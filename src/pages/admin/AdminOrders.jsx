@@ -11,6 +11,7 @@ const STATUS_COLOR = {
 const ORDER_STATUS_COLOR = {
   confirmed: '#22873A',
   pending: '#c9a96e',
+  personalization: '#9b59b6',
   processing: '#4a90d9',
   shipped: '#4a90d9',
   delivered: '#22873A',
@@ -179,7 +180,7 @@ export default function AdminOrders() {
                         {/* Update order status */}
                         <div style={{ marginTop: '1rem', display: 'flex', gap: '.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
                           <span style={{ fontSize: '.75rem', color: '#666' }}>Update order status:</span>
-                          {['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map((st) => (
+                          {['pending', 'confirmed', 'personalization', 'processing', 'shipped', 'delivered', 'cancelled'].map((st) => (
                             <button
                               key={st}
                               onClick={(e) => { e.stopPropagation(); updateOrderStatus(o.id, 'order_status', st); }}

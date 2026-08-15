@@ -147,7 +147,7 @@ serve(async (req) => {
         currency: 'INR',
         order_status: 'pending',
       })
-      .select('id')
+      .select('id, order_number')
       .single();
 
     if (orderErr) {
@@ -179,6 +179,7 @@ serve(async (req) => {
       currency: 'INR',
       key_id: keyId,
       order_id: order.id,
+      order_number: order.order_number,
     });
   } catch (err) {
     console.error('Unexpected error:', err);

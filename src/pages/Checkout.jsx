@@ -17,19 +17,44 @@ function loadRazorpay() {
   });
 }
 
+function CheckMark() {
+  return (
+    <svg className="ck-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle className="ck-circle" cx="40" cy="40" r="37" stroke="var(--gold)" strokeWidth="3" />
+      <path className="ck-path" d="M22 41L34 53L58 27" stroke="var(--gold)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+const PROGRESS_STEPS = [
+  { id: 'placed', label: 'Order Placed' },
+  { id: 'personalization', label: 'Personalization' },
+  { id: 'packed', label: 'Packed' },
+  { id: 'shipped', label: 'Shipped' },
+  { id: 'delivered', label: 'Delivered' },
+];
+
 export default function Checkout() {
   const { cartItems, subtotal, discountAmt, discountedTotal, appliedCoupon, money, clearCart } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', mobile: '', email: '', address: '', city: '', state: '', pin: '' });
-  const [payState, setPayState] = useState('idle'); // idle | creating | processing | success | failure
-  const [orderId, setOrderId] = useState('');
+  const [payState, setPayState] = useState('idle'); // idle | creating | processing | success | failure | dismissed
+  const [payData, setPayData] = useState(null);
   const [failReason, setFailReason] = useState('');
-  const payingRef = useRef(false); // guard against double-click
+  const [showReceipt, setShowReceipt] = useState(false);
+  const payingRef = useRef(false);
 
   useEffect(() => {
     if (cartItems.length === 0 && payState !== 'success') navigate('/cart', { replace: true });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (payState === 'success') {
+      const t = setTimeout(() => setShowReceipt(true), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [payState]);
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -50,7 +75,6 @@ export default function Checkout() {
     setPayState('creating');
 
     try {
-      // Load Razorpay SDK
       const loaded = await loadRazorpay();
       if (!loaded) {
         toast('Could not load payment gateway. Check your internet connection.');
@@ -59,7 +83,6 @@ export default function Checkout() {
         return;
       }
 
-      // Build items payload for Edge Function
       const items = cartItems.map((item) => ({
         legacyId: item.meta?.productId || item.id.split('__')[0] || item.id,
         name: item.meta?.displayName || item.product?.name || 'Product',
@@ -70,7 +93,6 @@ export default function Checkout() {
         category: item.product?.category || null,
       }));
 
-      // Call Edge Function — creates Razorpay order + Supabase order record
       const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
         body: {
           items,
@@ -95,9 +117,17 @@ export default function Checkout() {
         return;
       }
 
-      const { razorpay_order_id, amount, currency, key_id, order_id } = data;
+      const { razorpay_order_id, amount, currency, key_id, order_id, order_number } = data;
 
-      // Open Razorpay Checkout modal
+      // Snapshot cart BEFORE clearCart is called in the payment handler
+      const cartSnapshot = {
+        items: cartItems.map((i) => ({ ...i })),
+        subtotal,
+        discountAmt,
+        discountedTotal,
+        couponCode: appliedCoupon?.code || null,
+      };
+
       const rzp = new window.Razorpay({
         key: key_id,
         amount,
@@ -114,14 +144,13 @@ export default function Checkout() {
         theme: { color: '#B68D40' },
         modal: {
           ondismiss: () => {
-            setPayState('idle');
+            setPayState('dismissed');
             payingRef.current = false;
           },
         },
         handler: async (response) => {
           setPayState('processing');
           try {
-            // Verify payment server-side
             const { data: vData, error: vErr } = await supabase.functions.invoke('verify-razorpay-payment', {
               body: {
                 razorpay_order_id: response.razorpay_order_id,
@@ -139,7 +168,14 @@ export default function Checkout() {
             }
 
             clearCart();
-            setOrderId(order_id);
+            setPayData({
+              orderId: order_id,
+              orderNumber: order_number || `ORD-${order_id.slice(0, 8).toUpperCase()}`,
+              amount: amount / 100,
+              paymentId: response.razorpay_payment_id,
+              customerName: form.name.trim(),
+              ...cartSnapshot,
+            });
             setPayState('success');
             payingRef.current = false;
           } catch {
@@ -165,46 +201,194 @@ export default function Checkout() {
     }
   }
 
-  // ── Success screen ────────────────────────────────
+  // ── Success screen ──────────────────────────────────────────────────────
   if (payState === 'success') {
+    const d = payData || {};
+    const receiptDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+    const amtDisplay = d.amount ? d.amount.toLocaleString('en-IN') : (d.discountedTotal || 0).toLocaleString('en-IN');
+
     return (
-      <div data-page="checkout">
+      <>
         <SEO title="Order Confirmed | JHAYRA" description="" path="/checkout" noindex={true} />
-        <div className="container" style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4rem 1rem' }}>
-          <div style={{ textAlign: 'center', maxWidth: '480px' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>✅</div>
-            <h1 style={{ fontFamily: 'var(--fd)', fontSize: '1.8rem', marginBottom: '.5rem' }}>Payment Successful!</h1>
-            <p style={{ color: 'var(--muted)', marginBottom: '1rem' }}>Your order has been confirmed.</p>
-            {orderId && (
-              <div style={{ background: 'var(--bg)', border: '1px solid var(--cream)', borderRadius: 'var(--r)', padding: '.75rem 1.25rem', marginBottom: '1.5rem', fontFamily: 'monospace', fontSize: '.82rem', color: 'var(--muted)', wordBreak: 'break-all' }}>
-                Order ID: {orderId.slice(0, 8).toUpperCase()}
+
+        {/* Print-only receipt — shown only via window.print() */}
+        <div className="receipt-print">
+          <div className="rp-header">
+            <div className="rp-logo">JHAYRA</div>
+            <div className="rp-tagline">Wall Art &amp; Personalised Frames</div>
+          </div>
+          <hr className="rp-divider" />
+          <div className="rp-meta">
+            <div><span>Order</span><strong>{d.orderNumber}</strong></div>
+            <div><span>Date</span><strong>{receiptDate}</strong></div>
+            <div><span>Payment ID</span><strong>{d.paymentId}</strong></div>
+            <div><span>Status</span><strong>PAID</strong></div>
+          </div>
+          <hr className="rp-divider" />
+          <div className="rp-items">
+            {(d.items || []).map((item, i) => (
+              <div key={i} className="rp-item">
+                <span>
+                  {item.meta?.displayName || item.product?.name}
+                  {item.meta?.size ? ` (${item.meta.size} · ${item.meta.colour})` : ''}
+                  {' × '}{item.qty}
+                </span>
+                <span>&#8377;{(item.price * item.qty).toLocaleString('en-IN')}</span>
               </div>
+            ))}
+          </div>
+          <hr className="rp-divider" />
+          <div className="rp-totals">
+            <div className="rp-item"><span>Subtotal</span><span>&#8377;{(d.subtotal || 0).toLocaleString('en-IN')}</span></div>
+            {(d.discountAmt || 0) > 0 && (
+              <div className="rp-item"><span>Discount ({d.couponCode})</span><span>&#8722;&#8377;{(d.discountAmt || 0).toLocaleString('en-IN')}</span></div>
             )}
-            <p style={{ fontSize: '.88rem', color: 'var(--muted)', marginBottom: '2rem', lineHeight: 1.7 }}>
-              We'll contact you on WhatsApp to confirm delivery details. Thank you for choosing JHAYRA!
-            </p>
-            <div style={{ display: 'flex', gap: '.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link to="/shop" className="btn btn-gold">Continue Shopping</Link>
-              <a href="https://wa.me/917070728989" target="_blank" rel="noopener noreferrer" className="btn btn-outline">WhatsApp Us</a>
+            <div className="rp-item"><span>Delivery</span><span>FREE</span></div>
+            <div className="rp-item rp-total"><span>Total Paid</span><span>&#8377;{amtDisplay}</span></div>
+          </div>
+          <hr className="rp-divider" />
+          <div className="rp-footer">jhayra.com &middot; hello@jhayra.com &middot; +91 70707 28989</div>
+        </div>
+
+        {/* Screen success UI */}
+        <div className="co-success no-print">
+          <div className="container">
+            <div className="co-success-inner">
+
+              <div className="co-check-wrap">
+                <CheckMark />
+              </div>
+
+              <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '.4rem' }}>Payment Confirmed</p>
+              <h1 className="co-success-h1">Thank you, {d.customerName?.split(' ')[0] || 'Dear Customer'}!</h1>
+              <p className="co-success-sub">Your order has been placed. We'll start creating your personalised artwork with love and care.</p>
+
+              {/* Order detail chips */}
+              <div className="co-chips">
+                <div className="co-chip">
+                  <span className="co-chip-label">Order</span>
+                  <span className="co-chip-val">{d.orderNumber}</span>
+                </div>
+                <div className="co-chip">
+                  <span className="co-chip-label">Amount Paid</span>
+                  <span className="co-chip-val">&#8377;{amtDisplay}</span>
+                </div>
+                <div className="co-chip">
+                  <span className="co-chip-label">Payment ID</span>
+                  <span className="co-chip-val co-chip-mono">{(d.paymentId || '').slice(0, 18)}&hellip;</span>
+                </div>
+              </div>
+
+              {/* Animated digital receipt */}
+              <div className={`co-receipt${showReceipt ? ' co-receipt-vis' : ''}`}>
+                <div className="co-receipt-header">
+                  <div>
+                    <div className="co-receipt-logo">JHAYRA</div>
+                    <div style={{ fontSize: '.7rem', color: 'var(--muted)', marginTop: '.1rem' }}>Digital Receipt &middot; {receiptDate}</div>
+                  </div>
+                  <div className="co-paid-badge">PAID</div>
+                </div>
+
+                <div className="co-receipt-items">
+                  {(d.items || []).map((item, i) => {
+                    const name = item.meta?.displayName || item.product?.name;
+                    const desc = item.meta?.size ? `${item.meta.size} · ${item.meta.colour}` : '';
+                    return (
+                      <div key={i} className="co-receipt-item">
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: '.84rem' }}>{name}</div>
+                          {desc && <div style={{ fontSize: '.72rem', color: 'var(--muted)' }}>{desc} &middot; Qty: {item.qty}</div>}
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: '.84rem', flexShrink: 0 }}>&#8377;{(item.price * item.qty).toLocaleString('en-IN')}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="co-receipt-totals">
+                  <div className="co-rt-row"><span>Subtotal</span><span>&#8377;{(d.subtotal || 0).toLocaleString('en-IN')}</span></div>
+                  {(d.discountAmt || 0) > 0 && (
+                    <div className="co-rt-row" style={{ color: 'var(--ok)' }}>
+                      <span>Discount ({d.couponCode})</span>
+                      <span>&#8722;&#8377;{(d.discountAmt || 0).toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
+                  <div className="co-rt-row">
+                    <span style={{ color: 'var(--muted)' }}>Delivery</span>
+                    <span style={{ color: '#22873A', fontWeight: 600 }}>FREE</span>
+                  </div>
+                  <div className="co-rt-row co-rt-total">
+                    <span>Total Paid</span>
+                    <span>&#8377;{amtDisplay}</span>
+                  </div>
+                </div>
+
+                <button className="co-download-btn no-print" onClick={() => window.print()}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Download Receipt
+                </button>
+              </div>
+
+              {/* Order progress tracker */}
+              <div className={`co-tracker${showReceipt ? ' co-tracker-vis' : ''}`}>
+                <div className="co-tracker-label">Order Progress</div>
+                <div className="co-tracker-steps">
+                  {PROGRESS_STEPS.map((step, i) => (
+                    <div
+                      key={step.id}
+                      className={`co-step${i === 0 ? ' co-step-done' : i === 1 ? ' co-step-active' : ''}`}
+                    >
+                      <div className="co-step-dot">{i === 0 ? '✓' : i + 1}</div>
+                      <div className="co-step-label">{step.label}</div>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ fontSize: '.78rem', color: 'var(--muted)', textAlign: 'center', marginTop: '1.2rem', lineHeight: 1.65 }}>
+                  We'll contact you on WhatsApp to share personalization &amp; delivery updates.
+                </p>
+              </div>
+
+              <div className="co-success-ctas no-print">
+                <Link to="/shop" className="btn btn-gold">Continue Shopping</Link>
+                <a href="https://wa.me/917070728989" target="_blank" rel="noopener noreferrer" className="btn btn-outline">WhatsApp Us</a>
+              </div>
+
             </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
-  // ── Failure screen ────────────────────────────────
+  // ── Failure screen ──────────────────────────────────────────────────────
   if (payState === 'failure') {
     return (
-      <div data-page="checkout">
+      <div data-page="checkout" className="no-print">
         <SEO title="Payment Failed | JHAYRA" description="" path="/checkout" noindex={true} />
         <div className="container" style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4rem 1rem' }}>
-          <div style={{ textAlign: 'center', maxWidth: '480px' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>❌</div>
-            <h1 style={{ fontFamily: 'var(--fd)', fontSize: '1.8rem', marginBottom: '.5rem' }}>Payment Failed</h1>
-            {failReason && <p style={{ color: 'var(--muted)', marginBottom: '1.5rem', fontSize: '.9rem' }}>{failReason}</p>}
-            <div style={{ display: 'flex', gap: '.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div className="co-state-card">
+            <div className="co-state-icon co-state-fail">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+            </div>
+            <h2 className="co-state-title">Payment Unsuccessful</h2>
+            {failReason && <p className="co-state-msg">{failReason}</p>}
+            <div className="co-state-note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" style={{ flexShrink: 0 }}>
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+              Your cart is safe &mdash; items are still waiting for you.
+            </div>
+            <div className="co-state-actions">
               <button className="btn btn-gold" onClick={() => { setPayState('idle'); payingRef.current = false; }}>Try Again</button>
+              <Link to="/cart" className="btn btn-outline">Back to Cart</Link>
               <a href="https://wa.me/917070728989" target="_blank" rel="noopener noreferrer" className="btn btn-outline">Contact Support</a>
             </div>
           </div>
@@ -213,103 +397,164 @@ export default function Checkout() {
     );
   }
 
+  // ── Checkout form ───────────────────────────────────────────────────────
   const isCreating = payState === 'creating' || payState === 'processing';
-  const btnLabel = payState === 'creating' ? 'Creating order…' : payState === 'processing' ? 'Verifying payment…' : `Pay ${money(discountedTotal)}`;
+  const btnLabel = payState === 'creating'
+    ? 'Creating order…'
+    : payState === 'processing'
+    ? 'Verifying payment…'
+    : 'Proceed to Secure Payment';
 
   return (
-    <div data-page="checkout">
+    <div data-page="checkout" className="no-print">
       <SEO title="Checkout | JHAYRA" description="" path="/checkout" noindex={true} />
+
       <div className="page-hero">
         <div className="container">
           <p className="eyebrow">Secure Checkout</p>
-          <h1>Checkout</h1>
-          <p>Almost there — just a few details</p>
+          <h1>Complete Your Order</h1>
+          <p>Crafted with love &mdash; delivered to your door</p>
         </div>
       </div>
+
       <div className="container">
-        <div className="checkout-wrap">
-          <div className="box">
-            <h3 style={{ fontFamily: 'var(--fd)', fontSize: '1.2rem', marginBottom: '1.2rem' }}>Delivery Details</h3>
-            <div className="form-grid">
-              <div className="form-group">
-                <label className="form-label">Full Name *</label>
-                <input type="text" className="form-input" placeholder="John Doe" value={form.name} onChange={set('name')} disabled={isCreating} />
+        <div className="co-layout">
+
+          {/* ── Left: form ── */}
+          <div className="co-form-col">
+
+            {payState === 'dismissed' && (
+              <div className="co-dismissed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+                No worries &mdash; your items are still in your cart. Ready when you are!
               </div>
-              <div className="form-group">
-                <label className="form-label">Mobile *</label>
-                <input type="tel" className="form-input" placeholder="10-digit number" value={form.mobile} onChange={set('mobile')} disabled={isCreating} inputMode="numeric" />
+            )}
+
+            <div className="box">
+              <div className="co-section-title">
+                <div className="co-section-num">1</div>
+                <h3>Delivery Details</h3>
               </div>
-              <div className="form-group full">
-                <label className="form-label">Email</label>
-                <input type="email" className="form-input" placeholder="you@email.com" value={form.email} onChange={set('email')} disabled={isCreating} />
-              </div>
-              <div className="form-group full">
-                <label className="form-label">Address *</label>
-                <textarea className="form-textarea" placeholder="Street, Area" rows={2} value={form.address} onChange={set('address')} disabled={isCreating} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">City *</label>
-                <input type="text" className="form-input" placeholder="City" value={form.city} onChange={set('city')} disabled={isCreating} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">State</label>
-                <input type="text" className="form-input" placeholder="State" value={form.state} onChange={set('state')} disabled={isCreating} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Pincode *</label>
-                <input type="text" className="form-input" placeholder="6-digit pincode" maxLength={6} pattern="[0-9]{6}" inputMode="numeric" value={form.pin} onChange={set('pin')} disabled={isCreating} />
+              <div className="form-grid">
+                <div className="form-group">
+                  <label className="form-label">Full Name *</label>
+                  <input type="text" className="form-input" placeholder="John Doe" value={form.name} onChange={set('name')} disabled={isCreating} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Mobile *</label>
+                  <input type="tel" className="form-input" placeholder="10-digit number" value={form.mobile} onChange={set('mobile')} disabled={isCreating} inputMode="numeric" />
+                </div>
+                <div className="form-group full">
+                  <label className="form-label">Email (optional)</label>
+                  <input type="email" className="form-input" placeholder="you@email.com" value={form.email} onChange={set('email')} disabled={isCreating} />
+                </div>
+                <div className="form-group full">
+                  <label className="form-label">Delivery Address *</label>
+                  <textarea className="form-textarea" placeholder="Flat / House no., Street, Area" rows={2} value={form.address} onChange={set('address')} disabled={isCreating} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">City *</label>
+                  <input type="text" className="form-input" placeholder="City" value={form.city} onChange={set('city')} disabled={isCreating} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">State</label>
+                  <input type="text" className="form-input" placeholder="State" value={form.state} onChange={set('state')} disabled={isCreating} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Pincode *</label>
+                  <input type="text" className="form-input" placeholder="6-digit pincode" maxLength={6} pattern="[0-9]{6}" inputMode="numeric" value={form.pin} onChange={set('pin')} disabled={isCreating} />
+                </div>
               </div>
             </div>
 
-            <h3 style={{ fontFamily: 'var(--fd)', fontSize: '1.2rem', margin: '1.6rem 0 .75rem' }}>Payment</h3>
-
-            <button
-              id="payBtn"
-              className="btn btn-gold btn-lg"
-              style={{ width: '100%', opacity: isCreating ? 0.7 : 1, cursor: isCreating ? 'not-allowed' : 'pointer' }}
-              onClick={handlePay}
-              disabled={isCreating}
-            >
-              {isCreating ? (
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem' }}>
-                  <span style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin .7s linear infinite' }} />
-                  {btnLabel}
-                </span>
-              ) : btnLabel}
-            </button>
-
-            <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', fontSize: '.82rem', color: 'var(--muted)', marginTop: '1rem', padding: '.8rem', background: 'var(--bg)', borderRadius: 'var(--r)' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-              <span>Secured by Razorpay. UPI, Cards, Net Banking & Wallets accepted.</span>
+            <div className="box">
+              <div className="co-section-title">
+                <div className="co-section-num">2</div>
+                <h3>Payment</h3>
+              </div>
+              <div className="co-pay-methods">
+                {['UPI', 'Cards', 'Net Banking', 'Wallets'].map((m) => (
+                  <span key={m} className="co-pay-chip">{m}</span>
+                ))}
+              </div>
+              <button
+                id="payBtn"
+                className="btn btn-gold btn-lg co-pay-btn"
+                onClick={handlePay}
+                disabled={isCreating}
+                style={{ opacity: isCreating ? 0.7 : 1, cursor: isCreating ? 'not-allowed' : 'pointer' }}
+              >
+                {isCreating ? (
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem' }}>
+                    <span style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin .7s linear infinite' }} />
+                    {btnLabel}
+                  </span>
+                ) : (
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem' }}>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    {btnLabel}
+                  </span>
+                )}
+              </button>
+              <div className="co-secure-note">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                Secured by Razorpay &middot; 256-bit SSL encryption
+              </div>
             </div>
           </div>
 
-          <div className="summary">
-            <h3>Order Summary</h3>
-            <div style={{ marginBottom: '1rem' }}>
-              {cartItems.map(({ id, product, qty, price, meta }) => {
-                const art = PRODUCT_ART[product.id];
-                const name = meta?.displayName || product.name;
-                const frameLabel = meta?.size ? `${meta.size} · ${meta.colour}` : `Qty: ${qty}`;
-                return (
-                  <div key={id} style={{ display: 'flex', gap: '.6rem', alignItems: 'center', marginBottom: '.75rem' }}>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '.4rem', overflow: 'hidden', flexShrink: 0, background: art ? `${art.fc}dd` : 'var(--bg)' }}>
-                      {art && <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ height: '80%', aspectRatio: '200/260', overflow: 'hidden', borderRadius: '1px' }} dangerouslySetInnerHTML={{ __html: art.art }} /></div>}
+          {/* ── Right: order summary ── */}
+          <div className="co-summary-col">
+            <div className="summary co-summary-sticky">
+              <h3>Order Summary</h3>
+              <div style={{ marginBottom: '1rem' }}>
+                {cartItems.map(({ id, product, qty, price, meta }) => {
+                  const art = PRODUCT_ART[product.id];
+                  const name = meta?.displayName || product.name;
+                  const frameLabel = meta?.size ? `${meta.size} · ${meta.colour}` : '';
+                  return (
+                    <div key={id} style={{ display: 'flex', gap: '.6rem', alignItems: 'center', marginBottom: '.75rem' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '.4rem', overflow: 'hidden', flexShrink: 0, background: art ? `${art.fc}dd` : 'var(--bg)' }}>
+                        {art && (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ height: '80%', aspectRatio: '200/260', overflow: 'hidden', borderRadius: '1px' }} dangerouslySetInnerHTML={{ __html: art.art }} />
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '.82rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
+                        <div style={{ fontSize: '.72rem', color: 'var(--muted)' }}>{frameLabel && `${frameLabel} · `}Qty: {qty}</div>
+                      </div>
+                      <div style={{ fontWeight: 700, fontSize: '.88rem', flexShrink: 0 }}>&#8377;{(price * qty).toLocaleString('en-IN')}</div>
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '.82rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
-                      <div style={{ fontSize: '.72rem', color: 'var(--muted)' }}>{frameLabel} · Qty: {qty}</div>
-                    </div>
-                    <div style={{ fontWeight: 700, fontSize: '.88rem', flexShrink: 0 }}>₹{(price * qty).toLocaleString('en-IN')}</div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              <div className="sum-row"><span style={{ color: 'var(--muted)' }}>Subtotal</span><span>{money(subtotal)}</span></div>
+              {discountAmt > 0 && (
+                <div className="sum-row">
+                  <span style={{ color: 'var(--ok)' }}>Discount ({appliedCoupon?.code})</span>
+                  <span style={{ color: 'var(--ok)' }}>&minus;{money(discountAmt)}</span>
+                </div>
+              )}
+              <div className="sum-row"><span style={{ color: 'var(--muted)' }}>Delivery</span><span style={{ color: '#22873A', fontWeight: 600 }}>FREE</span></div>
+              <div className="sum-total"><span>Total</span><b>{money(discountedTotal)}</b></div>
+              <div className="co-trust">
+                {['Secure Payment', 'Handcrafted', 'Free Delivery'].map((t) => (
+                  <div key={t} className="co-trust-item">{t}</div>
+                ))}
+              </div>
             </div>
-            <div className="sum-row"><span style={{ color: 'var(--muted)' }}>Subtotal</span><span>{money(subtotal)}</span></div>
-            {discountAmt > 0 && <div className="sum-row"><span style={{ color: 'var(--ok)' }}>Discount ({appliedCoupon?.code})</span><span style={{ color: 'var(--ok)' }}>−{money(discountAmt)}</span></div>}
-            <div className="sum-row"><span style={{ color: 'var(--muted)' }}>Delivery</span><span style={{ color: '#22873A', fontWeight: 600 }}>FREE</span></div>
-            <div className="sum-total"><span>Total</span><b>{money(discountedTotal)}</b></div>
           </div>
+
         </div>
       </div>
     </div>
