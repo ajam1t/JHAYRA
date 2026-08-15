@@ -90,6 +90,9 @@ export default function Home() {
               </Link>
             ))}
           </div>
+          <div style={{textAlign:'center',marginTop:'1.5rem'}}>
+            <Link to="/collections" className="btn btn-outline">View All Collections</Link>
+          </div>
         </div>
       </section>
 
