@@ -162,7 +162,7 @@ input,select,textarea{font-family:inherit}::selection{background:var(--gold);col
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 .form-group{display:flex;flex-direction:column;gap:.35rem}.form-group.full{grid-column:1/-1}
 .form-label{font-size:.8rem;font-weight:600}
-.form-input,.form-select,.form-textarea{padding:.7rem 1rem;border:1.5px solid var(--cream);border-radius:var(--r);font-size:.9rem;outline:none;transition:.2s}
+.form-input,.form-select,.form-textarea{padding:.7rem 1rem;border:1.5px solid var(--cream);border-radius:var(--r);font-size:1rem;outline:none;transition:.2s}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--gold)}
 .box{background:#fff;border-radius:var(--rx);padding:1.8rem;box-shadow:var(--sh)}
 .pay-opt{display:flex;gap:.8rem;align-items:center;padding:.9rem 1rem;border:2px solid var(--cream);border-radius:var(--r);cursor:pointer;margin-top:.5rem;transition:.2s}

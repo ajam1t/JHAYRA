@@ -6,5 +6,6 @@ Disallow: /cart
 Disallow: /checkout
 Disallow: /orders
 Disallow: /wishlist
+Disallow: /admin
 
 Sitemap: https://jhayra.com/sitemap.xml
