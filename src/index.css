@@ -1038,3 +1038,61 @@ body{padding-bottom:56px}
   .co-step:not(:last-child)::after{top:14px}
   .co-success{padding:calc(var(--nav) + 2rem) 0 3rem}
 }
+
+/* ── Field validation hints ── */
+.co-field-hint{font-size:.72rem;margin-top:.3rem;padding-left:.1rem}
+.co-field-hint-ok{color:#22873A}
+.co-field-hint-err{color:var(--err,#e05c5c)}
+
+/* ── Payment option cards ── */
+.co-pay-option{background:var(--bg);border:1.5px solid var(--cream);border-radius:var(--rl);padding:1.25rem 1.4rem;margin-bottom:.4rem}
+.co-pay-option-header{display:flex;align-items:center;gap:.55rem;margin-bottom:.85rem;flex-wrap:wrap}
+.co-pay-option-header strong{font-size:.96rem;font-weight:700;color:var(--text)}
+.co-pay-option-sub{font-size:.72rem;color:var(--muted);margin-left:auto}
+.co-pay-option-wa{border-color:#c3f0cc;background:#f0faf2}
+.co-wa-desc{font-size:.82rem;color:#3A6A4A;margin-bottom:.85rem;line-height:1.55}
+.co-wa-btn{width:100%;background:#25D366;color:#fff;border:none;border-radius:var(--pill);padding:.875rem 1.25rem;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:.2s;font-family:var(--fb)}
+.co-wa-btn:hover{background:#1ebe5d}
+.co-wa-btn:disabled{opacity:.6;cursor:not-allowed}
+.co-pay-divider{position:relative;text-align:center;margin:.5rem 0;color:var(--muted);font-size:.78rem}
+.co-pay-divider::before,.co-pay-divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--cream)}
+.co-pay-divider::before{left:0}.co-pay-divider::after{right:0}
+.co-pay-divider span{background:#fff;padding:0 .65rem;position:relative}
+
+/* ── Mobile: make Pay Online & WhatsApp buttons larger and easier to tap ── */
+@media(max-width:600px){
+  .co-pay-btn,.co-wa-btn{font-size:1.05rem;padding:1rem 1.25rem;min-height:54px}
+  .co-pay-option{padding:1rem 1rem}
+  .co-pay-option-sub{display:none}
+}
+
+/* ── Razorpay mobile safety: hide JHAYRA FAB + bottom nav when modal is open ── */
+body.razorpay-container-open .wa-fab,
+body.razorpay-container-open .bottom-nav{display:none!important}
+
+/* ── Customize page — mobile layout ── */
+.cz-layout{display:flex;gap:2rem;align-items:flex-start}
+.cz-sidebar{width:200px;flex-shrink:0;position:sticky;top:calc(var(--nav) + 1rem)}
+.cz-mobile-bar{display:none}
+@media(max-width:768px){
+  .cz-sidebar{display:none}
+  .cz-mobile-bar{display:block;margin-bottom:1.25rem}
+  .cz-mobile-pills{display:flex;gap:.45rem;overflow-x:auto;padding-bottom:.5rem;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .cz-mobile-pills::-webkit-scrollbar{display:none}
+  .cz-pill{flex-shrink:0;padding:.42rem .85rem;border-radius:var(--pill);border:1.5px solid #DDD8CE;background:#fff;font-size:.82rem;font-weight:600;color:#5A4A3A;cursor:pointer;white-space:nowrap;transition:.18s;font-family:var(--fb)}
+  .cz-pill.active{background:#0F0D0A;color:#D4A85A;border-color:#0F0D0A}
+  .cz-pill-cnt{font-size:.68rem;opacity:.65;margin-left:.2rem}
+  .cz-mobile-row2{display:flex;gap:.5rem;margin-top:.6rem;align-items:center}
+  .cz-mobile-select{flex:1;padding:.42rem .75rem;border-radius:var(--pill);border:1.5px solid #DDD8CE;background:#fff;font-size:.82rem;color:#5A4A3A;font-family:var(--fb);appearance:none;-webkit-appearance:none}
+  .cz-mobile-toggle{padding:.42rem .85rem;border-radius:var(--pill);border:1.5px solid #DDD8CE;background:#fff;font-size:.82rem;font-weight:600;color:#5A4A3A;cursor:pointer;white-space:nowrap;font-family:var(--fb)}
+  .cz-mobile-toggle.active{background:#0F0D0A;color:#D4A85A;border-color:#0F0D0A}
+  .cz-layout{display:block}
+  .tmpl-gallery{grid-template-columns:repeat(2,1fr);gap:.75rem}
+  .tmpl-card-preview{aspect-ratio:3/2}
+  .tmpl-card-body{padding:.7rem .75rem .65rem}
+  .tmpl-card-title{font-size:.82rem}
+  .tmpl-card-subtitle{font-size:.7rem}
+}
+@media(max-width:360px){
+  .tmpl-gallery{grid-template-columns:1fr}
+}

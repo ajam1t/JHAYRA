@@ -25,6 +25,9 @@ serve(async (req) => {
     if (!Array.isArray(items) || !items.length) return json({ error: 'No items' }, 400);
     if (!customer?.name?.trim()) return json({ error: 'Customer name required' }, 400);
     if (!customer?.mobile?.trim()) return json({ error: 'Customer mobile required' }, 400);
+    if (!/^\d{10}$/.test(customer.mobile.replace(/\D/g, ''))) {
+      return json({ error: 'Mobile number must be exactly 10 digits' }, 400);
+    }
     if (!customer?.address?.trim() || !customer?.city?.trim() || !customer?.pin?.trim()) {
       return json({ error: 'Delivery address incomplete' }, 400);
     }

@@ -103,10 +103,42 @@ function TemplateGallery() {
           </a>
         </div>
 
-        <div style={{display:'flex',gap:'2rem',alignItems:'flex-start'}}>
+        {/* Mobile-only: horizontal category pills */}
+        <div className="cz-mobile-bar">
+          <div className="cz-mobile-pills">
+            <button className={`cz-pill${group==='all'?' active':''}`} onClick={()=>setGroup('all')}>
+              All <span className="cz-pill-cnt">{TEMPLATES.filter(t=>t.status==='active').length}</span>
+            </button>
+            {TEMPLATE_GROUPS.map(g => {
+              const cnt = TEMPLATES.filter(t=>t.group===g.id&&t.status==='active').length;
+              return (
+                <button key={g.id} className={`cz-pill${group===g.id?' active':''}`} onClick={()=>setGroup(g.id)}>
+                  {g.label} <span className="cz-pill-cnt">{cnt}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="cz-mobile-row2">
+            <select
+              className="cz-mobile-select"
+              value={photoCount}
+              onChange={e=>setPhotoCount(e.target.value)}
+            >
+              {photoOpts.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            <button
+              className={`cz-mobile-toggle${onlyPopular?' active':''}`}
+              onClick={()=>setOnlyPopular(p=>!p)}
+            >
+              ⭐ Popular
+            </button>
+          </div>
+        </div>
 
-          {/* Sidebar */}
-          <aside style={{width:'200px',flexShrink:0,position:'sticky',top:'calc(var(--nav) + 1rem)'}}>
+        <div className="cz-layout">
+
+          {/* Sidebar — desktop only */}
+          <aside className="cz-sidebar">
             <div className="cz-filters">
               <div>
                 <div className="cz-filter-title">Design Type</div>
@@ -159,7 +191,7 @@ function TemplateGallery() {
                   <button
                     className={`cz-filter-opt${onlyPopular?' active':''}`}
                     onClick={()=>setOnlyPopular(true)}
-                  >Popular & Best Sellers</button>
+                  >Popular &amp; Best Sellers</button>
                 </div>
               </div>
             </div>
