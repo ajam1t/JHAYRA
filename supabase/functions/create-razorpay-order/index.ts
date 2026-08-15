@@ -8,6 +8,17 @@ const CORS = {
 
 const VALID_COUPONS: Record<string, number> = { JHAYRA10: 10, JHAYRA15: 15 };
 
+// Server-authoritative frame prices — must stay in sync with src/data/frameOptions.js
+const FRAME_PRICES: Record<string, number> = {
+  'A4_Black':       499,
+  'A3+_Black':      999,
+  '18 × 24_Black': 1499,
+  '18 × 24_Gold':  1499,
+  '24 × 36_Black': 2999,
+  '24 × 36_Gold':  2999,
+  '24 × 36_Brown': 2999,
+};
+
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -71,8 +82,19 @@ serve(async (req) => {
       if (error || !product) return json({ error: `Product not found: ${legacyId}` }, 400);
       if (!product.active) return json({ error: `Product unavailable: ${legacyId}` }, 400);
 
-      // Price must be >= base product price (frame options add to base)
-      if (price < Number(product.price)) {
+      // Server-side price validation: if a frame size+colour is specified,
+      // validate against the authoritative FRAME_PRICES table.
+      // Otherwise fall back to the product's base price.
+      let expectedPrice = Number(product.price);
+      if (size && colour) {
+        const frameKey = `${size}_${colour}`;
+        const framePriceMin = FRAME_PRICES[frameKey];
+        if (framePriceMin === undefined) {
+          return json({ error: `Invalid frame option: ${size} / ${colour}` }, 400);
+        }
+        expectedPrice = framePriceMin;
+      }
+      if (price < expectedPrice) {
         return json({ error: `Price below minimum for: ${legacyId}` }, 400);
       }
 
@@ -173,7 +195,15 @@ serve(async (req) => {
     }));
 
     const { error: itemsErr } = await supabase.from('order_items').insert(orderItemsData);
-    if (itemsErr) console.error('Order items insert error:', itemsErr);
+    if (itemsErr) {
+      console.error('Order items insert error:', itemsErr);
+      // Prevent orphaned orders — mark as cancelled so admin can see the failure
+      await supabase.from('orders').update({
+        order_status: 'cancelled',
+        notes: `Auto-cancelled: order items failed to persist — ${itemsErr.message}`,
+      }).eq('id', order.id);
+      return json({ error: 'Failed to record order details. Please try again or contact support.' }, 500);
+    }
 
     // Return ONLY what the frontend needs
     return json({
