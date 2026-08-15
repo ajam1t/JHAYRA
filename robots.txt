@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Block private/utility pages
+Disallow: /cart
+Disallow: /checkout
+Disallow: /orders
+Disallow: /wishlist
+
+Sitemap: https://jhayra.com/sitemap.xml
