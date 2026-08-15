@@ -11,7 +11,7 @@ export function CartProvider({ children }) {
     catch { return {}; }
   });
 
-  /* Per-item metadata: price (from frame option), size, colour, orientation, displayName */
+  /* Per-item metadata: price (from Supabase product), size, colour, orientation, displayName */
   const [cartMeta, setCartMeta] = useState(() => {
     try { return JSON.parse(localStorage.getItem('jhayra_cart_meta') || '{}'); }
     catch { return {}; }
@@ -33,14 +33,14 @@ export function CartProvider({ children }) {
   }, []);
 
   /* Frame-aware add: key = "productId__frameOptionId" */
-  const addToCartWithFrame = useCallback((productId, frameOption, displayName, qty = 1, orientation = 'Vertical') => {
+  const addToCartWithFrame = useCallback((productId, frameOption, displayName, qty = 1, orientation = 'Vertical', productPrice = null) => {
     const key = `${productId}__${frameOption.id}`;
     setCart(c => ({ ...c, [key]: (c[key] || 0) + qty }));
     setCartMeta(m => ({
       ...m,
       [key]: {
         productId,
-        price: frameOption.price,
+        price: productPrice != null ? productPrice : frameOption.price,
         frameOptionId: frameOption.id,
         size: frameOption.size,
         dimensions: frameOption.dimensions,
@@ -58,16 +58,13 @@ export function CartProvider({ children }) {
   }, []);
 
   const changeQty = useCallback((id, delta) => {
-    const newQty = (cart[id] || 0) + delta;
     setCart(c => {
-      const n = { ...c, [id]: newQty };
-      if (n[id] <= 0) delete n[id];
+      const newQty = (c[id] || 0) + delta;
+      const n = { ...c };
+      if (newQty <= 0) { delete n[id]; } else { n[id] = newQty; }
       return n;
     });
-    if (newQty <= 0) {
-      setCartMeta(m => { const n = { ...m }; delete n[id]; return n; });
-    }
-  }, [cart]);
+  }, []);
 
   const clearCart = useCallback(() => { setCart({}); setCartMeta({}); setAppliedCoupon(null); }, []);
 
@@ -88,7 +85,7 @@ export function CartProvider({ children }) {
   const cartItems = Object.entries(cart).map(([key, qty]) => {
     const meta = cartMeta[key];
     const productId = meta?.productId || key.split('__')[0] || key;
-    const product = PRODUCTS[productId] || PRODUCTS['custom'];
+    const product = PRODUCTS[productId];
     const price = meta?.price ?? product?.price ?? 499;
     return { id: key, product, qty, price, meta };
   }).filter(item => item.product);

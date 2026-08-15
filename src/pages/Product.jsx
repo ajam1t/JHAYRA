@@ -40,7 +40,7 @@ export default function Product() {
 
   const availableColours = coloursForSize(selectedSize);
   const frameOption      = getFrameOption(selectedSize, selectedColour);
-  const price            = frameOption?.price ?? 499;
+  const price            = product?.price ?? frameOption?.price ?? 499;
 
   /* Frame geometry — portrait dims flipped for landscape */
   const isPortrait = selectedOrientation === 'Vertical';
@@ -80,7 +80,7 @@ export default function Product() {
 
   const handleAddToCart = () => {
     if (!frameOption) return;
-    addToCartWithFrame(product.id, frameOption, product.name, qty, selectedOrientation);
+    addToCartWithFrame(product.id, frameOption, product.name, qty, selectedOrientation, product.price);
     toast('Added to cart ✓');
   };
 
