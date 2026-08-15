@@ -58,6 +58,7 @@ input,select,textarea{font-family:inherit}::selection{background:var(--gold);col
 .hero-visual{display:flex;align-items:center;justify-content:center}
 .hero-photo{width:100%;max-width:560px;border-radius:14px;overflow:hidden;box-shadow:0 30px 70px rgba(80,50,10,.22),0 10px 26px rgba(0,0,0,.1);animation:fadeUp 1s var(--e) .4s both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
 .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem}
 .cat-card{position:relative;border-radius:var(--rl);overflow:hidden;aspect-ratio:1/1.414;display:block}
 .cat-card>svg,.cat-card>img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--e)}
