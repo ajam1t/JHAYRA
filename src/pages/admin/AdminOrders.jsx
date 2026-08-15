@@ -35,6 +35,7 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(null);
   const [orderItems, setOrderItems] = useState({});
+  const [statusError, setStatusError] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -62,7 +63,12 @@ export default function AdminOrders() {
   }
 
   async function updateOrderStatus(orderId, field, value) {
-    await supabase.from('orders').update({ [field]: value }).eq('id', orderId);
+    setStatusError(null);
+    const { error } = await supabase.from('orders').update({ [field]: value }).eq('id', orderId);
+    if (error) {
+      setStatusError(`Failed to update status to "${value}": ${error.message}`);
+      return;
+    }
     setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, [field]: value } : o));
   }
 
@@ -71,6 +77,12 @@ export default function AdminOrders() {
   return (
     <div>
       <h1 style={s.heading}>Orders</h1>
+      {statusError && (
+        <div style={{ background: '#3a0000', border: '1px solid #e05c5c', borderRadius: '6px', color: '#e05c5c', fontSize: '.82rem', padding: '.65rem 1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>{statusError}</span>
+          <button onClick={() => setStatusError(null)} style={{ background: 'none', border: 'none', color: '#e05c5c', cursor: 'pointer', fontSize: '1rem', lineHeight: 1 }}>✕</button>
+        </div>
+      )}
       {orders.length === 0 ? (
         <div style={{ color: '#666', fontSize: '.9rem' }}>No orders yet.</div>
       ) : (

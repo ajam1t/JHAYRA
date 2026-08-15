@@ -1096,3 +1096,187 @@ body.razorpay-container-open .bottom-nav{display:none!important}
 @media(max-width:360px){
   .tmpl-gallery{grid-template-columns:1fr}
 }
+
+/* ══════════════════════════════════════════════════
+   INTRO ANIMATION — luxury cinematic opener
+══════════════════════════════════════════════════ */
+
+/* Full-screen overlay — above everything */
+.jhintro{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(152deg,#FAF7F0 0%,#F3EBDF 48%,#EAE0CE 100%);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  transition:opacity .85s cubic-bezier(.4,0,.2,1);
+}
+.jhintro-exit{opacity:0;pointer-events:none}
+
+/* Film-grain texture */
+.jhintro-grain{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.88' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:.042;
+}
+
+/* Edge vignette for depth */
+.jhintro-vignette{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 80% at 50% 50%,transparent 55%,rgba(80,50,20,.18) 100%);
+}
+
+/* ── Scenes ─────────────────────────── */
+.jhintro-scene{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:2rem;text-align:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .65s cubic-bezier(.4,0,.2,1);
+}
+.jhintro-scene.jhintro-in{opacity:1}
+
+/* Scene 1 — tagline */
+.jhintro-tag1{
+  font-family:var(--fd);font-style:italic;font-weight:600;
+  font-size:clamp(1.1rem,3.2vw,1.65rem);
+  color:#5A4030;letter-spacing:.01em;line-height:1.4;
+  opacity:0;
+}
+.jhintro-in .jhintro-tag1{
+  animation:jhFadeUp .95s cubic-bezier(.16,1,.3,1) .12s both;
+}
+
+.jhintro-tag2{
+  font-family:var(--fd);font-weight:700;
+  font-size:clamp(1.3rem,3.8vw,2.1rem);
+  color:#1A1208;letter-spacing:-.015em;line-height:1.25;
+  margin-top:.32rem;
+  opacity:0;
+}
+.jhintro-in .jhintro-tag2{
+  animation:jhFadeUp .95s cubic-bezier(.16,1,.3,1) .52s both;
+}
+
+/* Scene 2 — logo */
+.jhintro-rule{
+  width:0;height:1px;
+  background:linear-gradient(90deg,transparent,#B68D40,transparent);
+  opacity:0;
+}
+.jhintro-rule:first-child{ margin-bottom:.9rem; }
+.jhintro-rule:nth-child(3){ margin-top:.9rem;margin-bottom:1rem; }
+.jhintro-in .jhintro-rule{
+  animation:jhRuleGrow .75s cubic-bezier(.16,1,.3,1) .1s both;
+}
+.jhintro-in .jhintro-rule:nth-child(3){
+  animation-delay:.25s;
+}
+
+.jhintro-logo{
+  font-family:var(--fd);font-weight:700;
+  font-size:clamp(2.8rem,10vw,6rem);
+  letter-spacing:.22em;
+  /* Shimmer gradient — sweeps gold across dark text */
+  background:linear-gradient(90deg,#1A1208 25%,#D4A85A 42%,#F0CC80 50%,#D4A85A 58%,#1A1208 75%);
+  background-size:350% auto;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  color:#1A1208; /* fallback */
+  opacity:0;
+}
+.jhintro-in .jhintro-logo{
+  animation:jhLogoIn .65s cubic-bezier(.16,1,.3,1) .2s both,
+            jhShimmer 2s ease .55s both;
+}
+
+.jhintro-sub{
+  font-family:var(--fb);font-weight:400;
+  font-size:clamp(.6rem,1.8vw,.82rem);
+  letter-spacing:.22em;text-transform:uppercase;
+  color:#8B6A2E;opacity:0;
+}
+.jhintro-in .jhintro-sub{
+  animation:jhFadeUp .7s ease .72s both;
+}
+
+/* ── Keyframes ──────────────────────── */
+@keyframes jhFadeUp{
+  from{opacity:0;transform:translateY(14px)}
+  to  {opacity:1;transform:none}
+}
+@keyframes jhRuleGrow{
+  from{width:0;opacity:0}
+  to  {width:72px;opacity:1}
+}
+@keyframes jhLogoIn{
+  from{opacity:0;transform:translateY(8px) scale(.97)}
+  to  {opacity:1;transform:none}
+}
+@keyframes jhShimmer{
+  0%  {background-position:110% center}
+  100%{background-position:-30% center}
+}
+
+/* ── Mute button ────────────────────── */
+.jhintro-mute{
+  position:absolute;bottom:1.4rem;right:1.4rem;
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(26,18,8,.07);
+  border:1px solid rgba(26,18,8,.13);
+  display:flex;align-items:center;justify-content:center;
+  color:#7A5E3A;cursor:pointer;
+  opacity:0;transition:opacity .2s,background .2s;
+  animation:jhFadeUp .5s ease .6s both;
+}
+.jhintro-mute:hover{opacity:1;background:rgba(26,18,8,.13)}
+.jhintro-mute svg{width:14px;height:14px}
+
+/* ── Skip hint ──────────────────────── */
+.jhintro-skip{
+  position:absolute;bottom:1.45rem;left:50%;transform:translateX(-50%);
+  font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(90,72,48,.38);pointer-events:none;
+  opacity:0;animation:jhFadeUp .5s ease 1.8s both;
+  white-space:nowrap;
+}
+
+/* ── Tap to enter (mobile) ──────────── */
+.jhintro-tap{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:transparent;border:none;cursor:pointer;
+  opacity:0;animation:jhFadeUp .6s ease .4s both;
+}
+.jhintro-tap-pulse{
+  position:absolute;
+  width:60px;height:60px;border-radius:50%;
+  border:1.5px solid rgba(182,141,64,.5);
+  animation:jhTapPulse 2.2s ease-out infinite;
+}
+.jhintro-tap-pulse2{animation-delay:.9s}
+.jhintro-tap-core{
+  position:absolute;
+  width:14px;height:14px;border-radius:50%;
+  background:#B68D40;
+  box-shadow:0 0 12px rgba(182,141,64,.5);
+}
+.jhintro-tap-lbl{
+  position:absolute;bottom:calc(50% - 68px);
+  font-family:var(--fb);font-size:.68rem;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:#8B6A2E;
+}
+@keyframes jhTapPulse{
+  0%  {transform:scale(1);opacity:.7}
+  80% {transform:scale(1.9);opacity:0}
+  100%{transform:scale(1.9);opacity:0}
+}
+
+/* ── Mobile tweaks ──────────────────── */
+@media(max-width:480px){
+  .jhintro-tag1{font-size:clamp(1rem,5vw,1.25rem)}
+  .jhintro-tag2{font-size:clamp(1.2rem,6vw,1.55rem)}
+  .jhintro-logo{font-size:clamp(2.4rem,14vw,3.5rem);letter-spacing:.18em}
+  .jhintro-sub {font-size:.6rem;letter-spacing:.18em}
+  .jhintro-skip{display:none}
+}
