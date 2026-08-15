@@ -27,9 +27,15 @@ export function CartProvider({ children }) {
     localStorage.setItem('jhayra_cart_meta', JSON.stringify(cartMeta));
   }, [cartMeta]);
 
-  /* Legacy quick-add (uses product.price as fallback) */
-  const addToCart = useCallback((id) => {
+  /* Quick-add (no frame selection): stores name + Supabase price in meta */
+  const addToCart = useCallback((id, productMeta = null) => {
     setCart(c => ({ ...c, [id]: (c[id] || 0) + 1 }));
+    if (productMeta) {
+      setCartMeta(m => ({
+        ...m,
+        [id]: { productId: id, price: productMeta.price, displayName: productMeta.name || '' },
+      }));
+    }
   }, []);
 
   /* Frame-aware add: key = "productId__frameOptionId" */

@@ -100,7 +100,7 @@ export default function ProductCard({ product, className = '' }) {
         <div className="product-card-price">
           <span className="price-now">from ₹{product.price.toLocaleString('en-IN')}</span>
         </div>
-        <button className="product-card-add" onClick={e => { e.preventDefault(); addToCart(product.id); toast('Added to cart ✓'); }}>
+        <button className="product-card-add" onClick={e => { e.preventDefault(); addToCart(product.id, { name: product.name, price: product.price }); toast('Added to cart ✓'); }}>
           Add to Cart
         </button>
       </div>
