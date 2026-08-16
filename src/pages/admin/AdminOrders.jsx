@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { supabase } from '../../lib/supabase';
 
 const STATUS_COLOR = {
@@ -64,6 +64,8 @@ export default function AdminOrders() {
 
   async function updateOrderStatus(orderId, field, value) {
     setStatusError(null);
+    const ALLOWED_FIELDS = ['order_status'];
+    if (!ALLOWED_FIELDS.includes(field)) return;
     const { error } = await supabase.from('orders').update({ [field]: value }).eq('id', orderId);
     if (error) {
       setStatusError(`Failed to update status to "${value}": ${error.message}`);
@@ -101,8 +103,8 @@ export default function AdminOrders() {
             </thead>
             <tbody>
               {orders.map((o) => (
-                <>
-                  <tr key={o.id} style={{ cursor: 'pointer' }} onClick={() => toggleExpand(o.id)}>
+                <Fragment key={o.id}>
+                  <tr style={{ cursor: 'pointer' }} onClick={() => toggleExpand(o.id)}>
                     <td style={s.td}>
                       <span style={{ fontFamily: 'monospace', fontSize: '.75rem', color: '#888' }}>
                         {o.id.slice(0, 8).toUpperCase()}
@@ -137,7 +139,7 @@ export default function AdminOrders() {
                     </td>
                   </tr>
                   {expanded === o.id && (
-                    <tr key={`${o.id}-detail`}>
+                    <tr>
                       <td colSpan={7} style={{ ...s.td, background: '#0d0d0d', padding: '1rem 1.25rem' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                           <div>
@@ -205,7 +207,7 @@ export default function AdminOrders() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>

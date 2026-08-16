@@ -1,10 +1,16 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const ALLOWED_ORIGINS = ['https://jhayra.com', 'https://www.jhayra.com', 'http://localhost:5173', 'http://localhost:5176'];
+
+function corsHeaders(origin: string | null) {
+  const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : 'https://jhayra.com';
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Vary': 'Origin',
+  };
+}
 
 const VALID_COUPONS: Record<string, number> = { JHAYRA10: 10, JHAYRA15: 15 };
 
@@ -19,15 +25,14 @@ const FRAME_PRICES: Record<string, number> = {
   '24 × 36_Brown': 2999,
 };
 
-function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...CORS, 'Content-Type': 'application/json' },
-  });
-}
-
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
+  const origin = req.headers.get('Origin');
+  const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
+  });
+
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(origin) });
 
   try {
     const { items, customer } = await req.json();
@@ -98,7 +103,7 @@ serve(async (req) => {
         return json({ error: `Price below minimum for: ${legacyId}` }, 400);
       }
 
-      subtotal += price * qty;
+      subtotal += expectedPrice * qty;
       validatedItems.push({
         productDbId: product.id,
         legacyId,
@@ -107,7 +112,7 @@ serve(async (req) => {
         size: size || null,
         colour: colour || null,
         qty,
-        price,
+        price: expectedPrice,
       });
     }
 

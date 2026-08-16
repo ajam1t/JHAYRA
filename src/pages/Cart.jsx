@@ -8,11 +8,18 @@ export default function Cart() {
   const { cartItems, subtotal, shipping, total, discountAmt, discountedTotal, appliedCoupon, money, changeQty, removeFromCart, applyCoupon, clearCoupon } = useCart();
   const [couponCode, setCouponCode] = useState('');
   const [couponErr, setCouponErr] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
 
-  const handleApplyCoupon = () => {
-    if (!couponCode.trim()) return;
-    const result = applyCoupon(couponCode);
-    setCouponErr(result.ok ? '' : 'Invalid coupon code.');
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim() || couponLoading) return;
+    setCouponLoading(true);
+    setCouponErr('');
+    try {
+      const result = await applyCoupon(couponCode);
+      setCouponErr(result.ok ? '' : 'Invalid coupon code.');
+    } finally {
+      setCouponLoading(false);
+    }
   };
 
   const handleClearCoupon = () => {
@@ -60,11 +67,11 @@ export default function Cart() {
                     <div className="cart-item-name">{meta?.displayName || product.name}</div>
                     <div className="cart-item-meta">{frameLabel}</div>
                     <div className="qty">
-                      <button onClick={()=>changeQty(id,-1)}>−</button>
-                      <span>{qty}</span>
-                      <button onClick={()=>changeQty(id,1)}>+</button>
+                      <button onClick={()=>changeQty(id,-1)} aria-label="Decrease quantity">−</button>
+                      <span aria-label={`Quantity: ${qty}`}>{qty}</span>
+                      <button onClick={()=>changeQty(id,1)} aria-label="Increase quantity">+</button>
                     </div>
-                    <span className="cart-rm" onClick={()=>removeFromCart(id)} style={{cursor:'pointer'}}>Remove</span>
+                    <button className="cart-rm" onClick={()=>removeFromCart(id)} style={{cursor:'pointer',background:'none',border:'none',padding:0,font:'inherit'}}>Remove</button>
                   </div>
                   <div style={{fontWeight:700,fontFamily:'var(--fd)'}}>₹{(price*qty).toLocaleString('en-IN')}</div>
                 </div>
@@ -75,8 +82,8 @@ export default function Cart() {
             <h3>Order Summary</h3>
             {!appliedCoupon ? (
               <div className="coupon">
-                <input className="form-input" placeholder="Enter coupon code" value={couponCode} onChange={e=>setCouponCode(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleApplyCoupon()} style={{flex:1,padding:'.6rem 1rem',border:'1.5px solid var(--cream)',borderRadius:'var(--pill)',fontSize:'.85rem'}} />
-                <button className="btn btn-outline" style={{padding:'.6rem 1.1rem'}} onClick={handleApplyCoupon}>Apply</button>
+                <input className="form-input" placeholder="Enter coupon code" value={couponCode} onChange={e=>setCouponCode(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleApplyCoupon()} style={{flex:1,padding:'.6rem 1rem',border:'1.5px solid var(--cream)',borderRadius:'var(--pill)',fontSize:'.85rem'}} disabled={couponLoading} />
+                <button className="btn btn-outline" style={{padding:'.6rem 1.1rem',minWidth:'4.5rem'}} onClick={handleApplyCoupon} disabled={couponLoading}>{couponLoading ? '…' : 'Apply'}</button>
               </div>
             ) : (
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.75rem',padding:'.55rem .85rem',background:'rgba(34,135,58,.06)',border:'1px solid rgba(34,135,58,.2)',borderRadius:'var(--pill)'}}>

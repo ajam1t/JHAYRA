@@ -211,7 +211,7 @@ export default function Shop() {
           {/* Product grid */}
           <div>
             <div className="shop-top">
-              <span style={{fontSize:'.85rem',color:'var(--muted)'}}>{products.length} products</span>
+              <span style={{fontSize:'.85rem',color:'var(--muted)'}}>{products.length} {products.length === 1 ? 'product' : 'products'}</span>
               <select className="sort-select" value={sort} onChange={e => setSort(e.target.value)}>
                 {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
@@ -274,7 +274,7 @@ export default function Shop() {
             ))}
           </div>
           <button className="mobile-sheet-apply" onClick={() => setMobileFilterOpen(false)}>
-            Show {products.length} Products
+            Show {products.length} {products.length === 1 ? 'Product' : 'Products'}
           </button>
         </div>
       </div>

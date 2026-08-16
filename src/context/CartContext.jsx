@@ -1,9 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { PRODUCTS } from '../data/products';
+import { supabase } from '../lib/supabase';
 
 const CartContext = createContext(null);
-
-const VALID_COUPONS = { 'JHAYRA10': 10, 'JHAYRA15': 15 };
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState(() => {
@@ -74,14 +73,27 @@ export function CartProvider({ children }) {
 
   const clearCart = useCallback(() => { setCart({}); setCartMeta({}); setAppliedCoupon(null); }, []);
 
-  const applyCoupon = useCallback((code) => {
+  const applyCoupon = useCallback(async (code) => {
     const upper = code.trim().toUpperCase();
-    if (VALID_COUPONS[upper]) {
-      setAppliedCoupon({ code: upper, discount: VALID_COUPONS[upper] });
-      return { ok: true, discount: VALID_COUPONS[upper] };
+    if (!upper) return { ok: false };
+    if (!supabase) {
+      setAppliedCoupon(null);
+      return { ok: false };
     }
-    setAppliedCoupon(null);
-    return { ok: false };
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-coupon', {
+        body: { code: upper },
+      });
+      if (error || !data?.valid) {
+        setAppliedCoupon(null);
+        return { ok: false };
+      }
+      setAppliedCoupon({ code: upper, discount: data.discount });
+      return { ok: true, discount: data.discount };
+    } catch {
+      setAppliedCoupon(null);
+      return { ok: false };
+    }
   }, []);
 
   const clearCoupon = useCallback(() => setAppliedCoupon(null), []);

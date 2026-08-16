@@ -38,6 +38,7 @@ import AdminCategories from './pages/admin/Categories';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminLayout from './components/admin/AdminLayout';
 import ProtectedRoute from './components/admin/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -117,7 +118,8 @@ function GlobalSchemas() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ErrorBoundary>
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
@@ -173,6 +175,7 @@ export default function App() {
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }
