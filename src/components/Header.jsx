@@ -1,11 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useEffect, useState } from 'react';
+import SearchOverlay from './SearchOverlay';
 
 export default function Header() {
   const { cartCount } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [inspireOpen, setInspireOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -131,9 +133,9 @@ export default function Header() {
               </li>
             </ul>
             <div className="nav-actions">
-              <Link to="/shop" className="nav-ic" aria-label="Search">
+              <button className="nav-ic" aria-label="Search" onClick={() => setSearchOpen(true)}>
                 <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
-              </Link>
+              </button>
               <Link to="/wishlist" className="nav-ic" aria-label="Wishlist">
                 <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0l-.9 1-.9-1a5.5 5.5 0 0 0-7.8 7.8l8.7 8.7 8.7-8.7a5.5 5.5 0 0 0 0-7.8z"/></svg>
               </Link>
@@ -153,6 +155,7 @@ export default function Header() {
           </div>
         </div>
       </nav>
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }

@@ -13,8 +13,8 @@ export default function Home() {
   return (
     <div data-page="home">
       <SEO
-        title="JHAYRA | Personalized Photo Frames & Gifts India"
-        description="India's premium personalized photo frames brand. Custom wall art, couple frames, family portraits & spiritual art. Starting ₹499. Free delivery above ₹999."
+        title="JHAYRA — Crafting Memories Into Art | Premium Wall Décor India"
+        description="Handcrafted photo frames, personalized gifts, canvas prints and spiritual art. Free delivery across India on all orders."
         path="/"
         ogImage="https://jhayra.com/Images/personalized.jpg"
       />
