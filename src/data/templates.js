@@ -1745,3 +1745,51 @@ export function filterTemplates({ group = 'all', photoSlots = 'all', onlyPopular
     return true;
   });
 }
+
+export function filterTemplatesWithSearch({ group = 'all', photoSlots = 'all', onlyPopular = false, query = '' } = {}) {
+  const preFiltered = TEMPLATES.filter(t => {
+    if (t.status !== 'active') return false;
+    if (onlyPopular && !t.popular && !t.bestSeller) return false;
+    if (group !== 'all' && t.group !== group) return false;
+    if (photoSlots !== 'all') {
+      const n = t.photoSlots;
+      if (photoSlots === '0' && n !== 0) return false;
+      if (photoSlots === '1' && n !== 1) return false;
+      if (photoSlots === '2-3' && (n < 2 || n > 3)) return false;
+      if (photoSlots === '4-6' && (n < 4 || n > 6)) return false;
+      if (photoSlots === '7+' && n < 7) return false;
+    }
+    return true;
+  });
+
+  const q = query.trim().toLowerCase();
+  if (!q) return preFiltered.sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const score = (t) => {
+    let s = 0;
+    const check = (str, pts) => { if (str && str.toLowerCase().includes(q)) s += pts; };
+    check(t.title, 80); check(t.subtitle, 30); check(t.description, 20);
+    check(t.group, 40); check((t.occasion||[]).join(' '), 35);
+    check((t.recipient||[]).join(' '), 30);
+    if (s > 0 && t.bestSeller) s += 5;
+    if (s > 0 && t.popular) s += 3;
+    return s;
+  };
+
+  const scored = preFiltered.map(t => ({ t, s: score(t) })).filter(x => x.s > 0);
+
+  if (scored.length === 0) {
+    // fuzzy: split query into words, match any
+    const words = q.split(/\s+/).filter(w => w.length > 2);
+    const fuzzy = preFiltered.map(t => {
+      const hay = [t.title, t.subtitle, t.description, t.group, ...(t.occasion||[]), ...(t.recipient||[])].join(' ').toLowerCase();
+      const hits = words.filter(w => hay.includes(w)).length;
+      return { t, s: hits * 10 };
+    }).filter(x => x.s > 0);
+    if (fuzzy.length > 0) return fuzzy.sort((a,b) => b.s - a.s).map(x => x.t);
+    // fallback: return popular templates as suggestions
+    return preFiltered.filter(t => t.bestSeller || t.popular).sort((a,b) => a.sortOrder - b.sortOrder).slice(0, 8);
+  }
+
+  return scored.sort((a,b) => b.s - a.s || a.t.sortOrder - b.t.sortOrder).map(x => x.t);
+}

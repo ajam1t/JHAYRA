@@ -70,18 +70,36 @@ export default function TemplateCard({ template }) {
   else if (template.popular) badge = {cls:'popular',label:'Popular'};
   else if (template.newArrival) badge = {cls:'new',label:'New'};
 
+  // Photo count label
+  const photoLabel = template.photoSlots === 0
+    ? 'No photo needed'
+    : `${template.photoSlots} Photo${template.photoSlots !== 1 ? 's' : ''}`;
+
+  // Field hints derived from textFields
+  const tf = template.textFields || [];
+  const hints = [];
+  if (tf.some(f => f.id === 'name1' || f.id === 'name2')) hints.push('Names');
+  else if (tf.some(f => f.id === 'name' || f.id === 'surname')) hints.push('Name');
+  if (tf.some(f => f.id === 'date')) hints.push('Date');
+  if (tf.some(f => f.id === 'msg' || f.id === 'quote')) hints.push('Message');
+  const hintStr = hints.join(' • ');
+
+  const slotInfo = photoLabel + (hintStr ? ' • ' + hintStr : '');
+
   return (
     <Link to={`/customize/${template.id}`} className="tmpl-card" style={{textDecoration:'none'}}>
       <div className="tmpl-card-preview" dangerouslySetInnerHTML={{__html:svg}} />
       <div className="tmpl-card-body">
         <div className="tmpl-card-title">{template.title}</div>
         <div className="tmpl-card-subtitle">{template.subtitle}</div>
+        <div className="tmpl-card-slots">{slotInfo}</div>
         <div className="tmpl-card-meta">
           <span className="tmpl-card-group">{group.label || template.group}</span>
           <span className="tmpl-card-price">from ₹{MIN_FRAME_PRICE.toLocaleString('en-IN')}</span>
         </div>
         {badge && <div style={{marginTop:'.35rem'}}><span className={`tmpl-card-badge ${badge.cls}`}>{badge.label}</span></div>}
       </div>
+      <div className="tmpl-card-cta">Customise →</div>
     </Link>
   );
 }

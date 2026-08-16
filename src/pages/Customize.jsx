@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useScrollReveal } from '../components/ScrollReveal';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
-import { TEMPLATES, TEMPLATE_GROUPS, filterTemplates, getTemplateById } from '../data/templates';
+import { TEMPLATES, TEMPLATE_GROUPS, filterTemplatesWithSearch, getTemplateById } from '../data/templates';
 import TemplateCard from '../components/TemplateCard';
 import TemplateRenderer from '../components/TemplateRenderer';
 import { FRAME_SIZES, FRAME_COLOUR_HEX, coloursForSize, getFrameOption, MIN_FRAME_PRICE } from '../data/frameOptions';
@@ -31,8 +31,16 @@ function TemplateGallery() {
   const [group,       setGroup]       = useState('all');
   const [photoCount,  setPhotoCount]  = useState('all');
   const [onlyPopular, setOnlyPopular] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const filtered = filterTemplates({ group, photoSlots: photoCount, onlyPopular });
+  const filtered = filterTemplatesWithSearch({ group, photoSlots: photoCount, onlyPopular, query: searchQuery });
+
+  // Detect fuzzy fallback: query is non-empty but no result has a direct substring match
+  const q = searchQuery.trim().toLowerCase();
+  const isFuzzyFallback = q.length > 0 && filtered.length > 0 && !filtered.some(t => {
+    const hay = [t.title, t.subtitle, t.description, t.group, ...(t.occasion||[]), ...(t.recipient||[])].join(' ').toLowerCase();
+    return hay.includes(q);
+  });
 
   const photoOpts = [
     {value:'all',    label:'Any photos'},
@@ -101,6 +109,24 @@ function TemplateGallery() {
             <WaIcon size={17}/>
             Chat on WhatsApp
           </a>
+        </div>
+
+        {/* Search box — visible on both mobile and desktop */}
+        <div className="cz-search-wrap">
+          <svg className="cz-search-icon" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            className="cz-search-input"
+            placeholder="Search designs, occasions or memories..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button className="cz-search-clear" onClick={() => setSearchQuery('')} aria-label="Clear search">✕</button>
+          )}
         </div>
 
         {/* Mobile-only: horizontal category pills */}
@@ -199,6 +225,9 @@ function TemplateGallery() {
 
           {/* Grid */}
           <div style={{flex:1,minWidth:0}}>
+            {isFuzzyFallback && (
+              <p className="cz-search-note">Showing related designs for '{searchQuery}'</p>
+            )}
             <p style={{fontSize:'.85rem',color:'#9A8A6A',marginBottom:'1.2rem'}}>
               {filtered.length} design{filtered.length!==1?'s':''} found
             </p>
@@ -210,7 +239,7 @@ function TemplateGallery() {
               <div style={{textAlign:'center',padding:'4rem 0',color:'#9A8A6A'}}>
                 <div style={{fontSize:'2.5rem',marginBottom:'1rem'}}>🖼️</div>
                 <p>No templates found with these filters.</p>
-                <button className="btn btn-outline" style={{marginTop:'1rem'}} onClick={()=>{setGroup('all');setPhotoCount('all');setOnlyPopular(false);}}>
+                <button className="btn btn-outline" style={{marginTop:'1rem'}} onClick={()=>{setGroup('all');setPhotoCount('all');setOnlyPopular(false);setSearchQuery('');}}>
                   Clear Filters
                 </button>
               </div>
@@ -438,6 +467,85 @@ function ScratchBuilder() {
   );
 }
 
+/* ── Photo Editor Modal ───────────────────────────────────────────────────── */
+function PhotoEditModal({ photo, slotId, slotLabel, initial, onConfirm, onClose }) {
+  const [state, setState] = useState({
+    zoom: initial?.zoom ?? 1,
+    panX: initial?.panX ?? 0,
+    panY: initial?.panY ?? 0,
+  });
+  const containerRef = useRef(null);
+  const dragRef      = useRef(null);
+
+  const handlePointerDown = (e) => {
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+    dragRef.current = { lastX: e.clientX, lastY: e.clientY };
+    if (containerRef.current) containerRef.current.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!dragRef.current) return;
+    const dx = e.clientX - dragRef.current.lastX;
+    const dy = e.clientY - dragRef.current.lastY;
+    dragRef.current.lastX = e.clientX;
+    dragRef.current.lastY = e.clientY;
+    const cw = containerRef.current?.offsetWidth  || 320;
+    const ch = containerRef.current?.offsetHeight || 400;
+    setState(prev => ({
+      ...prev,
+      panX: prev.panX + dx / (cw * prev.zoom),
+      panY: prev.panY + dy / (ch * prev.zoom),
+    }));
+  };
+
+  const handlePointerUp = () => { dragRef.current = null; };
+
+  const handleOverlayClick = (e) => { if (e.target === e.currentTarget) onClose(); };
+
+  const containerW = 'min(320px, 85vw)';
+
+  return (
+    <div className="photo-editor-overlay" onClick={handleOverlayClick}>
+      <div className="photo-editor-title">Adjust Photo · {slotLabel}</div>
+      <div
+        ref={containerRef}
+        className="photo-editor-container"
+        style={{ width: containerW, aspectRatio: '4/5' }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        <img
+          src={photo}
+          alt={slotLabel}
+          className="photo-editor-img"
+          style={{
+            transform: `scale(${state.zoom}) translate(${state.panX * 100}%, ${state.panY * 100}%)`,
+            transformOrigin: 'center',
+          }}
+        />
+        <div className="photo-editor-guide" />
+      </div>
+      <div className="photo-editor-zoom" onClick={e => e.stopPropagation()}>
+        <span style={{fontSize:'.75rem'}}>Zoom</span>
+        <input
+          type="range" min={1} max={4} step={0.05}
+          value={state.zoom}
+          onChange={e => setState(prev => ({...prev, zoom: +e.target.value}))}
+        />
+        <span style={{fontSize:'.75rem',minWidth:'2.5rem',textAlign:'right'}}>{state.zoom.toFixed(1)}×</span>
+      </div>
+      <div className="photo-editor-actions" onClick={e => e.stopPropagation()}>
+        <button className="photo-editor-btn reset"   onClick={() => setState({zoom:1, panX:0, panY:0})}>Reset</button>
+        <button className="photo-editor-btn cancel"  onClick={onClose}>Cancel</button>
+        <button className="photo-editor-btn confirm" onClick={() => { onConfirm(state); onClose(); }}>Done ✓</button>
+      </div>
+    </div>
+  );
+}
+
 /* ── Template Wizard ──────────────────────────────────────────────────────── */
 const STEPS = ['Photos','Personalise','Frame','Add to Cart'];
 
@@ -453,6 +561,9 @@ function TemplateWizard({ template }) {
   useScrollReveal();
   const { addToCartWithFrame } = useCart();
   const { toast }              = useToast();
+
+  const STORAGE_KEY = `jhayra_wizard_${template.id}`;
+
   const [step, setStep]   = useState(0);
   const [photos, setPhotos] = useState({});
   const [texts, setTexts]   = useState(
@@ -467,6 +578,55 @@ function TemplateWizard({ template }) {
   const [calMonth,       setCalMonth]       = useState(template.calendar?.month || new Date().getMonth() + 1);
   const [calYear,        setCalYear]        = useState(template.calendar?.year  || new Date().getFullYear());
   const [calHighlight,   setCalHighlight]   = useState(template.calendar?.highlightDate ?? null);
+
+  // New state for photo editing
+  const [photoTransforms, setPhotoTransforms] = useState({}); // {slotId: {zoom, panX, panY}}
+  const [photoQuality,    setPhotoQuality]    = useState({}); // {slotId: 'excellent'|'good'|'low'}
+  const [editingSlot,     setEditingSlot]     = useState(null);
+
+  // sessionStorage restore on mount
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || 'null');
+      if (saved) {
+        if (saved.texts) {
+          setTexts(prev => {
+            const merged = {...prev};
+            Object.keys(saved.texts).forEach(k => { if (k in merged) merged[k] = saved.texts[k]; });
+            return merged;
+          });
+        }
+        if (saved.selectedSize && FRAME_SIZES.includes(saved.selectedSize)) {
+          setSelectedSize(saved.selectedSize);
+          const cols = coloursForSize(saved.selectedSize);
+          if (saved.selectedColour && cols.includes(saved.selectedColour)) {
+            setSelectedColour(saved.selectedColour);
+          }
+        }
+        if (saved.selectedOrientation) setSelectedOrientation(saved.selectedOrientation);
+        if (saved.textScale) setTextScale(saved.textScale);
+        if (saved.textFont) setTextFont(saved.textFont);
+        if (saved.accentOverride !== undefined) setAccentOverride(saved.accentOverride);
+        if (saved.calMonth) setCalMonth(saved.calMonth);
+        if (saved.calYear) setCalYear(saved.calYear);
+        if (saved.calHighlight !== undefined) setCalHighlight(saved.calHighlight);
+        if (saved.step !== undefined && saved.step < 3) setStep(saved.step);
+      }
+    } catch (e) {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // sessionStorage save on change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+        step: Math.min(step, 2),
+        texts, selectedSize, selectedColour, selectedOrientation,
+        textScale, textFont, accentOverride,
+        calMonth, calYear, calHighlight,
+      }));
+    } catch (e) {}
+  }, [step, texts, selectedSize, selectedColour, selectedOrientation, textScale, textFont, accentOverride, calMonth, calYear, calHighlight, STORAGE_KEY]);
 
   const availableColours    = coloursForSize(selectedSize);
   const selectedFrameOption = getFrameOption(selectedSize, selectedColour);
@@ -485,22 +645,68 @@ function TemplateWizard({ template }) {
     if (!cols.includes(selectedColour)) setSelectedColour(cols[0]);
   };
 
+  // Enhanced photo upload with quality check and orientation suggestion
   const handlePhotoUpload = (slotId, file) => {
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => setPhotos(p => ({...p, [slotId]: ev.target.result}));
+    reader.onload = ev => {
+      const dataUrl = ev.target.result;
+      const img = new Image();
+      img.onload = () => {
+        const px = img.naturalWidth * img.naturalHeight;
+        const quality = px < 500000 ? 'low' : px < 2000000 ? 'good' : 'excellent';
+        const isLandscape = img.naturalWidth > img.naturalHeight * 1.2;
+
+        setPhotos(p => ({...p, [slotId]: dataUrl}));
+        setPhotoQuality(q => ({...q, [slotId]: quality}));
+        setPhotoTransforms(t => ({...t, [slotId]: {zoom:1, panX:0, panY:0}}));
+
+        if (quality === 'low') {
+          toast('Low resolution photo — it may appear blurry when printed.');
+        }
+        if (isLandscape && selectedOrientation === 'Vertical') {
+          toast('Tip: this photo looks great in Horizontal orientation.');
+        }
+      };
+      img.src = dataUrl;
+    };
     reader.readAsDataURL(file);
   };
-  const removePhoto    = (slotId) => setPhotos(p => { const n={...p}; delete n[slotId]; return n; });
+
+  // Handle multiple file selection: fill slots in order starting from the given slot
+  const handleMultiUpload = (startSlotId, files) => {
+    const startIdx = (template.slots||[]).findIndex(s => s.id === startSlotId);
+    files.forEach((file, i) => {
+      const targetSlot = (template.slots||[])[startIdx + i];
+      if (targetSlot) handlePhotoUpload(targetSlot.id, file);
+    });
+  };
+
+  const removePhoto = (slotId) => setPhotos(p => { const n={...p}; delete n[slotId]; return n; });
   const requiredFilled = (template.slots||[]).filter(s=>s.required).every(s=>photos[s.id]);
+
+  // Better cart integration with personalization summary
   const handleAddToCart = () => {
     if (!selectedFrameOption) return;
-    addToCartWithFrame('custom', selectedFrameOption, template.title);
+    const personalizationSummary = [];
+    if (texts.name1 && texts.name2) personalizationSummary.push(`${texts.name1} & ${texts.name2}`);
+    else if (texts.name) personalizationSummary.push(texts.name);
+    if (texts.date) personalizationSummary.push(texts.date);
+    const cartName = [template.title, personalizationSummary.join(' • ')].filter(Boolean).join(' — ');
+    addToCartWithFrame('custom', selectedFrameOption, cartName, 1, isPortrait ? 'Vertical' : 'Horizontal');
     toast(`${template.title} added to cart ✓`);
   };
 
   const fb = FRAME_BORDER[selectedColour] || FRAME_BORDER.Black;
   const fw = `${FRAME_BW_MAP[selectedSize] || 14}px`;
+
+  // Quality chip text/emoji
+  const qualityLabel = (q) => {
+    if (q === 'excellent') return '🟢 Excellent';
+    if (q === 'good')      return '🟡 Good';
+    if (q === 'low')       return '⚠ Low Quality - may appear blurry';
+    return null;
+  };
 
   return (
     <div data-page="customize">
@@ -513,6 +719,18 @@ function TemplateWizard({ template }) {
           <p style={{color:'rgba(255,255,255,.72)',fontSize:'.9rem'}}>{template.description}</p>
         </div>
       </div>
+
+      {/* Photo editor modal */}
+      {editingSlot && photos[editingSlot] && (
+        <PhotoEditModal
+          photo={photos[editingSlot]}
+          slotId={editingSlot}
+          slotLabel={(template.slots||[]).find(s=>s.id===editingSlot)?.label || 'Photo'}
+          initial={photoTransforms[editingSlot] || {zoom:1, panX:0, panY:0}}
+          onConfirm={transform => setPhotoTransforms(prev => ({...prev, [editingSlot]: transform}))}
+          onClose={() => setEditingSlot(null)}
+        />
+      )}
 
       <div className="container" style={{paddingTop:'2rem',paddingBottom:'4rem'}}>
         {/* Step bar */}
@@ -549,25 +767,53 @@ function TemplateWizard({ template }) {
                 </p>
                 {template.photoSlots>0 && (
                   <div className="photo-upload-grid">
-                    {(template.slots||[]).map(slot => (
-                      <label key={slot.id} className={`photo-slot${photos[slot.id]?' filled':''}`}>
-                        <input type="file" accept="image/*" style={{display:'none'}}
-                          onChange={e=>handlePhotoUpload(slot.id,e.target.files[0])}/>
-                        {photos[slot.id] && (
-                          <>
-                            <img src={photos[slot.id]} alt={slot.label} className="slot-img"/>
-                            <button className="photo-slot-remove"
-                              onClick={e=>{e.preventDefault();e.stopPropagation();removePhoto(slot.id);}}>✕</button>
-                          </>
-                        )}
-                        {!photos[slot.id] && (
-                          <>
-                            <div className="slot-icon">+</div>
-                            <div className="slot-label">{slot.label}{slot.required?' *':''}</div>
-                          </>
-                        )}
-                      </label>
-                    ))}
+                    {(template.slots||[]).map(slot => {
+                      const filled = !!photos[slot.id];
+                      const quality = photoQuality[slot.id];
+                      return (
+                        <div key={slot.id}>
+                          {filled ? (
+                            <div
+                              className="photo-slot filled"
+                              style={{cursor:'pointer'}}
+                              onClick={() => setEditingSlot(slot.id)}
+                            >
+                              <img src={photos[slot.id]} alt={slot.label} className="slot-img"/>
+                              <button
+                                className="photo-slot-remove"
+                                onClick={e=>{e.preventDefault();e.stopPropagation();removePhoto(slot.id);}}
+                              >✕</button>
+                              <button
+                                className="photo-slot-edit"
+                                onClick={e=>{e.preventDefault();e.stopPropagation();setEditingSlot(slot.id);}}
+                              >✎</button>
+                            </div>
+                          ) : (
+                            <label className="photo-slot">
+                              <input
+                                type="file" accept="image/*"
+                                multiple={template.photoSlots > 1}
+                                style={{display:'none'}}
+                                onChange={e => {
+                                  const files = Array.from(e.target.files);
+                                  if (files.length <= 1) {
+                                    handlePhotoUpload(slot.id, files[0]);
+                                  } else {
+                                    handleMultiUpload(slot.id, files);
+                                  }
+                                  e.target.value = '';
+                                }}
+                              />
+                              <div className="slot-icon">+</div>
+                              <div className="slot-label">{slot.label}{slot.required?' *':''}</div>
+                            </label>
+                          )}
+                          {quality && (
+                            <div className={`quality-chip ${quality}`}>{qualityLabel(quality)}</div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
                 <button className="btn btn-gold" style={{marginTop:'1.5rem',width:'100%'}}
@@ -852,6 +1098,7 @@ function TemplateWizard({ template }) {
                     fill={!isPortrait} framed={true}
                     textScale={textScale} textFont={textFont} accentOverride={accentOverride}
                     calendarOverride={template.hasCalendar ? {month:calMonth,year:calYear,highlightDate:calHighlight,visible:true} : null}
+                    photoTransforms={photoTransforms}
                   />
                 </div>
 

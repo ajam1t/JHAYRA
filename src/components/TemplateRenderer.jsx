@@ -438,7 +438,7 @@ function Decoratives({ decoratives, accent, framed }) {
 }
 
 /* ── Main exported renderer ───────────────────────────────────────────────── */
-export default function TemplateRenderer({ template, photos = {}, texts = {}, fill = false, framed = false, textScale = 1, textFont = 'serif-italic', accentOverride = null, calendarOverride = null }) {
+export default function TemplateRenderer({ template, photos = {}, texts = {}, fill = false, framed = false, textScale = 1, textFont = 'serif-italic', accentOverride = null, calendarOverride = null, photoTransforms = {} }) {
   if (!template) return null;
 
   const bg      = template.previewColors?.[0] || '#E8E0C8';
@@ -488,12 +488,24 @@ export default function TemplateRenderer({ template, photos = {}, texts = {}, fi
         const photoUrl = slot ? (photos[slot.id] || null) : null;
 
         if (photoUrl) {
+          const slotId   = slot?.id;
+          const transform = slotId ? (photoTransforms[slotId] || null) : null;
+
+          let imgX = rect.x, imgY = rect.y, imgW = rect.w, imgH = rect.h;
+          if (transform) {
+            const { zoom = 1, panX = 0, panY = 0 } = transform;
+            imgW = rect.w * zoom;
+            imgH = rect.h * zoom;
+            imgX = rect.x - (imgW - rect.w) / 2 + panX * rect.w;
+            imgY = rect.y - (imgH - rect.h) / 2 + panY * rect.h;
+          }
+
           return (
             <image
               key={i}
               href={photoUrl}
-              x={rect.x} y={rect.y}
-              width={rect.w} height={rect.h}
+              x={imgX} y={imgY}
+              width={imgW} height={imgH}
               clipPath={`url(#cp-${safeId}-${i})`}
               preserveAspectRatio="xMidYMid slice"
             />
