@@ -1345,3 +1345,45 @@ body.razorpay-container-open .bottom-nav{display:none!important}
   .wizard-preview-sticky{position:sticky;top:calc(var(--nav) + var(--bar));z-index:10}
   .wizard-controls{flex:none;width:100%}
 }
+
+/* ── Mobile footer compact ───────────────────────────────────────────────── */
+@media(max-width:600px){
+  .footer-main{padding:.9rem 0 .5rem}
+  .footer-bottom{padding:.4rem 0}
+
+  /* Collapse the large grid gap — biggest space saver */
+  .footer-grid{gap:.35rem}
+
+  /* Brand: hide description + tagline, keep logo + social */
+  .footer-desc{display:none}
+  .footer-tag{display:none}
+  .footer-logo{font-size:1.1rem}
+  .footer-social{margin-top:.3rem;margin-bottom:0}
+  .footer-social a{width:28px;height:28px}
+
+  /* Compact section headings */
+  .footer-col{margin-top:.5rem}
+  .footer-col h4{margin-bottom:.25rem;font-size:.62rem;letter-spacing:.16em}
+
+  /* Links go inline so they wrap in 1-2 natural lines */
+  .footer-col a{
+    display:inline-block;
+    font-size:.78rem;
+    margin-bottom:0;
+    padding:.12rem 0;
+    line-height:1.65;
+    color:rgba(255,255,255,.5);
+  }
+  /* Separator dot between links */
+  .footer-col a::after{
+    content:'\00a0\00b7';
+    color:rgba(255,255,255,.22);
+    font-size:.72rem;
+    margin-left:.05rem;
+  }
+  .footer-col a:last-of-type::after{content:''}
+
+  /* Legal row hidden on mobile — links are in the Help column */
+  .footer-legal{display:none}
+  .footer-bottom>div:first-child{font-size:.65rem;color:rgba(255,255,255,.25)}
+}
