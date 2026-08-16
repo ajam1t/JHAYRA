@@ -14,7 +14,7 @@ const FRAME_SHADOW = {
   Brown: '0 12px 40px rgba(0,0,0,.20),0 4px 14px rgba(0,0,0,.12)',
 };
 const FRAME_BW = { 'A4':12, 'A3+':14, '18 × 24':16, '24 × 36':20 };
-/* Physical portrait dimensions (inches): w = width, h = height */
+/* Physical portrait dimensions (inches) */
 const SIZE_DIMS = {
   'A4':     { w:9.5, h:13 },
   'A3+':    { w:12,  h:18 },
@@ -23,6 +23,9 @@ const SIZE_DIMS = {
 };
 /* Portrait display height (px) per size — determines overall visual scale */
 const FRAME_SCALE_H = { 'A4':320, 'A3+':390, '18 × 24':470, '24 × 36':560 };
+
+/* Show "Read more" when description exceeds this many characters */
+const DESC_THRESHOLD = 160;
 
 export default function Product() {
   useScrollReveal();
@@ -36,9 +39,10 @@ export default function Product() {
   const [selectedSize,        setSelectedSize]        = useState(FRAME_SIZES[0]);
   const [selectedColour,      setSelectedColour]      = useState(coloursForSize(FRAME_SIZES[0])[0]);
   const [selectedOrientation, setSelectedOrientation] = useState('Vertical');
-  const [qty, setQty] = useState(1);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [qty,         setQty]         = useState(1);
+  const [shareOpen,   setShareOpen]   = useState(false);
+  const [copied,      setCopied]      = useState(false);
+  const [descExpanded,setDescExpanded]= useState(false);
 
   const availableColours = coloursForSize(selectedSize);
   const frameOption      = getFrameOption(selectedSize, selectedColour);
@@ -49,8 +53,8 @@ export default function Product() {
   const dims    = SIZE_DIMS[selectedSize] || { w:18, h:24 };
   const scaleH  = FRAME_SCALE_H[selectedSize] || 320;
   const scaleW  = Math.round(scaleH * dims.w / dims.h);
-  const frameH  = isPortrait ? scaleH : scaleW;   // px
-  const frameW  = isPortrait ? scaleW : scaleH;   // px
+  const frameH  = isPortrait ? scaleH : scaleW;
+  const frameW  = isPortrait ? scaleW : scaleH;
   const actualSize = isPortrait
     ? `${dims.w} × ${dims.h} inches`
     : `${dims.h} × ${dims.w} inches`;
@@ -62,6 +66,7 @@ export default function Product() {
     if (!cols.includes(selectedColour)) setSelectedColour(cols[0]);
   };
 
+  /* 3D tilt on desktop */
   useEffect(() => {
     const el = galleryRef.current;
     if (!el) return;
@@ -77,7 +82,7 @@ export default function Product() {
     return () => { el.removeEventListener('mousemove', onMove); el.removeEventListener('mouseleave', onLeave); };
   }, []);
 
-  // Close share menu on Escape
+  /* Close share menu on Escape */
   useEffect(() => {
     if (!shareOpen) return;
     const onKey = e => { if (e.key === 'Escape') setShareOpen(false); };
@@ -85,8 +90,16 @@ export default function Product() {
     return () => window.removeEventListener('keydown', onKey);
   }, [shareOpen]);
 
-  if (loading) return <div className="container" style={{padding:'4rem 0',textAlign:'center',color:'var(--muted)'}}>Loading…</div>;
-  if (!product) return <div className="container" style={{padding:'4rem 0',textAlign:'center'}}>Product not found.</div>;
+  if (loading) return (
+    <div className="container" style={{padding:'4rem 0',textAlign:'center',color:'var(--muted)'}}>
+      Loading…
+    </div>
+  );
+  if (!product) return (
+    <div className="container" style={{padding:'4rem 0',textAlign:'center'}}>
+      Product not found.
+    </div>
+  );
 
   const handleAddToCart = () => {
     if (!frameOption) return;
@@ -96,7 +109,7 @@ export default function Product() {
 
   const waMsg = `Hello JHAYRA! I'd like to order:\n• ${product.name}\n  Frame: ${selectedSize} · ${selectedOrientation} · ${actualSize} · ${selectedColour} PS Moulding\n  Qty: ${qty} — ₹${(price * qty).toLocaleString('en-IN')}\n\nPlease confirm.`;
 
-  const productId = id || product.id;
+  const productId  = id || product.id;
   const productUrl = `https://jhayra.com/product/${productId}`;
   const waShareMsg = `I found this beautiful JHAYRA product:\n\n${product.name}\n${productUrl}`;
 
@@ -125,16 +138,16 @@ export default function Product() {
       const ta = document.createElement('textarea');
       ta.value = productUrl;
       ta.style.position = 'fixed';
-      ta.style.opacity = '0';
+      ta.style.opacity  = '0';
       document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
+      ta.focus(); ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
     }
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   }
+
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -164,6 +177,30 @@ export default function Product() {
     ],
   };
 
+  const isLongDesc = product.description && product.description.length > DESC_THRESHOLD;
+
+  /* ── shared option-button style ── */
+  const optBtn = (active) => ({
+    padding: '.35rem .85rem',
+    borderRadius: '.4rem',
+    border: `1.5px solid ${active ? 'var(--gold)' : 'var(--cream)'}`,
+    background: active ? 'rgba(182,141,64,.08)' : '#fff',
+    cursor: 'pointer',
+    fontSize: '.82rem',
+    fontWeight: active ? 600 : 400,
+    color: active ? 'var(--gold)' : 'var(--text)',
+  });
+
+  /* ── shared option-label style ── */
+  const optLabel = {
+    fontSize: '.75rem',
+    fontWeight: 600,
+    marginBottom: '.4rem',
+    letterSpacing: '.08em',
+    textTransform: 'uppercase',
+    color: 'var(--muted)',
+  };
+
   return (
     <div data-page="product">
       <SEO
@@ -174,6 +211,7 @@ export default function Product() {
         schema={[productSchema, breadcrumbSchema]}
         schemaId="product-schema"
       />
+
       {/* Breadcrumb */}
       <div className="container" style={{paddingTop:'calc(var(--nav) + var(--bar) + 1.5rem)',paddingBottom:'.5rem'}}>
         <div style={{display:'flex',gap:'.5rem',alignItems:'center',fontSize:'.8rem',color:'var(--muted)'}}>
@@ -187,10 +225,10 @@ export default function Product() {
 
       <div className="container">
         <div className="product-layout">
-          {/* Gallery */}
+
+          {/* ── Gallery ─────────────────────────────────────────── */}
           <div className="product-gallery-col">
             <div className="gallery-main" ref={galleryRef} style={{transition:'transform .12s ease',cursor:'crosshair'}}>
-              {/* Frame preview — height grows with selected size */}
               <div className="product-gallery-area" style={{
                 width:'100%',
                 minHeight:`${frameH + 80}px`,
@@ -200,7 +238,6 @@ export default function Product() {
                 position:'relative',
                 transition:'min-height .45s ease',
               }}>
-                {/* Frame — border colour and thickness update with selectedColour and selectedSize */}
                 <div className="product-frame-box" style={{
                   position:'relative',
                   border:`${FRAME_BW[selectedSize]||14}px solid ${FRAME_COLOUR_HEX[selectedColour]||'#1C1C1C'}`,
@@ -233,20 +270,20 @@ export default function Product() {
                 </div>
               </div>
             </div>
-            {/* Thumbnails — one per available colour for current size; clicking changes frame colour */}
+
+            {/* Colour swatches — hidden on mobile via CSS (.gallery-thumbs{display:none}) */}
             <div className="gallery-thumbs" style={{display:'flex',gap:'.5rem',marginTop:'.75rem'}}>
               {availableColours.map(col => {
-                const isActive = col === selectedColour;
-                const thumbHex = FRAME_COLOUR_HEX[col] || '#1C1C1C';
+                const isActive  = col === selectedColour;
+                const thumbHex  = FRAME_COLOUR_HEX[col] || '#1C1C1C';
                 return (
                   <div key={col} onClick={()=>setSelectedColour(col)} style={{
-                    width:'64px', height:'64px', borderRadius:'.5rem', cursor:'pointer',
+                    width:'64px',height:'64px',borderRadius:'.5rem',cursor:'pointer',
                     background:'var(--bg)',
                     border:`2px solid ${isActive?'var(--gold)':'var(--cream)'}`,
-                    overflow:'hidden', position:'relative',
-                    display:'flex', alignItems:'center', justifyContent:'center',
-                    transition:'border-color .2s',
-                    flexShrink:0,
+                    overflow:'hidden',position:'relative',
+                    display:'flex',alignItems:'center',justifyContent:'center',
+                    transition:'border-color .2s',flexShrink:0,
                   }}>
                     <div style={{border:`5px solid ${thumbHex}`,width:'40px',height:'52px',overflow:'hidden',flexShrink:0,boxShadow:'0 3px 10px rgba(0,0,0,.18)'}}>
                       {art ? (
@@ -268,95 +305,127 @@ export default function Product() {
             </div>
           </div>
 
-          {/* Info */}
+          {/* ── Info ─────────────────────────────────────────────
+               Mobile order: title → description → rating → price
+               → frame size → orientation → colour → qty+cart
+               → whatsapp+share → delivery                       */}
           <div className="product-info">
-            <div style={{display:'flex',gap:'.5rem',marginBottom:'.8rem',flexWrap:'wrap'}}>
-              {product.bestSeller && <span className="badge" style={{background:'var(--gold)',color:'#fff'}}>Best Seller</span>}
-              {product.newArrival && <span className="badge" style={{background:'#22C55E',color:'#fff'}}>New</span>}
-            </div>
-            <h1 className="product-name" style={{fontFamily:'var(--fd)',fontSize:'clamp(1.5rem,2.5vw,2rem)',marginBottom:'.5rem'}}>{product.name}</h1>
-            <div style={{display:'flex',alignItems:'center',gap:'.5rem',marginBottom:'.8rem'}}>
-              <span className="stars" style={{color:'#F59E0B',fontSize:'1rem'}}>{'★'.repeat(Math.round(product.rating))}</span>
-              <span style={{fontSize:'.85rem',color:'var(--muted)'}}>({product.reviewCount} reviews)</span>
+
+            {/* Badges */}
+            {(product.bestSeller || product.newArrival) && (
+              <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
+                {product.bestSeller && <span className="badge" style={{background:'var(--gold)',color:'#fff'}}>Best Seller</span>}
+                {product.newArrival && <span className="badge" style={{background:'#22C55E',color:'#fff'}}>New</span>}
+              </div>
+            )}
+
+            {/* Title */}
+            <h1 className="product-name" style={{fontFamily:'var(--fd)',fontSize:'clamp(1.3rem,2.5vw,2rem)',margin:0,lineHeight:1.2}}>
+              {product.name}
+            </h1>
+
+            {/* Description — directly below title with Read more / Read less */}
+            {product.description && (
+              <div>
+                <p style={{
+                  color:'var(--muted)',
+                  lineHeight:1.65,
+                  fontSize:'.88rem',
+                  margin:0,
+                  ...(descExpanded ? {} : {
+                    display:'-webkit-box',
+                    WebkitLineClamp:3,
+                    WebkitBoxOrient:'vertical',
+                    overflow:'hidden',
+                  }),
+                }}>
+                  {product.description}
+                </p>
+                {isLongDesc && (
+                  <button
+                    onClick={() => setDescExpanded(e => !e)}
+                    style={{
+                      fontSize:'.78rem',color:'var(--gold)',fontWeight:600,
+                      marginTop:'.25rem',padding:0,background:'none',
+                      border:'none',cursor:'pointer',letterSpacing:'.01em',
+                    }}
+                  >
+                    {descExpanded ? 'Read less ↑' : 'Read more ↓'}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Rating */}
+            <div style={{display:'flex',alignItems:'center',gap:'.4rem'}}>
+              <span className="stars" style={{color:'#F59E0B',fontSize:'.95rem'}}>
+                {'★'.repeat(Math.round(product.rating))}
+              </span>
+              <span style={{fontSize:'.82rem',color:'var(--muted)'}}>
+                ({product.reviewCount} reviews)
+              </span>
             </div>
 
-            {/* Dynamic price from selected frame option */}
-            <div style={{display:'flex',alignItems:'baseline',gap:'.75rem',marginBottom:'1.2rem'}}>
-              <span className="price-now" style={{fontSize:'1.6rem',fontFamily:'var(--fd)',fontWeight:700}}>
+            {/* Price */}
+            <div style={{display:'flex',alignItems:'baseline',gap:'.6rem',flexWrap:'wrap'}}>
+              <span className="price-now" style={{fontSize:'1.55rem',fontFamily:'var(--fd)',fontWeight:700}}>
                 ₹{price.toLocaleString('en-IN')}
               </span>
-              <span style={{fontSize:'.82rem',color:'var(--muted)'}}>PS Moulding · Free Delivery</span>
+              <span style={{fontSize:'.8rem',color:'var(--muted)'}}>PS Moulding · Free Delivery</span>
             </div>
 
             {/* Frame Size */}
-            <div style={{marginBottom:'1rem'}}>
-              <div style={{fontSize:'.8rem',fontWeight:600,marginBottom:'.5rem',letterSpacing:'.08em',textTransform:'uppercase',color:'var(--muted)'}}>
-                Frame Size: {selectedSize}
+            <div>
+              <div style={optLabel}>
+                Frame Size: <span style={{color:'var(--text)',fontWeight:500,textTransform:'none',letterSpacing:0}}>{selectedSize}</span>
               </div>
-              <div style={{display:'flex',gap:'.5rem',flexWrap:'wrap'}}>
+              <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
                 {FRAME_SIZES.map(s => (
-                  <button key={s} onClick={()=>handleSizeChange(s)} style={{
-                    padding:'.4rem .9rem',borderRadius:'.4rem',
-                    border:`1.5px solid ${selectedSize===s?'var(--gold)':'var(--cream)'}`,
-                    background:selectedSize===s?'rgba(182,141,64,.08)':'#fff',
-                    cursor:'pointer',fontSize:'.82rem',fontWeight:selectedSize===s?600:400,
-                    color:selectedSize===s?'var(--gold)':'var(--text)',
-                  }}>{s}</button>
+                  <button key={s} onClick={()=>handleSizeChange(s)} style={optBtn(selectedSize===s)}>{s}</button>
                 ))}
               </div>
-              <div style={{fontSize:'.75rem',color:'var(--muted)',marginTop:'.35rem'}}>
+              <div style={{fontSize:'.72rem',color:'var(--muted)',marginTop:'.3rem'}}>
                 Actual size: {actualSize}
               </div>
             </div>
 
             {/* Orientation */}
-            <div style={{marginBottom:'1rem'}}>
-              <div style={{fontSize:'.8rem',fontWeight:600,marginBottom:'.5rem',letterSpacing:'.08em',textTransform:'uppercase',color:'var(--muted)'}}>
-                Orientation: {selectedOrientation === 'Vertical' ? 'Vertical / Portrait' : 'Horizontal / Landscape'}
+            <div>
+              <div style={optLabel}>
+                Orientation: <span style={{color:'var(--text)',fontWeight:500,textTransform:'none',letterSpacing:0}}>
+                  {selectedOrientation === 'Vertical' ? 'Portrait' : 'Landscape'}
+                </span>
               </div>
-              <div style={{display:'flex',gap:'.5rem',flexWrap:'wrap'}}>
+              <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
                 {[
                   { key:'Vertical',   label:'Vertical',   icon:'▯' },
                   { key:'Horizontal', label:'Horizontal', icon:'▭' },
                 ].map(({ key, label, icon }) => (
-                  <button key={key} onClick={()=>setSelectedOrientation(key)} style={{
-                    padding:'.4rem .9rem', borderRadius:'.4rem', cursor:'pointer',
-                    border:`1.5px solid ${selectedOrientation===key?'var(--gold)':'var(--cream)'}`,
-                    background:selectedOrientation===key?'rgba(182,141,64,.08)':'#fff',
-                    fontSize:'.82rem', fontWeight:selectedOrientation===key?600:400,
-                    color:selectedOrientation===key?'var(--gold)':'var(--text)',
-                    display:'flex', alignItems:'center', gap:'.35rem',
-                  }}>
-                    <span style={{fontSize:'.9rem',lineHeight:1}}>{icon}</span> {label}
+                  <button key={key} onClick={()=>setSelectedOrientation(key)}
+                    style={{...optBtn(selectedOrientation===key),display:'flex',alignItems:'center',gap:'.3rem'}}
+                  >
+                    <span style={{fontSize:'.85rem',lineHeight:1}}>{icon}</span>
+                    {label}
                   </button>
                 ))}
               </div>
-              <div style={{fontSize:'.75rem',color:'var(--muted)',marginTop:'.35rem'}}>
-                {actualSize}
-              </div>
             </div>
 
-            {/* Frame Colour — only shows colours valid for selected size */}
-            <div style={{marginBottom:'1.5rem'}}>
-              <div style={{fontSize:'.8rem',fontWeight:600,marginBottom:'.5rem',letterSpacing:'.08em',textTransform:'uppercase',color:'var(--muted)'}}>
-                Frame Colour: {selectedColour}
+            {/* Frame Colour */}
+            <div>
+              <div style={optLabel}>
+                Frame Colour: <span style={{color:'var(--text)',fontWeight:500,textTransform:'none',letterSpacing:0}}>{selectedColour}</span>
               </div>
-              <div style={{display:'flex',gap:'.5rem',flexWrap:'wrap'}}>
+              <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
                 {availableColours.map(c => (
-                  <button key={c} onClick={()=>setSelectedColour(c)} style={{
-                    padding:'.4rem .9rem',borderRadius:'.4rem',
-                    border:`1.5px solid ${selectedColour===c?'var(--gold)':'var(--cream)'}`,
-                    background:selectedColour===c?'rgba(182,141,64,.08)':'#fff',
-                    cursor:'pointer',fontSize:'.82rem',fontWeight:selectedColour===c?600:400,
-                    color:selectedColour===c?'var(--gold)':'var(--text)',
-                  }}>{c}</button>
+                  <button key={c} onClick={()=>setSelectedColour(c)} style={optBtn(selectedColour===c)}>{c}</button>
                 ))}
               </div>
             </div>
 
-            {/* Qty + Add */}
-            <div style={{display:'flex',gap:'.75rem',alignItems:'center',marginBottom:'1rem',flexWrap:'wrap'}}>
-              <div className="qty" style={{display:'flex',alignItems:'center',gap:'.5rem'}}>
+            {/* Qty + Add to Cart */}
+            <div style={{display:'flex',gap:'.6rem',alignItems:'center',flexWrap:'wrap'}}>
+              <div className="qty" style={{display:'flex',alignItems:'center',gap:'.4rem'}}>
                 <button onClick={()=>setQty(q=>Math.max(1,q-1))} style={{width:'32px',height:'32px',border:'1.5px solid var(--cream)',borderRadius:'.4rem',background:'#fff',cursor:'pointer',fontSize:'1rem'}}>−</button>
                 <span style={{minWidth:'24px',textAlign:'center',fontWeight:600}}>{qty}</span>
                 <button onClick={()=>setQty(q=>q+1)} style={{width:'32px',height:'32px',border:'1.5px solid var(--cream)',borderRadius:'.4rem',background:'#fff',cursor:'pointer',fontSize:'1rem'}}>+</button>
@@ -365,13 +434,16 @@ export default function Product() {
                 Add to Cart · ₹{(price * qty).toLocaleString('en-IN')}
               </button>
             </div>
-            <div style={{display:'flex',gap:'.65rem',marginBottom:'1.2rem',position:'relative'}}>
+
+            {/* WhatsApp order + Share */}
+            <div style={{display:'flex',gap:'.5rem',alignItems:'center',position:'relative'}}>
               <button className="btn btn-outline" style={{flex:1}} onClick={()=>{
                 window.open(`https://wa.me/917070728989?text=${encodeURIComponent(waMsg)}`, '_blank');
               }}>🟢 Order on WhatsApp</button>
+
               <button
                 className="btn btn-outline"
-                style={{flexShrink:0,padding:'.85rem 1.1rem'}}
+                style={{flexShrink:0,padding:'.85rem 1rem'}}
                 aria-label="Share this product"
                 onClick={() => setShareOpen(o => !o)}
               >
@@ -382,11 +454,13 @@ export default function Product() {
                 </svg>
                 Share
               </button>
+
               {shareOpen && (
                 <>
                   <div className="share-backdrop" onClick={() => setShareOpen(false)} />
                   <div className="share-menu" style={{position:'absolute',bottom:'calc(100% + .5rem)',right:0}}>
                     <div className="share-menu-title">Share this product</div>
+
                     <button className="share-option share-opt-wa" onClick={() => {
                       setShareOpen(false);
                       const text = encodeURIComponent(waShareMsg);
@@ -401,6 +475,7 @@ export default function Product() {
                       </span>
                       WhatsApp
                     </button>
+
                     <button className="share-option share-opt-ig" onClick={handleNativeShare}>
                       <span className="share-option-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -411,6 +486,7 @@ export default function Product() {
                       </span>
                       Instagram / Share
                     </button>
+
                     <button className="share-option share-opt-copy" onClick={handleCopyLink}>
                       <span className="share-option-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -420,6 +496,7 @@ export default function Product() {
                       </span>
                       Copy Link
                     </button>
+
                     {copied && (
                       <div className="share-copied">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -430,26 +507,33 @@ export default function Product() {
                 </>
               )}
             </div>
+
             {copied && !shareOpen && (
-              <div style={{fontSize:'.78rem',color:'var(--ok)',marginTop:'-.7rem',marginBottom:'.7rem',display:'flex',alignItems:'center',gap:'.3rem'}}>
+              <div style={{fontSize:'.78rem',color:'var(--ok)',display:'flex',alignItems:'center',gap:'.3rem'}}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 Link copied to clipboard!
               </div>
             )}
 
             {/* Delivery info */}
-            <div style={{display:'flex',flexDirection:'column',gap:'.6rem',fontSize:'.82rem',color:'var(--muted)',background:'var(--bg)',borderRadius:'.75rem',padding:'1rem'}}>
-              <div style={{display:'flex',gap:'.5rem',alignItems:'center'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13"/><path d="m16 8 5 1v5h-5z"/></svg> Free Delivery Across India — On All Orders</div>
-              <div style={{display:'flex',gap:'.5rem',alignItems:'center'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Delivered in 5–7 business days</div>
-              <div style={{display:'flex',gap:'.5rem',alignItems:'center'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> Handcrafted to order · PS Moulding</div>
+            <div style={{display:'flex',flexDirection:'column',gap:'.5rem',fontSize:'.8rem',color:'var(--muted)',background:'var(--bg)',borderRadius:'.75rem',padding:'.85rem'}}>
+              <div style={{display:'flex',gap:'.5rem',alignItems:'center'}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13"/><path d="m16 8 5 1v5h-5z"/></svg>
+                Free Delivery Across India — On All Orders
+              </div>
+              <div style={{display:'flex',gap:'.5rem',alignItems:'center'}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Delivered in 5–7 business days
+              </div>
+              <div style={{display:'flex',gap:'.5rem',alignItems:'center'}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                Handcrafted to order · PS Moulding
+              </div>
             </div>
 
-            {/* Description */}
-            <div style={{marginTop:'1.4rem',padding:'1rem 0',borderTop:'1px solid var(--cream)'}}>
-              <div style={{fontWeight:600,marginBottom:'.5rem'}}>Description</div>
-              <p style={{color:'var(--muted)',lineHeight:1.75,fontSize:'.9rem'}}>{product.description}</p>
-            </div>
           </div>
+          {/* end .product-info */}
+
         </div>
       </div>
     </div>
