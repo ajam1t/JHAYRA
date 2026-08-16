@@ -11,7 +11,7 @@ const REVIEWS = [
   {name:'Sneha Patil',city:'Pune',rating:5,text:"Ordered a custom wedding frame as a gift for close friends. It arrived beautifully packaged and looked exactly as shown in the preview. The couple was overjoyed. JHAYRA's attention to detail is remarkable!",product:'LED Backlit Memory'},
   {name:'Mihir Shah',city:'Ahmedabad',rating:5,text:"The 7 Running Horses canvas looks spectacular in our drawing room. The colour vibrancy is incredible and it's exactly what our Vastu consultant recommended. Fast shipping and the quality is far beyond what I expected.",product:'7 Running Horses'},
   {name:'Santosh Sharma',city:'Jaipur',rating:5,text:"The Divine Ganesha canvas is now the centrepiece of our pooja room. The colours are vivid and the details are incredible. Delivered ahead of schedule — truly a premium experience from order to delivery!",product:'Divine Ganesha Canvas'},
-  {name:'Ritu Kumari',city:'Lucknow',rating:5,text:"I gifted a custom couple frame to my sister on her wedding and she was in tears. It looked exactly like the preview and the packaging was so premium. JHAYRA is simply the best for gifting!",product:'Personalized Couple Frame'},
+  {name:'Palak Mehta & Ritu Chaudhary',city:'Umargam',rating:5,text:"We ordered a best friends collage to celebrate 10 years of our friendship and it turned out absolutely perfect! Every photo was placed so beautifully and the frame quality is truly premium. A memory we will cherish forever — thank you JHAYRA!",product:'Best Friends Collage'},
 ];
 
 export default function CustomerStories() {
