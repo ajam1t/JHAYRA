@@ -919,6 +919,9 @@ body{padding-bottom:56px}
 .product-gallery{width:100%!important;flex:none!important;max-width:100%!important}
 .product-main-image{width:88vw!important;max-width:420px!important;margin:0 auto!important;aspect-ratio:1/1!important}
 .product-info{width:100%!important;max-width:100%!important;padding:1.25rem 0 2rem!important}
+/* Viewport-aware gallery: prevents 560px frames overflowing a 375px phone */
+.product-gallery-area{min-height:0!important;height:clamp(220px,45svh,360px)!important;padding:1.5rem 1rem!important;transition:none!important}
+.product-frame-box{height:auto!important;width:auto!important;max-height:100%!important;max-width:100%!important;flex-shrink:1!important}
 }
 
 /* ── Mobile typography & spacing ───────────────────────────────────────── */

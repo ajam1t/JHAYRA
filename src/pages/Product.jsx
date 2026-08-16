@@ -191,7 +191,7 @@ export default function Product() {
           <div>
             <div className="gallery-main" ref={galleryRef} style={{transition:'transform .12s ease',cursor:'crosshair'}}>
               {/* Frame preview — height grows with selected size */}
-              <div style={{
+              <div className="product-gallery-area" style={{
                 width:'100%',
                 minHeight:`${frameH + 80}px`,
                 background:'var(--bg)',
@@ -201,13 +201,14 @@ export default function Product() {
                 transition:'min-height .45s ease',
               }}>
                 {/* Frame — border colour and thickness update with selectedColour and selectedSize */}
-                <div style={{
+                <div className="product-frame-box" style={{
                   position:'relative',
                   border:`${FRAME_BW[selectedSize]||14}px solid ${FRAME_COLOUR_HEX[selectedColour]||'#1C1C1C'}`,
                   boxShadow:FRAME_SHADOW[selectedColour]||FRAME_SHADOW.Black,
                   height:`${frameH}px`,
                   width:`${frameW}px`,
                   maxWidth:'calc(100% - 2rem)',
+                  aspectRatio:`${frameW} / ${frameH}`,
                   flexShrink:0,
                   overflow:'hidden',
                   borderRadius:'1px',
