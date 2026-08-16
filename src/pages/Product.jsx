@@ -188,7 +188,7 @@ export default function Product() {
       <div className="container">
         <div className="product-layout">
           {/* Gallery */}
-          <div>
+          <div className="product-gallery-col">
             <div className="gallery-main" ref={galleryRef} style={{transition:'transform .12s ease',cursor:'crosshair'}}>
               {/* Frame preview — height grows with selected size */}
               <div className="product-gallery-area" style={{

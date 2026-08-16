@@ -9,7 +9,7 @@ const s = {
   searchRow: { display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' },
   search: { flex: 1, minWidth: '200px', background: '#111', border: '1px solid #222', borderRadius: '7px', color: '#e8e0d4', padding: '0.55rem 0.9rem', fontSize: '0.875rem', outline: 'none' },
   select: { background: '#111', border: '1px solid #222', borderRadius: '7px', color: '#e8e0d4', padding: '0.55rem 0.9rem', fontSize: '0.875rem', outline: 'none' },
-  wrap: { background: '#111', border: '1px solid #1e1e1e', borderRadius: '10px', overflow: 'hidden' },
+  wrap: { background: '#111', border: '1px solid #1e1e1e', borderRadius: '10px', overflowX: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' },
   th: { textAlign: 'left', padding: '0.65rem 1rem', fontSize: '0.7rem', letterSpacing: '0.1em', color: '#666', textTransform: 'uppercase', borderBottom: '1px solid #1e1e1e' },
   td: { padding: '0.7rem 1rem', borderBottom: '1px solid #161616', color: '#ccc', verticalAlign: 'middle' },

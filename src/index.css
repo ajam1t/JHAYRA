@@ -920,8 +920,14 @@ body{padding-bottom:56px}
 .product-main-image{width:88vw!important;max-width:420px!important;margin:0 auto!important;aspect-ratio:1/1!important}
 .product-info{width:100%!important;max-width:100%!important;padding:1.25rem 0 2rem!important}
 /* Viewport-aware gallery: prevents 560px frames overflowing a 375px phone */
-.product-gallery-area{min-height:0!important;height:clamp(220px,45svh,360px)!important;padding:1.5rem 1rem!important;transition:none!important}
+.product-gallery-area{min-height:0!important;height:clamp(200px,38svh,300px)!important;padding:1rem!important;transition:none!important}
 .product-frame-box{height:auto!important;width:auto!important;max-height:100%!important;max-width:100%!important;flex-shrink:1!important}
+/* Sticky gallery — frame stays visible while user scrolls config options */
+.product-gallery-col{position:sticky;top:calc(var(--nav) + var(--bar));z-index:2;background:var(--bg)}
+/* Hide colour thumbnails on mobile — colour selectable via buttons below */
+.gallery-thumbs{display:none!important}
+/* Tighten spacing between config selectors on mobile */
+.product-info{gap:0.6rem!important}
 }
 
 /* ── Mobile typography & spacing ───────────────────────────────────────── */
