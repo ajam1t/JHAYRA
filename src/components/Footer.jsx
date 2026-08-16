@@ -46,7 +46,8 @@ export default function Footer() {
                 <Link to="/orders">My Orders</Link>
                 <Link to="/contact">Contact Us</Link>
                 <Link to="/shipping-policy">Shipping Policy</Link>
-                <Link to="/refund">Returns &amp; Refunds</Link>
+                <Link to="/replacement-policy">Replacement &amp; Order Care</Link>
+                <Link to="/refund">Refund Policy</Link>
                 <Link to="/privacy">Privacy Policy</Link>
                 <Link to="/terms">Terms of Service</Link>
               </div>
@@ -59,6 +60,7 @@ export default function Footer() {
             <div className="footer-legal">
               <Link to="/privacy">Privacy Policy</Link>
               <Link to="/terms">Terms of Service</Link>
+              <Link to="/replacement-policy">Replacement &amp; Order Care</Link>
               <Link to="/refund">Refund Policy</Link>
               <Link to="/cookie-policy">Cookie Policy</Link>
               <Link to="/shipping-policy">Shipping Policy</Link>

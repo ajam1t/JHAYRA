@@ -452,6 +452,18 @@ export default function Product() {
               </button>
             </div>
 
+            {/* Replacement reassurance */}
+            <div style={{display:'flex',alignItems:'center',gap:'.4rem',fontSize:'.76rem',color:'var(--muted)'}}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Personalized with care.{' '}
+              <Link to="/replacement-policy" style={{color:'var(--gold)',fontWeight:600}}>
+                Replacement support
+              </Link>{' '}
+              available for eligible issues.
+            </div>
+
             {/* WhatsApp order + Share */}
             <div style={{display:'flex',gap:'.5rem',alignItems:'center',position:'relative'}}>
               <button className="btn btn-outline" style={{flex:1}} onClick={()=>{

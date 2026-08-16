@@ -29,6 +29,7 @@ import Refund from './pages/Refund';
 import ShippingPolicy from './pages/ShippingPolicy';
 import Terms from './pages/Terms';
 import CookiePolicy from './pages/CookiePolicy';
+import ReplacementPolicy from './pages/ReplacementPolicy';
 import NotFound from './pages/NotFound';
 import AdminLogin from './pages/admin/Login';
 import Dashboard from './pages/admin/Dashboard';
@@ -168,6 +169,7 @@ export default function App() {
                   <Route path="/shipping-policy" element={<ShippingPolicy />} />
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/cookie-policy" element={<CookiePolicy />} />
+                  <Route path="/replacement-policy" element={<ReplacementPolicy />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>

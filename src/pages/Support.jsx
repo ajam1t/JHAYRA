@@ -4,7 +4,7 @@ import SEO from '../components/SEO';
 
 const FAQS = [
   {q:'How long does delivery take?',a:'Standard delivery takes 5–7 business days across India. All orders ship free with no minimum order value.'},
-  {q:'Can I return my order?',a:'Yes! If you\'re not satisfied, contact us within 7 days of delivery. We offer hassle-free replacements or refunds.'},
+  {q:'What if my order arrives damaged or incorrect?',a:'Please photograph the package and product before discarding packaging, then contact us via WhatsApp within 48 hours of delivery with your order number and photos. We will assess your case and arrange a replacement where eligible.'},
   {q:'How do I track my order?',a:'Once your order ships, you\'ll receive a tracking link via WhatsApp and SMS.'},
   {q:'Do you offer custom sizes?',a:'Yes, we can create custom sizes for special requirements. Contact us on WhatsApp with your specifications.'},
   {q:'What material is the frame?',a:'All JHAYRA frames are crafted from premium PS Moulding — a durable, lightweight material used in professional picture framing. Available in Black, Gold, and Brown finishes depending on the frame size.'},
