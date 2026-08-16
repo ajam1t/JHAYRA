@@ -48,7 +48,7 @@ export default function ProductCard({ product, className = '' }) {
             src={realImg}
             alt={product.name}
             loading="lazy"
-            style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}
+            style={{width:'100%',height:'100%',objectFit:'contain',display:'block'}}
           />
         ) : art ? (
           /* SVG artwork (existing design for known products) */
