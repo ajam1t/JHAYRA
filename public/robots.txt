@@ -1,11 +1,15 @@
 User-agent: *
 Allow: /
 
-# Block private/utility pages
+# Block private/utility pages from indexing
 Disallow: /cart
 Disallow: /checkout
 Disallow: /orders
 Disallow: /wishlist
 Disallow: /admin
+Disallow: /admin/
+
+# Block internal search results (noindex handled in React too)
+Disallow: /shop?q=
 
 Sitemap: https://jhayra.com/sitemap.xml

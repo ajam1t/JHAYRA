@@ -1161,6 +1161,7 @@ export default function Customize() {
   if (!template) {
     return (
       <div data-page="customize">
+        <SEO noindex title="Template Not Found | JHAYRA" path={`/customize/${templateId}`} />
         <div className="container" style={{padding:'4rem 0',textAlign:'center'}}>
           <p style={{fontSize:'2rem',marginBottom:'1rem'}}>🖼️</p>
           <h2>Template not found</h2>
@@ -1170,5 +1171,17 @@ export default function Customize() {
     );
   }
 
-  return <TemplateWizard template={template} />;
+  const occasions = (template.occasion || []).join(', ');
+  const templateDesc = `${template.description || template.subtitle || ''} ${occasions ? `Perfect for ${occasions}.` : ''} Starting ₹${template.startingPrice || 499}. Free delivery across India.`.trim();
+
+  return (
+    <>
+      <SEO
+        title={`${template.title} — Personalized Frame | JHAYRA`}
+        description={templateDesc}
+        path={`/customize/${template.id}`}
+      />
+      <TemplateWizard template={template} />
+    </>
+  );
 }

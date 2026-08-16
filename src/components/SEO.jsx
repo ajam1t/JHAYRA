@@ -41,6 +41,9 @@ export default function SEO({
   description,
   path,
   ogImage,
+  ogImageAlt,
+  ogImageWidth = '1200',
+  ogImageHeight = '630',
   ogType = 'website',
   noindex = false,
   schema,
@@ -48,6 +51,7 @@ export default function SEO({
 }) {
   const canonical = path ? `${BASE_URL}${path}` : null;
   const image = ogImage || DEFAULT_OG_IMAGE;
+  const imageAlt = ogImageAlt || title || 'JHAYRA premium wall art and personalized photo frames';
 
   useEffect(() => {
     const prevTitle = document.title;
@@ -63,6 +67,10 @@ export default function SEO({
     if (description) setMeta('property', 'og:description', description);
     if (canonical) setMeta('property', 'og:url', canonical);
     setMeta('property', 'og:image', image);
+    setMeta('property', 'og:image:width', String(ogImageWidth));
+    setMeta('property', 'og:image:height', String(ogImageHeight));
+    setMeta('property', 'og:image:alt', imageAlt);
+    setMeta('property', 'og:image:type', 'image/jpeg');
     setMeta('property', 'og:type', ogType);
     setMeta('property', 'og:site_name', 'JHAYRA');
     setMeta('property', 'og:locale', 'en_IN');
@@ -72,6 +80,7 @@ export default function SEO({
     if (title) setMeta('name', 'twitter:title', title);
     if (description) setMeta('name', 'twitter:description', description);
     setMeta('name', 'twitter:image', image);
+    setMeta('name', 'twitter:image:alt', imageAlt);
     setMeta('name', 'twitter:site', '@jhayra.in');
 
     // JSON-LD — supports single object or array of schemas
@@ -86,7 +95,7 @@ export default function SEO({
     return () => {
       document.title = prevTitle;
     };
-  }, [title, description, canonical, image, ogType, noindex, schema, schemaId]);
+  }, [title, description, canonical, image, imageAlt, ogImageWidth, ogImageHeight, ogType, noindex, schema, schemaId]);
 
   return null;
 }

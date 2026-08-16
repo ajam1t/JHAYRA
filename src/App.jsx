@@ -64,13 +64,21 @@ function StorefrontLayout() {
 const ORG_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
+  '@id': 'https://jhayra.com/#organization',
   name: 'JHAYRA',
   url: 'https://jhayra.com',
-  logo: 'https://jhayra.com/Images/personalized.jpg',
+  logo: {
+    '@type': 'ImageObject',
+    url: 'https://jhayra.com/favicon-192.png',
+    width: 192,
+    height: 192,
+  },
   sameAs: ['https://www.instagram.com/jhayra.in/'],
   contactPoint: {
     '@type': 'ContactPoint',
+    telephone: '+91-7070728989',
     contactType: 'customer service',
+    areaServed: 'IN',
     availableLanguage: ['English', 'Hindi'],
   },
 };
@@ -78,8 +86,10 @@ const ORG_SCHEMA = {
 const WEBSITE_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
+  '@id': 'https://jhayra.com/#website',
   name: 'JHAYRA',
   url: 'https://jhayra.com',
+  publisher: { '@id': 'https://jhayra.com/#organization' },
   potentialAction: {
     '@type': 'SearchAction',
     target: { '@type': 'EntryPoint', urlTemplate: 'https://jhayra.com/shop?q={search_term_string}' },

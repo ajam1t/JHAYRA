@@ -1,6 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+
+// Ensure admin login is never indexed by search engines
+function AdminNoIndex() {
+  useEffect(() => {
+    const el = document.querySelector('meta[name="robots"]');
+    if (el) el.setAttribute('content', 'noindex, nofollow');
+  }, []);
+  return null;
+}
 
 const s = {
   page: { minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--fs, sans-serif)' },
@@ -39,6 +48,7 @@ export default function AdminLogin() {
 
   return (
     <div style={s.page}>
+      <AdminNoIndex />
       <div style={s.card}>
         <div style={s.logo}>
           <span style={s.logoText}>JHAYRA</span>

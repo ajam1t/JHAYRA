@@ -6,10 +6,31 @@ import { CATALOG } from '../data/catalog';
 import { useProducts } from '../hooks/useProducts';
 import SEO from '../components/SEO';
 
+/* ── Category SEO metadata map ──────────────────────────────────────────── */
+const CATEGORY_SEO = {
+  personalized:   { title: 'Personalized Photo Frames | Custom Wall Art', h1: 'Personalized Photo Frames', desc: 'Shop personalized photo frames crafted with your own photos, names & dates. Handmade in India. Starting ₹499. Free delivery.' },
+  religious:      { title: 'Religious & Spiritual Wall Art Frames',       h1: 'Religious & Spiritual Art', desc: 'Premium religious wall art — Ganesha, Krishna, Shiva, Hanuman, Lakshmi and more. Handcrafted PS Moulding frames. Starting ₹499.' },
+  'love-romance': { title: 'Romantic Couple Photo Frames | Love Gifts',   h1: 'Love & Romance Frames',     desc: 'Beautiful couple photo frames and romantic wall art gifts. Personalized with names, dates & heartfelt messages. Starting ₹499.' },
+  wedding:        { title: 'Wedding Photo Frames & Keepsakes',            h1: 'Wedding Photo Frames',       desc: 'Stunning personalized wedding frames and keepsakes. Capture your special day — names, date & photos in a premium handcrafted frame.' },
+  family:         { title: 'Family Portrait Frames | Photo Collage',      h1: 'Family Photo Frames',        desc: 'Classic family portrait frames and multi-photo collage prints. Handcrafted wall art for every home. Starting ₹499.' },
+  nature:         { title: 'Nature Photography Wall Art Frames',          h1: 'Nature Canvas Prints',       desc: 'Calming nature photography prints and canvas art for living spaces. Museum-grade prints in premium PS Moulding frames.' },
+  'modern-art':   { title: 'Modern Abstract Wall Art Frames | JHAYRA',   h1: 'Modern & Abstract Art',      desc: 'Contemporary abstract and modern wall art for your home or office. Bold, minimal, and conversation-starting. Starting ₹499.' },
+  canvas:         { title: 'Canvas Prints & Gallery Wall Art | JHAYRA',  h1: 'Canvas Art Prints',          desc: 'Museum-grade gallery canvas prints in premium PS Moulding frames. A versatile statement piece for any room. Starting ₹499.' },
+  'baby-kids':    { title: 'Baby & Kids Photo Frames | Milestone Gifts',  h1: 'Baby & Kids Frames',         desc: 'Personalized baby milestone frames and children\'s wall art. Perfect gifts for new parents and birthday celebrations.' },
+  'animals-pets': { title: 'Pet Portrait & Wildlife Wall Art Frames',     h1: 'Pet & Wildlife Art',         desc: 'Custom pet portrait frames and majestic wildlife wall art. Because your furry family deserves their own wall art.' },
+  occasions:      { title: 'Occasion Gift Frames — Graduation, Retirement & More', h1: 'Occasion Gift Frames', desc: 'Personalized frames for graduation, retirement, housewarming and every milestone. Meaningful gifts starting ₹499.' },
+  'art-abstract': { title: 'Folk & Traditional Art Frames — Madhubani, Mithila', h1: 'Folk & Traditional Art', desc: 'Authentic Madhubani and Mithila folk art prints in premium frames. Celebrate India\'s artistic heritage on your walls.' },
+  photography:    { title: 'Photography Prints & Canvas Wall Art',         h1: 'Photography Prints',         desc: 'Travel photography, black & white classics and fine art prints in premium PS Moulding frames. Starting ₹499.' },
+  quotes:         { title: 'Motivational Quote Wall Art Frames | JHAYRA', h1: 'Quotes & Typography Art',    desc: 'Bold motivational typography and Hindi quote frames for homes, offices and gifting. Premium canvas prints starting ₹499.' },
+  'home-vastu':   { title: 'Vastu Wall Art | Seven Horses, Prosperity Frames', h1: 'Vastu & Home Art',     desc: 'Vastu-approved wall art — seven running horses, prosperity symbols and auspicious prints for a positive home.' },
+  'running-horses': { title: 'Seven Running Horses Frame | Vastu Wall Art', h1: '7 Running Horses Art',    desc: 'Vastu-approved seven running horses wall art for luck, power and prosperity. Premium handcrafted frames. Starting ₹499.' },
+};
+
 export default function Shop() {
   const [searchParams] = useSearchParams();
   const viewParam     = searchParams.get('view');
   const categoryParam = searchParams.get('category');
+  const qParam        = searchParams.get('q');
   const [filter, setFilter]           = useState(categoryParam || 'all');
   const [priceFilter, setPriceFilter] = useState('all');
   const [sort, setSort]               = useState(viewParam === 'new' ? 'new' : viewParam === 'best' ? 'best' : 'popular');
@@ -33,6 +54,17 @@ export default function Shop() {
   const closeSheets  = () => { setMobileFilterOpen(false); setMobileSortOpen(false); };
 
   let products = filter === 'all' ? allProducts : allProducts.filter(p => p.category === filter);
+
+  // URL-based text search (?q=)
+  if (qParam) {
+    const q = qParam.toLowerCase().trim();
+    products = products.filter(p =>
+      p.name?.toLowerCase().includes(q) ||
+      p.description?.toLowerCase().includes(q) ||
+      p.tags?.some(t => t.toLowerCase().includes(q))
+    );
+  }
+
   if (priceFilter === 'under1k')   products = products.filter(p => p.price < 1000);
   else if (priceFilter === '1k-2k') products = products.filter(p => p.price >= 1000 && p.price <= 2000);
   else if (priceFilter === 'above2k') products = products.filter(p => p.price > 2000);
@@ -43,6 +75,36 @@ export default function Shop() {
 
   const activeCats = CATALOG.filter(c => c.active);
   const activeFilterCount = (filter !== 'all' ? 1 : 0) + (priceFilter !== 'all' ? 1 : 0);
+
+  // Dynamic SEO: build title, description and canonical based on active params
+  const catSEO = CATEGORY_SEO[categoryParam] || null;
+  let seoTitle, seoDesc, seoCanonical, seoH1;
+  if (qParam) {
+    seoTitle = `Search: "${qParam}" | JHAYRA Wall Art`;
+    seoDesc  = `Search results for "${qParam}" on JHAYRA. Browse photo frames, canvas prints and personalized wall art.`;
+    seoCanonical = `/shop?q=${encodeURIComponent(qParam)}`;
+    seoH1 = `Results for "${qParam}"`;
+  } else if (catSEO) {
+    seoTitle = `${catSEO.title} | JHAYRA`;
+    seoDesc  = catSEO.desc;
+    seoCanonical = `/shop?category=${categoryParam}`;
+    seoH1 = catSEO.h1;
+  } else if (viewParam === 'new') {
+    seoTitle = 'New Arrivals — Photo Frames & Wall Art | JHAYRA';
+    seoDesc  = 'Discover JHAYRA\'s newest photo frames and wall art. Fresh designs in personalized frames, religious art, canvas prints and more. Starting ₹499.';
+    seoCanonical = '/shop?view=new';
+    seoH1 = 'New Arrivals';
+  } else if (viewParam === 'best') {
+    seoTitle = 'Best Sellers — Photo Frames & Wall Art | JHAYRA';
+    seoDesc  = 'Shop JHAYRA\'s most loved photo frames and wall art. Customer favourites in personalized frames, religious art and canvas prints. Starting ₹499.';
+    seoCanonical = '/shop?view=best';
+    seoH1 = 'Best Sellers';
+  } else {
+    seoTitle = 'Shop Personalized Photo Frames & Wall Art | JHAYRA';
+    seoDesc  = 'Browse JHAYRA\'s complete collection of personalized photo frames, religious wall art, canvas prints and spiritual décor. Handcrafted in India. Starting ₹499. Free delivery.';
+    seoCanonical = '/shop';
+    seoH1 = 'Shop All';
+  }
 
   const sortOptions = [
     { label: 'Most Popular',        value: 'popular' },
@@ -61,14 +123,15 @@ export default function Shop() {
   return (
     <div data-page="shop">
       <SEO
-        title="Shop Personalized Photo Frames | JHAYRA"
-        description="Browse JHAYRA's complete collection of personalized photo frames, canvas prints & spiritual wall art. Available in A4, A3+ and large sizes. Starting ₹499."
-        path="/shop"
+        title={seoTitle}
+        description={seoDesc}
+        path={seoCanonical}
+        noindex={!!qParam}
       />
       <div className="page-hero">
         <div className="container">
           <p className="eyebrow">Our Collections</p>
-          <h1>Shop All</h1>
+          <h1>{seoH1}</h1>
           <p>Discover our curated collection of premium wall art</p>
         </div>
       </div>

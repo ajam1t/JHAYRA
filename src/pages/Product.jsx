@@ -148,12 +148,19 @@ export default function Product() {
     setTimeout(() => setCopied(false), 2500);
   }
 
+  const productImageUrl = (product.images && product.images.length > 0)
+    ? product.images[0]
+    : 'https://jhayra.com/Images/personalized.jpg';
+
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
+    '@id': `https://jhayra.com/product/${productId}#product`,
     name: product.name,
     description: product.description,
+    sku: product.id,
     brand: { '@type': 'Brand', name: 'JHAYRA' },
+    image: productImageUrl,
     url: `https://jhayra.com/product/${productId}`,
     offers: {
       '@type': 'Offer',
@@ -163,8 +170,18 @@ export default function Product() {
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
       url: `https://jhayra.com/product/${productId}`,
-      seller: { '@type': 'Organization', name: 'JHAYRA' },
+      priceValidUntil: '2027-12-31',
+      seller: { '@type': 'Organization', name: 'JHAYRA', url: 'https://jhayra.com' },
     },
+    ...(product.rating && product.reviewCount ? {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: product.rating,
+        reviewCount: product.reviewCount,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    } : {}),
   };
 
   const breadcrumbSchema = {

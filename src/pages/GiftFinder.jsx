@@ -50,13 +50,13 @@ function GiftResultPage({ type, item, onBack }) {
           </button>
           <div style={{textAlign:'center'}}>
             <div style={{fontSize:'3rem',marginBottom:'.6rem',lineHeight:1}}>{item.emoji}</div>
-            <h1 style={{
+            <h2 style={{
               color:'#fff', fontFamily:'var(--fd)',
               fontSize:'clamp(1.5rem,3.5vw,2.4rem)',
               margin:'0 0 .6rem',
             }}>
               {item.heading}
-            </h1>
+            </h2>
             <p style={{
               color:'rgba(255,255,255,.6)', maxWidth:'460px',
               margin:'0 auto', lineHeight:1.75, fontSize:'.95rem',
