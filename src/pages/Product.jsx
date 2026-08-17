@@ -258,6 +258,16 @@ export default function Product() {
                 position:'relative',
                 transition:'min-height .45s ease',
               }}>
+                {realImg ? (
+                  /* An uploaded product photo is a COMPLETE framed mockup. Show it
+                     as-is (like the Shop card) — never inside the CSS frame-preview
+                     box below, which would produce a frame-inside-frame. */
+                  <img
+                    src={realImg}
+                    alt={product.name}
+                    style={{maxWidth:'100%',maxHeight:`${frameH + 40}px`,objectFit:'contain',display:'block',borderRadius:'2px'}}
+                  />
+                ) : (
                 <div className="product-frame-box" style={{
                   position:'relative',
                   border:`${FRAME_BW[selectedSize]||14}px solid ${FRAME_COLOUR_HEX[selectedColour]||'#1C1C1C'}`,
@@ -271,9 +281,7 @@ export default function Product() {
                   borderRadius:'1px',
                   transition:'border-color .4s ease,border-width .4s ease,box-shadow .4s ease,height .45s ease,width .45s ease',
                 }}>
-                  {realImg ? (
-                    <img src={realImg} alt={product.name} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} />
-                  ) : art ? (
+                  {art ? (
                     <div style={{width:'100%',height:'100%',overflow:'hidden',background:`${art.fc}cc`}}>
                       <div style={{width:'100%',height:'100%'}} dangerouslySetInnerHTML={{__html:
                         art.art
@@ -290,10 +298,14 @@ export default function Product() {
                   {/* Gloss overlay */}
                   <div style={{position:'absolute',inset:0,background:'linear-gradient(148deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.03) 35%,transparent 60%)',pointerEvents:'none'}} />
                 </div>
+                )}
               </div>
             </div>
 
-            {/* Colour swatches — hidden on mobile via CSS (.gallery-thumbs{display:none}) */}
+            {/* Colour swatches — frame-colour preview for SVG artwork only.
+                Hidden when a real framed-mockup photo is used (its frame colour is
+                fixed) and hidden on mobile via CSS (.gallery-thumbs{display:none}). */}
+            {!realImg && (
             <div className="gallery-thumbs" style={{display:'flex',gap:'.5rem',marginTop:'.75rem'}}>
               {availableColours.map(col => {
                 const isActive  = col === selectedColour;
@@ -308,9 +320,7 @@ export default function Product() {
                     transition:'border-color .2s',flexShrink:0,
                   }}>
                     <div style={{border:`5px solid ${thumbHex}`,width:'40px',height:'52px',overflow:'hidden',flexShrink:0,boxShadow:'0 3px 10px rgba(0,0,0,.18)'}}>
-                      {realImg ? (
-                        <img src={realImg} alt="" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} />
-                      ) : art ? (
+                      {art ? (
                         <div style={{width:'100%',height:'100%',overflow:'hidden',background:`${art.fc}cc`}}>
                           <div style={{width:'100%',height:'100%'}} dangerouslySetInnerHTML={{__html:
                             art.art
@@ -327,6 +337,7 @@ export default function Product() {
                 );
               })}
             </div>
+            )}
           </div>
 
           {/* ── Info ─────────────────────────────────────────────
