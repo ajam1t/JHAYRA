@@ -7,6 +7,7 @@ import { TEMPLATES, TEMPLATE_GROUPS, filterTemplatesWithSearch, getTemplateById 
 import TemplateCard from '../components/TemplateCard';
 import TemplateRenderer from '../components/TemplateRenderer';
 import { FRAME_SIZES, FRAME_COLOUR_HEX, coloursForSize, getFrameOption, MIN_FRAME_PRICE } from '../data/frameOptions';
+import { uploadCustomerArtwork } from '../lib/artwork';
 import SEO from '../components/SEO';
 
 /* ── Shared frame geometry (mirrors Product.jsx constants) ───────────────── */
@@ -267,6 +268,7 @@ function ScratchBuilder() {
   const [selectedColour,      setSelectedColour]      = useState(coloursForSize(FRAME_SIZES[0])[0]);
   const [selectedOrientation, setSelectedOrientation] = useState('Vertical');
   const [photo, setPhoto] = useState(null);
+  const [adding, setAdding] = useState(false);
   const czRoomRef = useRef(null);
 
   const availableColours  = coloursForSize(selectedSize);
@@ -390,13 +392,22 @@ function ScratchBuilder() {
                   <p style={{fontSize:'.72rem',color:'#9A8A6A',marginTop:'.4rem'}}>{selectedSize} is available in Black only.</p>
                 )}
               </div>
-              <button className="btn btn-gold btn-lg" style={{width:'100%'}} onClick={()=>{
+              <button className="btn btn-gold btn-lg" style={{width:'100%',opacity:adding?0.7:1}} disabled={adding} onClick={async ()=>{
                 if (!photo) { toast('Please upload a photo first'); return; }
-                if (!frameOption) return;
-                addToCartWithFrame('custom', frameOption, 'Custom Photo Frame');
-                toast('Custom frame added to cart ✓');
+                if (!frameOption || adding) return;
+                setAdding(true);
+                try {
+                  const artworkPaths = await uploadCustomerArtwork([photo]);
+                  addToCartWithFrame('custom', frameOption, 'Custom Photo Frame', 1, isPortrait ? 'Vertical' : 'Horizontal', frameOption.price, {
+                    artworkPaths,
+                    customization: { source: 'scratch-builder', orientation: isPortrait ? 'Vertical' : 'Horizontal' },
+                  });
+                  toast('Custom frame added to cart ✓');
+                } finally {
+                  setAdding(false);
+                }
               }}>
-                Add to Cart · ₹{(frameOption?.price ?? MIN_FRAME_PRICE).toLocaleString('en-IN')}
+                {adding ? 'Adding…' : `Add to Cart · ₹${(frameOption?.price ?? MIN_FRAME_PRICE).toLocaleString('en-IN')}`}
               </button>
 
               {/* WhatsApp alternative */}
@@ -583,6 +594,7 @@ function TemplateWizard({ template }) {
   const [photoTransforms, setPhotoTransforms] = useState({}); // {slotId: {zoom, panX, panY}}
   const [photoQuality,    setPhotoQuality]    = useState({}); // {slotId: 'excellent'|'good'|'low'}
   const [editingSlot,     setEditingSlot]     = useState(null);
+  const [adding,          setAdding]          = useState(false);
 
   // sessionStorage restore on mount
   useEffect(() => {
@@ -686,15 +698,34 @@ function TemplateWizard({ template }) {
   const requiredFilled = (template.slots||[]).filter(s=>s.required).every(s=>photos[s.id]);
 
   // Better cart integration with personalization summary
-  const handleAddToCart = () => {
-    if (!selectedFrameOption) return;
+  const handleAddToCart = async () => {
+    if (!selectedFrameOption || adding) return;
     const personalizationSummary = [];
     if (texts.name1 && texts.name2) personalizationSummary.push(`${texts.name1} & ${texts.name2}`);
     else if (texts.name) personalizationSummary.push(texts.name);
     if (texts.date) personalizationSummary.push(texts.date);
     const cartName = [template.title, personalizationSummary.join(' • ')].filter(Boolean).join(' — ');
-    addToCartWithFrame('custom', selectedFrameOption, cartName, 1, isPortrait ? 'Vertical' : 'Horizontal');
-    toast(`${template.title} added to cart ✓`);
+
+    setAdding(true);
+    try {
+      // Collect uploaded photos in slot order, then persist them to private storage
+      const orderedPhotos = (template.slots || []).map(s => photos[s.id]).filter(Boolean);
+      const artworkPaths = await uploadCustomerArtwork(orderedPhotos);
+      addToCartWithFrame('custom', selectedFrameOption, cartName, 1, isPortrait ? 'Vertical' : 'Horizontal', selectedFrameOption.price, {
+        artworkPaths,
+        customization: {
+          source: 'template',
+          templateId: template.id,
+          templateTitle: template.title,
+          texts,
+          orientation: isPortrait ? 'Vertical' : 'Horizontal',
+          transforms: photoTransforms,
+        },
+      });
+      toast(`${template.title} added to cart ✓`);
+    } finally {
+      setAdding(false);
+    }
   };
 
   const fb = FRAME_BORDER[selectedColour] || FRAME_BORDER.Black;
@@ -1051,8 +1082,8 @@ function TemplateWizard({ template }) {
                 </div>
                 <div style={{display:'flex',gap:'1rem'}}>
                   <button className="btn btn-outline" onClick={()=>setStep(2)}>← Back</button>
-                  <button className="btn btn-gold btn-lg" style={{flex:1}} onClick={handleAddToCart}>
-                    Add to Cart · ₹{(selectedFrameOption?.price ?? MIN_FRAME_PRICE).toLocaleString('en-IN')}
+                  <button className="btn btn-gold btn-lg" style={{flex:1,opacity:adding?0.7:1}} disabled={adding} onClick={handleAddToCart}>
+                    {adding ? 'Adding…' : `Add to Cart · ₹${(selectedFrameOption?.price ?? MIN_FRAME_PRICE).toLocaleString('en-IN')}`}
                   </button>
                 </div>
                 <div style={{textAlign:'center',marginTop:'.9rem'}}>

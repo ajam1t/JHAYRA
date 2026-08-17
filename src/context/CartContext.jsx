@@ -37,9 +37,15 @@ export function CartProvider({ children }) {
     }
   }, []);
 
-  /* Frame-aware add: key = "productId__frameOptionId" */
-  const addToCartWithFrame = useCallback((productId, frameOption, displayName, qty = 1, orientation = 'Vertical', productPrice = null) => {
-    const key = `${productId}__${frameOption.id}`;
+  /* Frame-aware add: key = "productId__frameOptionId".
+     `extra` may carry { artworkPaths: string[], customization: object } for
+     personalised (custom) items so the uploaded photos + selections reach the order. */
+  const addToCartWithFrame = useCallback((productId, frameOption, displayName, qty = 1, orientation = 'Vertical', productPrice = null, extra = {}) => {
+    /* Custom items get a unique key so two different personalisations never merge. */
+    const isCustom = productId === 'custom';
+    const key = isCustom
+      ? `${productId}__${frameOption.id}__${Date.now().toString(36)}`
+      : `${productId}__${frameOption.id}`;
     setCart(c => ({ ...c, [key]: (c[key] || 0) + qty }));
     setCartMeta(m => ({
       ...m,
@@ -53,6 +59,8 @@ export function CartProvider({ children }) {
         material: frameOption.material,
         orientation,
         displayName: displayName || '',
+        ...(Array.isArray(extra.artworkPaths) && extra.artworkPaths.length ? { artworkPaths: extra.artworkPaths } : {}),
+        ...(extra.customization ? { customization: extra.customization } : {}),
       },
     }));
   }, []);

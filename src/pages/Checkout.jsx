@@ -146,6 +146,8 @@ export default function Checkout() {
         colour: item.meta?.colour || null,
         orientation: item.meta?.orientation || null,
         category: item.product?.category || null,
+        artworkPaths: Array.isArray(item.meta?.artworkPaths) ? item.meta.artworkPaths : null,
+        customization: item.meta?.customization || null,
       }));
 
       const { data, error } = await supabase.functions.invoke('create-razorpay-order', {

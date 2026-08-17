@@ -64,12 +64,17 @@ serve(async (req) => {
       size: string | null;
       colour: string | null;
       orientation: string | null;
+      artworkPaths: string[] | null;
+      customization: unknown | null;
       qty: number;
       price: number;
     }> = [];
 
     for (const item of items) {
-      const { legacyId, name, qty, price, size, colour, orientation, category } = item;
+      const { legacyId, name, qty, price, size, colour, orientation, category, artworkPaths, customization } = item;
+      const cleanArtwork = Array.isArray(artworkPaths)
+        ? artworkPaths.filter((p: unknown) => typeof p === 'string').slice(0, 20)
+        : null;
 
       if (!legacyId || !qty || qty < 1 || qty > 50) {
         return json({ error: `Invalid item: ${legacyId}` }, 400);
@@ -102,6 +107,8 @@ serve(async (req) => {
           size,
           colour,
           orientation: orientation || null,
+          artworkPaths: cleanArtwork,
+          customization: customization ?? null,
           qty,
           price: framePriceMin,
         });
@@ -143,6 +150,8 @@ serve(async (req) => {
         size: size || null,
         colour: colour || null,
         orientation: orientation || null,
+        artworkPaths: cleanArtwork,
+        customization: customization ?? null,
         qty,
         price: expectedPrice,
       });
@@ -227,6 +236,8 @@ serve(async (req) => {
       frame_size: item.size,
       frame_colour: item.colour,
       frame_orientation: item.orientation,
+      artwork_paths: item.artworkPaths,
+      customization: item.customization,
       quantity: item.qty,
       unit_price: item.price,
       total_price: item.price * item.qty,

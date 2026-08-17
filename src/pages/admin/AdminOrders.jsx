@@ -74,6 +74,17 @@ export default function AdminOrders() {
     setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, [field]: value } : o));
   }
 
+  // Customer artwork lives in a PRIVATE bucket — generate a short-lived signed URL on demand.
+  async function openArtwork(path) {
+    setStatusError(null);
+    const { data, error } = await supabase.storage.from('customer-artwork').createSignedUrl(path, 3600);
+    if (error || !data?.signedUrl) {
+      setStatusError(`Could not open artwork: ${error?.message || 'not found'}`);
+      return;
+    }
+    window.open(data.signedUrl, '_blank', 'noopener');
+  }
+
   if (loading) return <div style={{ color: '#666', padding: '2rem' }}>Loading orders…</div>;
 
   return (
@@ -179,15 +190,42 @@ export default function AdminOrders() {
                         <div style={{ marginTop: '1rem' }}>
                           <div style={{ fontSize: '.72rem', color: '#666', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '.5rem' }}>Items</div>
                           {(orderItems[o.id] || []).map((item) => (
-                            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '.4rem 0', borderBottom: '1px solid #1a1a1a', fontSize: '.8rem' }}>
-                              <div>
-                                <span style={{ color: '#e8e0d4' }}>{item.name}</span>
-                                {item.frame_size && <span style={{ color: '#666', marginLeft: '.4rem' }}>{item.frame_size} · {item.frame_colour}</span>}
-                                {item.frame_orientation && <span style={{ color: '#666', marginLeft: '.4rem' }}>· {item.frame_orientation}</span>}
-                                <span style={{ color: '#666', marginLeft: '.4rem' }}>× {item.quantity}</span>
-                                <span style={{ color: '#555', marginLeft: '.4rem' }}>(₹{Number(item.unit_price).toLocaleString('en-IN')} ea)</span>
+                            <div key={item.id} style={{ padding: '.5rem 0', borderBottom: '1px solid #1a1a1a', fontSize: '.8rem' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                  <span style={{ color: '#e8e0d4' }}>{item.name}</span>
+                                  {item.frame_size && <span style={{ color: '#666', marginLeft: '.4rem' }}>{item.frame_size} · {item.frame_colour}</span>}
+                                  {item.frame_orientation && <span style={{ color: '#666', marginLeft: '.4rem' }}>· {item.frame_orientation}</span>}
+                                  <span style={{ color: '#666', marginLeft: '.4rem' }}>× {item.quantity}</span>
+                                  <span style={{ color: '#555', marginLeft: '.4rem' }}>(₹{Number(item.unit_price).toLocaleString('en-IN')} ea)</span>
+                                </div>
+                                <span style={{ color: '#c9a96e', fontWeight: 600 }}>₹{Number(item.total_price).toLocaleString('en-IN')}</span>
                               </div>
-                              <span style={{ color: '#c9a96e', fontWeight: 600 }}>₹{Number(item.total_price).toLocaleString('en-IN')}</span>
+
+                              {/* Customer-uploaded artwork (private — signed URL on click) */}
+                              {Array.isArray(item.artwork_paths) && item.artwork_paths.length > 0 && (
+                                <div style={{ marginTop: '.45rem', display: 'flex', flexWrap: 'wrap', gap: '.4rem', alignItems: 'center' }}>
+                                  <span style={{ color: '#666', fontSize: '.72rem' }}>Artwork:</span>
+                                  {item.artwork_paths.map((p, idx) => (
+                                    <button key={idx} onClick={() => openArtwork(p)}
+                                      style={{ border: '1px solid #2c6', background: 'rgba(34,135,58,.12)', color: '#6cda96', borderRadius: '5px', padding: '.28rem .6rem', minHeight: '30px', fontSize: '.72rem', cursor: 'pointer' }}>
+                                      ⬇ Photo {idx + 1}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Personalisation details for production */}
+                              {item.customization && (
+                                <div style={{ marginTop: '.35rem', color: '#8a8276', fontSize: '.72rem', lineHeight: 1.5 }}>
+                                  {item.customization.templateTitle && <span>Template: <span style={{ color: '#b0a690' }}>{item.customization.templateTitle}</span>{' · '}</span>}
+                                  {item.customization.texts && Object.entries(item.customization.texts)
+                                    .filter(([, v]) => v && String(v).trim())
+                                    .map(([k, v]) => `${k}: ${v}`)
+                                    .join('  ·  ')}
+                                  {item.customization.source === 'scratch-builder' && <span>Uploaded photo (scratch builder)</span>}
+                                </div>
+                              )}
                             </div>
                           ))}
                           {!orderItems[o.id] && <span style={{ color: '#666', fontSize: '.78rem' }}>Loading…</span>}
