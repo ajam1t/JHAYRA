@@ -144,6 +144,7 @@ export default function Checkout() {
         price: item.price,
         size: item.meta?.size || null,
         colour: item.meta?.colour || null,
+        orientation: item.meta?.orientation || null,
         category: item.product?.category || null,
       }));
 

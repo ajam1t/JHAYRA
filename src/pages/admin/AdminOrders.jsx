@@ -141,7 +141,7 @@ export default function AdminOrders() {
                   {expanded === o.id && (
                     <tr>
                       <td colSpan={7} style={{ ...s.td, background: '#0d0d0d', padding: '1rem 1.25rem' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '1.5rem' }}>
                           <div>
                             <div style={{ fontSize: '.72rem', color: '#666', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: '.5rem' }}>Customer</div>
                             {[
@@ -183,7 +183,9 @@ export default function AdminOrders() {
                               <div>
                                 <span style={{ color: '#e8e0d4' }}>{item.name}</span>
                                 {item.frame_size && <span style={{ color: '#666', marginLeft: '.4rem' }}>{item.frame_size} · {item.frame_colour}</span>}
+                                {item.frame_orientation && <span style={{ color: '#666', marginLeft: '.4rem' }}>· {item.frame_orientation}</span>}
                                 <span style={{ color: '#666', marginLeft: '.4rem' }}>× {item.quantity}</span>
+                                <span style={{ color: '#555', marginLeft: '.4rem' }}>(₹{Number(item.unit_price).toLocaleString('en-IN')} ea)</span>
                               </div>
                               <span style={{ color: '#c9a96e', fontWeight: 600 }}>₹{Number(item.total_price).toLocaleString('en-IN')}</span>
                             </div>

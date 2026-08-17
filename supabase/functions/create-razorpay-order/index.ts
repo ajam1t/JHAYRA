@@ -57,24 +57,55 @@ serve(async (req) => {
     // Validate each item against Supabase and accumulate server-side subtotal
     let subtotal = 0;
     const validatedItems: Array<{
-      productDbId: string;
+      productDbId: string | null;
       legacyId: string;
       name: string;
       category: string | null;
       size: string | null;
       colour: string | null;
+      orientation: string | null;
       qty: number;
       price: number;
     }> = [];
 
     for (const item of items) {
-      const { legacyId, name, qty, price, size, colour, category } = item;
+      const { legacyId, name, qty, price, size, colour, orientation, category } = item;
 
       if (!legacyId || !qty || qty < 1 || qty > 50) {
         return json({ error: `Invalid item: ${legacyId}` }, 400);
       }
       if (!price || price < 1 || price > 100000) {
         return json({ error: `Invalid price for: ${legacyId}` }, 400);
+      }
+
+      // Personalized custom frames have no catalog row (legacy_id 'custom' is not
+      // seeded). Price is fully frame-authoritative — validate against FRAME_PRICES
+      // and record with product_id null (order_items.product_id is nullable).
+      if (legacyId === 'custom') {
+        if (!size || !colour) {
+          return json({ error: 'Custom frame is missing its size/colour selection' }, 400);
+        }
+        const frameKey = `${size}_${colour}`;
+        const framePriceMin = FRAME_PRICES[frameKey];
+        if (framePriceMin === undefined) {
+          return json({ error: `Invalid frame option: ${size} / ${colour}` }, 400);
+        }
+        if (price < framePriceMin) {
+          return json({ error: `Price below minimum for: ${legacyId}` }, 400);
+        }
+        subtotal += framePriceMin * qty;
+        validatedItems.push({
+          productDbId: null,
+          legacyId: 'custom',
+          name: name || 'Custom Photo Frame',
+          category: category || 'personalized',
+          size,
+          colour,
+          orientation: orientation || null,
+          qty,
+          price: framePriceMin,
+        });
+        continue;
       }
 
       // Confirm product exists and is active in Supabase
@@ -111,6 +142,7 @@ serve(async (req) => {
         category: category || null,
         size: size || null,
         colour: colour || null,
+        orientation: orientation || null,
         qty,
         price: expectedPrice,
       });
@@ -194,6 +226,7 @@ serve(async (req) => {
       category: item.category,
       frame_size: item.size,
       frame_colour: item.colour,
+      frame_orientation: item.orientation,
       quantity: item.qty,
       unit_price: item.price,
       total_price: item.price * item.qty,

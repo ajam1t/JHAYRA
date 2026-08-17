@@ -35,6 +35,9 @@ export default function Product() {
   const { id } = useParams();
   const { product, loading } = useProduct(id || 'p001');
   const art = PRODUCT_ART[product?.id];
+  /* Prefer a real uploaded product photo (Supabase) over SVG artwork — keeps the
+     detail image consistent with the Shop grid, which also prioritises the photo. */
+  const realImg = (product?.images && product.images[0]) || product?.thumbnail || '';
 
   const [selectedSize,        setSelectedSize]        = useState(FRAME_SIZES[0]);
   const [selectedColour,      setSelectedColour]      = useState(coloursForSize(FRAME_SIZES[0])[0]);
@@ -268,7 +271,9 @@ export default function Product() {
                   borderRadius:'1px',
                   transition:'border-color .4s ease,border-width .4s ease,box-shadow .4s ease,height .45s ease,width .45s ease',
                 }}>
-                  {art ? (
+                  {realImg ? (
+                    <img src={realImg} alt={product.name} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} />
+                  ) : art ? (
                     <div style={{width:'100%',height:'100%',overflow:'hidden',background:`${art.fc}cc`}}>
                       <div style={{width:'100%',height:'100%'}} dangerouslySetInnerHTML={{__html:
                         art.art
@@ -303,7 +308,9 @@ export default function Product() {
                     transition:'border-color .2s',flexShrink:0,
                   }}>
                     <div style={{border:`5px solid ${thumbHex}`,width:'40px',height:'52px',overflow:'hidden',flexShrink:0,boxShadow:'0 3px 10px rgba(0,0,0,.18)'}}>
-                      {art ? (
+                      {realImg ? (
+                        <img src={realImg} alt="" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} />
+                      ) : art ? (
                         <div style={{width:'100%',height:'100%',overflow:'hidden',background:`${art.fc}cc`}}>
                           <div style={{width:'100%',height:'100%'}} dangerouslySetInnerHTML={{__html:
                             art.art

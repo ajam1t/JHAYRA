@@ -15,7 +15,7 @@ const s = {
   td: { padding: '0.7rem 1rem', borderBottom: '1px solid #161616', color: '#ccc', verticalAlign: 'middle' },
   badge: (active) => ({ display: 'inline-block', padding: '2px 8px', borderRadius: '99px', fontSize: '0.7rem', background: active ? 'rgba(80,200,120,0.12)' : 'rgba(200,80,80,0.12)', color: active ? '#6cda96' : '#e07070', border: `1px solid ${active ? 'rgba(80,200,120,0.25)' : 'rgba(200,80,80,0.25)'}` }),
   homeBadge: { display: 'inline-block', padding: '2px 8px', borderRadius: '99px', fontSize: '0.7rem', background: 'rgba(201,169,110,0.1)', color: '#c9a96e', border: '1px solid rgba(201,169,110,0.2)' },
-  actionBtn: (variant = 'default') => ({ border: 'none', borderRadius: '5px', padding: '0.3rem 0.65rem', cursor: 'pointer', fontSize: '0.72rem', marginLeft: '4px', background: variant === 'danger' ? 'rgba(200,80,80,0.15)' : variant === 'edit' ? 'rgba(100,140,200,0.12)' : 'rgba(201,169,110,0.1)', color: variant === 'danger' ? '#e07070' : variant === 'edit' ? '#7aaeee' : '#c9a96e' }),
+  actionBtn: (variant = 'default') => ({ border: 'none', borderRadius: '5px', padding: '0.45rem 0.7rem', minHeight: '34px', cursor: 'pointer', fontSize: '0.72rem', marginLeft: '4px', background: variant === 'danger' ? 'rgba(200,80,80,0.15)' : variant === 'edit' ? 'rgba(100,140,200,0.12)' : 'rgba(201,169,110,0.1)', color: variant === 'danger' ? '#e07070' : variant === 'edit' ? '#7aaeee' : '#c9a96e' }),
 };
 
 export default function Products() {
