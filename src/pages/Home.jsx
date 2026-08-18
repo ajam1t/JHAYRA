@@ -2,13 +2,14 @@ import { Link } from 'react-router-dom';
 import Hero3D from '../components/Hero3D';
 import ProductCard from '../components/ProductCard';
 import { useScrollReveal } from '../components/ScrollReveal';
-import { CATEGORIES } from '../data/categories';
 import { useProducts } from '../hooks/useProducts';
+import { useHomepageCollections } from '../hooks/useHomepageCollections';
 import SEO from '../components/SEO';
 
 export default function Home() {
   const { products: bestSellers } = useProducts({ homepage: true, limit: 4 });
-  useScrollReveal([bestSellers.length]);
+  const { items: collections } = useHomepageCollections();
+  useScrollReveal([bestSellers.length, collections.length]);
 
   return (
     <div data-page="home">
@@ -72,23 +73,33 @@ export default function Home() {
             <div className="divider"></div>
           </div>
           <div className="cat-grid">
-            {CATEGORIES.map((cat, i) => (
-              <Link to={`/shop?category=${cat.slug}`} className="cat-card reveal" key={cat.slug} aria-label={cat.name}>
-                {cat.image ? (
-                  <img loading="lazy" src={cat.image} alt={cat.name} />
-                ) : (
-                  <div style={{width:'100%',height:'100%',background:`hsl(${i*40},25%,75%)`,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:'1.2rem',fontWeight:700}}>{cat.name}</div>
-                )}
-                <div className="cat-card-overlay"></div>
-                <div className="cat-card-body">
-                  <div className="cat-card-name">{cat.name}</div>
-                  <div className="cat-card-count">{cat.count}</div>
-                </div>
-                <div className="cat-card-arrow">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9,18 15,12 9,6"/></svg>
-                </div>
-              </Link>
-            ))}
+            {collections.map((col, i) => {
+              const link = col.link || '/shop';
+              const isExternal = /^https?:\/\//i.test(link);
+              const alt = col.alt_text || col.title;
+              const inner = (
+                <>
+                  {col.image_url ? (
+                    <img loading="lazy" src={col.image_url} alt={alt} />
+                  ) : (
+                    <div style={{width:'100%',height:'100%',background:`hsl(${i*40},25%,75%)`,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:'1.2rem',fontWeight:700}}>{col.title}</div>
+                  )}
+                  <div className="cat-card-overlay"></div>
+                  <div className="cat-card-body">
+                    <div className="cat-card-name">{col.title}</div>
+                    {col.subtitle && <div className="cat-card-count">{col.subtitle}</div>}
+                  </div>
+                  <div className="cat-card-arrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+                  </div>
+                </>
+              );
+              return isExternal ? (
+                <a href={link} className="cat-card reveal" key={col.id} aria-label={col.title} target="_blank" rel="noopener noreferrer">{inner}</a>
+              ) : (
+                <Link to={link} className="cat-card reveal" key={col.id} aria-label={col.title}>{inner}</Link>
+              );
+            })}
           </div>
           <div style={{textAlign:'center',marginTop:'1.5rem'}}>
             <Link to="/collections" className="btn btn-outline">View All Collections</Link>

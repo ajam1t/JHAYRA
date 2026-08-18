@@ -7,6 +7,7 @@ const NAV = [
   { to: '/admin/orders', label: 'Orders', icon: '📦' },
   { to: '/admin/products', label: 'Products', icon: '🖼' },
   { to: '/admin/categories', label: 'Categories', icon: '📂' },
+  { to: '/admin/homepage', label: 'Homepage', icon: '🏠' },
 ];
 
 function HamburgerIcon() {

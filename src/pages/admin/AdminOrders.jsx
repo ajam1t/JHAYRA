@@ -30,11 +30,25 @@ const s = {
   detailVal: { color: '#c8c0b4' },
 };
 
+function fmtBytes(b) {
+  if (!b || b <= 0) return '—';
+  if (b < 1024) return `${b} B`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`;
+  return `${(b / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function megapixels(w, h) {
+  if (!w || !h) return null;
+  const mp = (w * h) / 1_000_000;
+  return mp >= 1 ? `${mp.toFixed(1)} MP` : `${(mp * 1000).toFixed(0)} KP`;
+}
+
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(null);
   const [orderItems, setOrderItems] = useState({});
+  const [artworkUrls, setArtworkUrls] = useState({}); // { storagePath: signedDisplayUrl }
   const [statusError, setStatusError] = useState(null);
 
   useEffect(() => {
@@ -59,7 +73,44 @@ export default function AdminOrders() {
       .from('order_items')
       .select('*')
       .eq('order_id', orderId);
-    setOrderItems((prev) => ({ ...prev, [orderId]: data || [] }));
+    const items = data || [];
+    setOrderItems((prev) => ({ ...prev, [orderId]: items }));
+    // Pre-generate short-lived signed URLs so artwork thumbnails render inline.
+    loadArtworkThumbs(items);
+  }
+
+  // Generate signed (private) URLs for every artwork path in these items, for thumbnails.
+  async function loadArtworkThumbs(items) {
+    const paths = items.flatMap((it) => Array.isArray(it.artwork_paths) ? it.artwork_paths : []);
+    const missing = paths.filter((p) => p && !artworkUrls[p]);
+    if (!missing.length) return;
+    const entries = await Promise.all(missing.map(async (p) => {
+      const { data } = await supabase.storage.from('customer-artwork').createSignedUrl(p, 3600);
+      return [p, data?.signedUrl || null];
+    }));
+    setArtworkUrls((prev) => {
+      const next = { ...prev };
+      entries.forEach(([p, url]) => { if (url) next[p] = url; });
+      return next;
+    });
+  }
+
+  // Force-download the ORIGINAL stored file (HD) — never the website preview.
+  async function downloadOriginal(path, filename) {
+    setStatusError(null);
+    const { data, error } = await supabase.storage
+      .from('customer-artwork')
+      .createSignedUrl(path, 3600, { download: filename || true });
+    if (error || !data?.signedUrl) {
+      setStatusError(`Could not download artwork: ${error?.message || 'not found'}`);
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = data.signedUrl;
+    if (filename) a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
   async function updateOrderStatus(orderId, field, value) {
@@ -202,16 +253,48 @@ export default function AdminOrders() {
                                 <span style={{ color: '#c9a96e', fontWeight: 600 }}>₹{Number(item.total_price).toLocaleString('en-IN')}</span>
                               </div>
 
-                              {/* Customer-uploaded artwork (private — signed URL on click) */}
+                              {/* Customer artwork — production view (private originals, signed URLs) */}
                               {Array.isArray(item.artwork_paths) && item.artwork_paths.length > 0 && (
-                                <div style={{ marginTop: '.45rem', display: 'flex', flexWrap: 'wrap', gap: '.4rem', alignItems: 'center' }}>
-                                  <span style={{ color: '#666', fontSize: '.72rem' }}>Artwork:</span>
-                                  {item.artwork_paths.map((p, idx) => (
-                                    <button key={idx} onClick={() => openArtwork(p)}
-                                      style={{ border: '1px solid #2c6', background: 'rgba(34,135,58,.12)', color: '#6cda96', borderRadius: '5px', padding: '.28rem .6rem', minHeight: '30px', fontSize: '.72rem', cursor: 'pointer' }}>
-                                      ⬇ Photo {idx + 1}
-                                    </button>
-                                  ))}
+                                <div style={{ marginTop: '.6rem' }}>
+                                  <div style={{ color: '#666', fontSize: '.7rem', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: '.45rem' }}>
+                                    Customer Artwork ({item.artwork_paths.length})
+                                  </div>
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '.6rem' }}>
+                                    {item.artwork_paths.map((p, idx) => {
+                                      const meta = (item.customization?.artworkMeta || []).find((m) => m?.path === p)
+                                        || (item.customization?.artworkMeta || [])[idx] || {};
+                                      const url = artworkUrls[p];
+                                      const res = megapixels(meta.width, meta.height);
+                                      return (
+                                        <div key={idx} style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', borderRadius: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                                          <div
+                                            onClick={() => openArtwork(p)}
+                                            title="Open full image in new tab"
+                                            style={{ aspectRatio: '4 / 3', background: '#111', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
+                                          >
+                                            {url ? (
+                                              <img src={url} alt={meta.name || `Artwork ${idx + 1}`} loading="lazy"
+                                                style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                                            ) : (
+                                              <span style={{ color: '#555', fontSize: '.72rem' }}>Loading preview…</span>
+                                            )}
+                                          </div>
+                                          <div style={{ padding: '.5rem .6rem', fontSize: '.7rem', color: '#8a8276', lineHeight: 1.6 }}>
+                                            <div style={{ color: '#c8c0b4', wordBreak: 'break-all' }}>{meta.name || `Photo ${idx + 1}`}</div>
+                                            <div>{res ? `${meta.width}×${meta.height} · ${res}` : 'Resolution: —'}</div>
+                                            <div>{(meta.type || 'image').replace('image/', '').toUpperCase()} · {fmtBytes(meta.bytes)}</div>
+                                            <button onClick={() => downloadOriginal(p, meta.name)}
+                                              style={{ marginTop: '.4rem', width: '100%', border: '1px solid #2c6', background: 'rgba(34,135,58,.14)', color: '#6cda96', borderRadius: '5px', padding: '.4rem .5rem', minHeight: '34px', fontSize: '.72rem', fontWeight: 600, cursor: 'pointer' }}>
+                                              ⬇ Download Original HD
+                                            </button>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                  <div style={{ color: '#555', fontSize: '.66rem', marginTop: '.35rem' }}>
+                                    Downloads the exact original the customer uploaded — not the framed website preview.
+                                  </div>
                                 </div>
                               )}
 

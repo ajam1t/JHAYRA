@@ -36,6 +36,7 @@ import Dashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/Products';
 import ProductForm from './pages/admin/ProductForm';
 import AdminCategories from './pages/admin/Categories';
+import AdminHomepage from './pages/admin/HomepageCollections';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminLayout from './components/admin/AdminLayout';
 import ProtectedRoute from './components/admin/ProtectedRoute';
@@ -142,6 +143,7 @@ export default function App() {
                   <Route path="products" element={<AdminProducts />} />
                   <Route path="products/:id" element={<ProductForm />} />
                   <Route path="categories" element={<AdminCategories />} />
+                  <Route path="homepage" element={<AdminHomepage />} />
                 </Route>
 
                 {/* ── Storefront ────────────────────────────────── */}

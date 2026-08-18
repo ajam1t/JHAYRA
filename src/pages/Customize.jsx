@@ -264,6 +264,7 @@ function ScratchBuilder() {
   const [selectedColour,      setSelectedColour]      = useState(coloursForSize(FRAME_SIZES[0])[0]);
   const [selectedOrientation, setSelectedOrientation] = useState('Vertical');
   const [photo, setPhoto] = useState(null);
+  const [photoMeta, setPhotoMeta] = useState(null); // {name,width,height,size,type} of the ORIGINAL upload
   const [adding, setAdding] = useState(false);
   const czRoomRef = useRef(null);
 
@@ -299,7 +300,22 @@ function ScratchBuilder() {
     const f = e.target.files[0];
     if (!f) return;
     const reader = new FileReader();
-    reader.onload = ev => { setPhoto(ev.target.result); toast('Photo updated! ✓'); };
+    reader.onload = ev => {
+      const dataUrl = ev.target.result;
+      // Capture original-file metadata (filename, size, type + pixel dimensions)
+      const img = new Image();
+      img.onload = () => {
+        setPhoto(dataUrl);
+        setPhotoMeta({ name: f.name || null, size: f.size || null, type: f.type || null, width: img.naturalWidth, height: img.naturalHeight });
+        toast('Photo updated! ✓');
+      };
+      img.onerror = () => {
+        setPhoto(dataUrl);
+        setPhotoMeta({ name: f.name || null, size: f.size || null, type: f.type || null, width: null, height: null });
+        toast('Photo updated! ✓');
+      };
+      img.src = dataUrl;
+    };
     reader.readAsDataURL(f);
   };
 
@@ -386,10 +402,20 @@ function ScratchBuilder() {
                 if (!frameOption || adding) return;
                 setAdding(true);
                 try {
-                  const artworkPaths = await uploadCustomerArtwork([photo]);
+                  const up = await uploadCustomerArtwork([{ dataUrl: photo, name: photoMeta?.name, width: photoMeta?.width, height: photoMeta?.height }]);
+                  // Failed-upload protection: if persistent storage is available but the
+                  // original didn't save, do NOT create an order that references a missing image.
+                  if (up.supabaseEnabled && up.uploaded < up.requested) {
+                    toast('Photo upload failed — please try again before adding to cart.');
+                    return;
+                  }
                   addToCartWithFrame('custom', frameOption, 'Custom Photo Frame', 1, isPortrait ? 'Vertical' : 'Horizontal', frameOption.price, {
-                    artworkPaths,
-                    customization: { source: 'scratch-builder', orientation: isPortrait ? 'Vertical' : 'Horizontal' },
+                    artworkPaths: up.paths,
+                    customization: {
+                      source: 'scratch-builder',
+                      orientation: isPortrait ? 'Vertical' : 'Horizontal',
+                      artworkMeta: up.meta,
+                    },
                   });
                   toast('Custom frame added to cart ✓');
                 } finally {
@@ -570,6 +596,7 @@ function TemplateWizard({ template }) {
   // New state for photo editing
   const [photoTransforms, setPhotoTransforms] = useState({}); // {slotId: {zoom, panX, panY}}
   const [photoQuality,    setPhotoQuality]    = useState({}); // {slotId: 'excellent'|'good'|'low'}
+  const [photoMetas,      setPhotoMetas]      = useState({}); // {slotId: {name,width,height,size,type}} of ORIGINAL upload
   const [editingSlot,     setEditingSlot]     = useState(null);
   const [adding,          setAdding]          = useState(false);
 
@@ -644,6 +671,7 @@ function TemplateWizard({ template }) {
         setPhotos(p => ({...p, [slotId]: dataUrl}));
         setPhotoQuality(q => ({...q, [slotId]: quality}));
         setPhotoTransforms(t => ({...t, [slotId]: {zoom:1, panX:0, panY:0}}));
+        setPhotoMetas(m => ({...m, [slotId]: { name: file.name || null, size: file.size || null, type: file.type || null, width: img.naturalWidth, height: img.naturalHeight }}));
 
         if (quality === 'low') {
           toast('Low resolution photo — it may appear blurry when printed.');
@@ -666,7 +694,10 @@ function TemplateWizard({ template }) {
     });
   };
 
-  const removePhoto = (slotId) => setPhotos(p => { const n={...p}; delete n[slotId]; return n; });
+  const removePhoto = (slotId) => {
+    setPhotos(p => { const n={...p}; delete n[slotId]; return n; });
+    setPhotoMetas(m => { const n={...m}; delete n[slotId]; return n; });
+  };
   const requiredFilled = (template.slots||[]).filter(s=>s.required).every(s=>photos[s.id]);
 
   // Better cart integration with personalization summary
@@ -680,11 +711,23 @@ function TemplateWizard({ template }) {
 
     setAdding(true);
     try {
-      // Collect uploaded photos in slot order, then persist them to private storage
-      const orderedPhotos = (template.slots || []).map(s => photos[s.id]).filter(Boolean);
-      const artworkPaths = await uploadCustomerArtwork(orderedPhotos);
+      // Collect uploaded photos in slot order (with their original-file metadata),
+      // then persist the ORIGINALS to private storage.
+      const orderedSlots = (template.slots || []).filter(s => photos[s.id]);
+      const uploadItems = orderedSlots.map(s => ({
+        dataUrl: photos[s.id],
+        name:   photoMetas[s.id]?.name,
+        width:  photoMetas[s.id]?.width,
+        height: photoMetas[s.id]?.height,
+      }));
+      const up = await uploadCustomerArtwork(uploadItems);
+      // Failed-upload protection: never create an order that references a missing image.
+      if (up.supabaseEnabled && up.uploaded < up.requested) {
+        toast('Some photos failed to upload — please retry before adding to cart.');
+        return;
+      }
       addToCartWithFrame('custom', selectedFrameOption, cartName, 1, isPortrait ? 'Vertical' : 'Horizontal', selectedFrameOption.price, {
-        artworkPaths,
+        artworkPaths: up.paths,
         customization: {
           source: 'template',
           templateId: template.id,
@@ -692,6 +735,7 @@ function TemplateWizard({ template }) {
           texts,
           orientation: isPortrait ? 'Vertical' : 'Horizontal',
           transforms: photoTransforms,
+          artworkMeta: up.meta,
         },
       });
       toast(`${template.title} added to cart ✓`);
