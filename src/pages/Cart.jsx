@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { PRODUCT_ART } from '../data/artwork';
+import FramedArt from '../components/FramedArt';
 import SEO from '../components/SEO';
 
 export default function Cart() {
@@ -56,8 +57,18 @@ export default function Cart() {
                 <div key={id} className="cart-item">
                   <div className="cart-item-img" style={{overflow:'hidden'}}>
                     {art ? (
-                      <div style={{width:'100%',height:'100%',background:`linear-gradient(145deg,${art.fc}f0,${art.fc}cc)`,display:'flex',alignItems:'center',justifyContent:'center',padding:'.25rem'}}>
-                        <div style={{height:'88%',aspectRatio:'200/260',overflow:'hidden',borderRadius:'2px',flexShrink:0}} dangerouslySetInnerHTML={{__html:art.art}} />
+                      /* Framed exactly as configured, so the cart matches the order */
+                      <div style={{width:'100%',height:'100%',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',padding:'.35rem'}}>
+                        <FramedArt
+                          fitContainer
+                          size={meta?.size || 'A4'}
+                          orientation={meta?.orientation || 'Vertical'}
+                          colour={meta?.colour || 'Black'}
+                          fit="cover"
+                          svg={art.art}
+                          background={`${art.fc}cc`}
+                          alt={meta?.displayName || product.name}
+                        />
                       </div>
                     ) : (
                       <div style={{width:'100%',height:'100%',background:'var(--bg)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'.65rem',color:'var(--muted)',textAlign:'center',padding:'.3rem'}}>{meta?.displayName || product.name}</div>

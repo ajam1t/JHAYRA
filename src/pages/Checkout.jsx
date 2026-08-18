@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { PRODUCT_ART } from '../data/artwork';
+import FramedArt from '../components/FramedArt';
 import { supabase } from '../lib/supabase';
 import SEO from '../components/SEO';
 
@@ -648,11 +649,19 @@ export default function Checkout() {
                   const frameLabel = meta?.size ? `${meta.size} · ${meta.colour}` : '';
                   return (
                     <div key={id} style={{ display: 'flex', gap: '.6rem', alignItems: 'center', marginBottom: '.75rem' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '.4rem', overflow: 'hidden', flexShrink: 0, background: art ? `${art.fc}dd` : 'var(--bg)' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '.4rem', overflow: 'hidden', flexShrink: 0, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px' }}>
                         {art && (
-                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ height: '80%', aspectRatio: '200/260', overflow: 'hidden', borderRadius: '1px' }} dangerouslySetInnerHTML={{ __html: art.art }} />
-                          </div>
+                          <FramedArt
+                            fitContainer
+                            size={meta?.size || 'A4'}
+                            orientation={meta?.orientation || 'Vertical'}
+                            colour={meta?.colour || 'Black'}
+                            fit="cover"
+                            svg={art.art}
+                            background={`${art.fc}cc`}
+                            gloss={false}
+                            alt={name}
+                          />
                         )}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>

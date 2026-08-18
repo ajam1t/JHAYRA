@@ -5,24 +5,9 @@ import { useToast } from '../context/ToastContext';
 import { useScrollReveal } from '../components/ScrollReveal';
 import { useProduct } from '../hooks/useProducts';
 import { PRODUCT_ART } from '../data/artwork';
-import { FRAME_SIZES, coloursForSize, getFrameOption, FRAME_COLOUR_HEX } from '../data/frameOptions';
+import { FRAME_SIZES, coloursForSize, getFrameOption, frameGeometry } from '../data/frameOptions';
+import FramedArt from '../components/FramedArt';
 import SEO from '../components/SEO';
-
-const FRAME_SHADOW = {
-  Black: '0 12px 40px rgba(0,0,0,.22),0 4px 14px rgba(0,0,0,.14)',
-  Gold:  '0 12px 40px rgba(0,0,0,.18),0 4px 14px rgba(0,0,0,.10),0 0 0 1px rgba(196,155,46,.30)',
-  Brown: '0 12px 40px rgba(0,0,0,.20),0 4px 14px rgba(0,0,0,.12)',
-};
-const FRAME_BW = { 'A4':12, 'A3+':14, '18 × 24':16, '24 × 36':20 };
-/* Physical portrait dimensions (inches) */
-const SIZE_DIMS = {
-  'A4':     { w:9.5, h:13 },
-  'A3+':    { w:12,  h:18 },
-  '18 × 24':{ w:18,  h:24 },
-  '24 × 36':{ w:24,  h:36 },
-};
-/* Portrait display height (px) per size — determines overall visual scale */
-const FRAME_SCALE_H = { 'A4':320, 'A3+':390, '18 × 24':470, '24 × 36':560 };
 
 /* Show "Read more" when description exceeds this many characters */
 const DESC_THRESHOLD = 160;
@@ -51,16 +36,12 @@ export default function Product() {
   const frameOption      = getFrameOption(selectedSize, selectedColour);
   const price            = frameOption?.price ?? product?.price ?? 499;
 
-  /* Frame geometry — portrait dims flipped for landscape */
-  const isPortrait = selectedOrientation === 'Vertical';
-  const dims    = SIZE_DIMS[selectedSize] || { w:18, h:24 };
-  const scaleH  = FRAME_SCALE_H[selectedSize] || 320;
-  const scaleW  = Math.round(scaleH * dims.w / dims.h);
-  const frameH  = isPortrait ? scaleH : scaleW;
-  const frameW  = isPortrait ? scaleW : scaleH;
-  const actualSize = isPortrait
-    ? `${dims.w} × ${dims.h} inches`
-    : `${dims.h} × ${dims.w} inches`;
+  /* Frame geometry — single source of truth (portrait dims flipped for landscape) */
+  const { frameH, frameW, actualSize } = frameGeometry(selectedSize, selectedOrientation);
+
+  /* Clean artwork source — a real product photo (Supabase) or a studio SVG.
+     Either way the JHAYRA frame is rendered dynamically around it below. */
+  const useSvgArt = !realImg && !!art;
 
   /* When size changes, reset colour to first available for that size */
   const handleSizeChange = (size) => {
@@ -258,58 +239,34 @@ export default function Product() {
                 position:'relative',
                 transition:'min-height .45s ease',
               }}>
-                {realImg ? (
-                  /* An uploaded product photo is a COMPLETE framed mockup. Show it
-                     as-is (like the Shop card) — never inside the CSS frame-preview
-                     box below, which would produce a frame-inside-frame. */
-                  <img
-                    src={realImg}
-                    alt={product.name}
-                    style={{maxWidth:'100%',maxHeight:`${frameH + 40}px`,objectFit:'contain',display:'block',borderRadius:'2px'}}
-                  />
-                ) : (
-                <div className="product-frame-box" style={{
-                  position:'relative',
-                  border:`${FRAME_BW[selectedSize]||14}px solid ${FRAME_COLOUR_HEX[selectedColour]||'#1C1C1C'}`,
-                  boxShadow:FRAME_SHADOW[selectedColour]||FRAME_SHADOW.Black,
-                  height:`${frameH}px`,
-                  width:`${frameW}px`,
-                  maxWidth:'calc(100% - 2rem)',
-                  aspectRatio:`${frameW} / ${frameH}`,
-                  flexShrink:0,
-                  overflow:'hidden',
-                  borderRadius:'1px',
-                  transition:'border-color .4s ease,border-width .4s ease,box-shadow .4s ease,height .45s ease,width .45s ease',
-                }}>
-                  {art ? (
-                    <div style={{width:'100%',height:'100%',overflow:'hidden',background:`${art.fc}cc`}}>
-                      <div style={{width:'100%',height:'100%'}} dangerouslySetInnerHTML={{__html:
-                        art.art
-                          .replace(/preserveAspectRatio="[^"]*" */g, '')
-                          .replace('<svg ', '<svg preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block;" ')
-                      }} />
-                    </div>
-                  ) : (
-                    <div style={{width:'100%',height:'100%',background:'linear-gradient(150deg,#F7F3EC,#EDE7D9)',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',padding:'1.2rem',textAlign:'center'}}>
+                {/* JHAYRA renders the frame — clean artwork is fitted into the
+                    opening and the frame responds live to size, orientation and
+                    colour. Works identically for real photos and studio SVG art. */}
+                <FramedArt
+                  size={selectedSize}
+                  orientation={selectedOrientation}
+                  colour={selectedColour}
+                  fit="cover"
+                  src={realImg || undefined}
+                  svg={useSvgArt ? art.art : undefined}
+                  background={useSvgArt ? `${art.fc}cc` : 'linear-gradient(150deg,#F7F3EC,#EDE7D9)'}
+                  alt={product.name}
+                  placeholder={
+                    <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',padding:'1.2rem',textAlign:'center'}}>
                       <div style={{fontFamily:'var(--fd)',fontSize:'1rem',color:'var(--text)',lineHeight:1.4}}>{product.name}</div>
                       <div style={{fontSize:'.72rem',color:'var(--muted)',marginTop:'.5rem'}}>{selectedSize} · {selectedColour}</div>
                     </div>
-                  )}
-                  {/* Gloss overlay */}
-                  <div style={{position:'absolute',inset:0,background:'linear-gradient(148deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.03) 35%,transparent 60%)',pointerEvents:'none'}} />
-                </div>
-                )}
+                  }
+                />
               </div>
             </div>
 
-            {/* Colour swatches — frame-colour preview for SVG artwork only.
-                Hidden when a real framed-mockup photo is used (its frame colour is
-                fixed) and hidden on mobile via CSS (.gallery-thumbs{display:none}). */}
-            {!realImg && (
+            {/* Colour swatches — live frame-colour preview of THIS artwork.
+                Works for real photos and studio SVG alike (hidden on mobile via
+                CSS .gallery-thumbs{display:none}). */}
             <div className="gallery-thumbs" style={{display:'flex',gap:'.5rem',marginTop:'.75rem'}}>
               {availableColours.map(col => {
                 const isActive  = col === selectedColour;
-                const thumbHex  = FRAME_COLOUR_HEX[col] || '#1C1C1C';
                 return (
                   <div key={col} onClick={()=>setSelectedColour(col)} style={{
                     width:'64px',height:'64px',borderRadius:'.5rem',cursor:'pointer',
@@ -319,25 +276,23 @@ export default function Product() {
                     display:'flex',alignItems:'center',justifyContent:'center',
                     transition:'border-color .2s',flexShrink:0,
                   }}>
-                    <div style={{border:`5px solid ${thumbHex}`,width:'40px',height:'52px',overflow:'hidden',flexShrink:0,boxShadow:'0 3px 10px rgba(0,0,0,.18)'}}>
-                      {art ? (
-                        <div style={{width:'100%',height:'100%',overflow:'hidden',background:`${art.fc}cc`}}>
-                          <div style={{width:'100%',height:'100%'}} dangerouslySetInnerHTML={{__html:
-                            art.art
-                              .replace(/preserveAspectRatio="[^"]*" */g, '')
-                              .replace('<svg ', '<svg preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block;" ')
-                          }} />
-                        </div>
-                      ) : (
-                        <div style={{width:'100%',height:'100%',background:'#EDE7D9'}} />
-                      )}
-                    </div>
+                    <FramedArt
+                      size="A4"
+                      orientation="Vertical"
+                      colour={col}
+                      fit="cover"
+                      baseH={46}
+                      gloss={false}
+                      src={realImg || undefined}
+                      svg={useSvgArt ? art.art : undefined}
+                      background={useSvgArt ? `${art.fc}cc` : '#EDE7D9'}
+                      style={{boxShadow:'0 3px 10px rgba(0,0,0,.18)'}}
+                    />
                     <div style={{position:'absolute',bottom:'2px',left:0,right:0,textAlign:'center',fontSize:'.42rem',color:isActive?'var(--gold)':'var(--muted)',letterSpacing:'.06em',fontWeight:700,textTransform:'uppercase'}}>{col}</div>
                   </div>
                 );
               })}
             </div>
-            )}
           </div>
 
           {/* ── Info ─────────────────────────────────────────────

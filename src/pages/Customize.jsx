@@ -6,14 +6,10 @@ import { useToast } from '../context/ToastContext';
 import { TEMPLATES, TEMPLATE_GROUPS, filterTemplatesWithSearch, getTemplateById } from '../data/templates';
 import TemplateCard from '../components/TemplateCard';
 import TemplateRenderer from '../components/TemplateRenderer';
-import { FRAME_SIZES, FRAME_COLOUR_HEX, coloursForSize, getFrameOption, MIN_FRAME_PRICE } from '../data/frameOptions';
+import FramedArt from '../components/FramedArt';
+import { FRAME_SIZES, coloursForSize, getFrameOption, MIN_FRAME_PRICE, frameGeometry } from '../data/frameOptions';
 import { uploadCustomerArtwork } from '../lib/artwork';
 import SEO from '../components/SEO';
-
-/* ── Shared frame geometry (mirrors Product.jsx constants) ───────────────── */
-const SIZE_DIMS    = { 'A4':{w:9.5,h:13}, 'A3+':{w:12,h:18}, '18 × 24':{w:18,h:24}, '24 × 36':{w:24,h:36} };
-const FRAME_SCALE_H = { 'A4':320, 'A3+':390, '18 × 24':470, '24 × 36':560 };
-const FRAME_BW_MAP  = { 'A4':12,  'A3+':14,  '18 × 24':16,  '24 × 36':20  };
 
 /* ── WhatsApp design-service shared helpers ──────────────────────────────── */
 const WA_TEAM_URL = `https://wa.me/917070728989?text=${encodeURIComponent("Hi JHAYRA! I'd like your team to design a custom frame for me. I'll share my photo and ideas here 🎨")}`;
@@ -273,16 +269,9 @@ function ScratchBuilder() {
 
   const availableColours  = coloursForSize(selectedSize);
   const frameOption       = getFrameOption(selectedSize, selectedColour);
-  const borderColor       = FRAME_COLOUR_HEX[selectedColour] || '#1C1C1C';
 
   const isPortrait  = selectedOrientation === 'Vertical';
-  const dims        = SIZE_DIMS[selectedSize] || { w:18, h:24 };
-  const scaleH      = FRAME_SCALE_H[selectedSize] || 320;
-  const scaleW      = Math.round(scaleH * dims.w / dims.h);
-  const frameH      = isPortrait ? scaleH : scaleW;
-  const frameW      = isPortrait ? scaleW : scaleH;
-  const frameBW     = FRAME_BW_MAP[selectedSize] || 14;
-  const actualSize  = isPortrait ? `${dims.w} × ${dims.h} inches` : `${dims.h} × ${dims.w} inches`;
+  const { frameH, actualSize } = frameGeometry(selectedSize, selectedOrientation);
   const sizeLabel   = `${selectedSize} · ${isPortrait ? 'Vertical' : 'Horizontal'} · ${actualSize} · ${selectedColour} · PS Moulding`;
 
   const handleSizeChange = (size) => {
@@ -439,28 +428,24 @@ function ScratchBuilder() {
                 cursor:'crosshair',
                 overflow:'hidden',
               }}>
-                <div style={{
-                  border:`${frameBW}px solid ${borderColor}`,
-                  borderRadius:'2px',
-                  boxShadow:'0 12px 40px rgba(0,0,0,.22),0 4px 14px rgba(0,0,0,.14)',
-                  transition:'border-color .4s ease,border-width .4s ease,height .45s ease,width .45s ease',
-                  height:`${frameH}px`,
-                  width:`${frameW}px`,
-                  maxWidth:'calc(100% - 2rem)',
-                  overflow:'hidden',
-                  flexShrink:0,
-                }}>
-                  <div style={{width:'100%',height:'100%',overflow:'hidden',background:'linear-gradient(160deg,#F5EEE0,#EBE2D0)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    {photo ? (
-                      <img src={photo} alt="Your photo" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
-                    ) : (
-                      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'.7rem',color:'#B8A080'}}>
-                        <svg viewBox="0 0 48 48" style={{width:'38px',height:'38px',opacity:.35,stroke:'#B8A080',fill:'none',strokeWidth:1.5}}><rect x="4" y="4" width="40" height="40" rx="4"/><circle cx="16" cy="16" r="5"/><path d="M4 33l12-13 8 8 6-6 14 14"/></svg>
-                        <span style={{fontSize:'.62rem',letterSpacing:'.16em',textTransform:'uppercase',opacity:.5}}>Your Photo Here</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                {/* JHAYRA frame rendered around the customer's clean photo —
+                    fitted with object-fit (cover), never distorted, never
+                    pre-framed. Frame reacts live to size/orientation/colour. */}
+                <FramedArt
+                  size={selectedSize}
+                  orientation={selectedOrientation}
+                  colour={selectedColour}
+                  fit="cover"
+                  src={photo || undefined}
+                  background="linear-gradient(160deg,#F5EEE0,#EBE2D0)"
+                  alt="Your photo"
+                  placeholder={
+                    <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'.7rem',color:'#B8A080'}}>
+                      <svg viewBox="0 0 48 48" style={{width:'38px',height:'38px',opacity:.35,stroke:'#B8A080',fill:'none',strokeWidth:1.5}}><rect x="4" y="4" width="40" height="40" rx="4"/><circle cx="16" cy="16" r="5"/><path d="M4 33l12-13 8 8 6-6 14 14"/></svg>
+                      <span style={{fontSize:'.62rem',letterSpacing:'.16em',textTransform:'uppercase',opacity:.5}}>Your Photo Here</span>
+                    </div>
+                  }
+                />
                 <div style={{marginTop:'1rem',background:'rgba(26,18,8,.6)',color:'#fff',fontSize:'.68rem',letterSpacing:'.1em',padding:'.35rem 1.1rem',borderRadius:'var(--pill)',backdropFilter:'blur(10px)',textAlign:'center'}}>{sizeLabel}</div>
               </div>
               <div style={{background:'#fff',padding:'.9rem 1.4rem',borderRadius:'0 0 1rem 1rem',borderTop:'1px solid rgba(0,0,0,.06)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
@@ -560,14 +545,6 @@ function PhotoEditModal({ photo, slotId, slotLabel, initial, onConfirm, onClose 
 /* ── Template Wizard ──────────────────────────────────────────────────────── */
 const STEPS = ['Photos','Personalise','Frame','Add to Cart'];
 
-// PS Moulding frame border simulation (indexed by colour)
-const FRAME_BORDER = {
-  Black: { color:'#1C1C1C', shadow:'0 24px 70px rgba(0,0,0,.40),0 6px 20px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06)' },
-  Gold:  { color:'#B8932A', shadow:'0 24px 70px rgba(0,0,0,.30),0 6px 20px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,220,120,.15)' },
-  Brown: { color:'#6B4423', shadow:'0 24px 70px rgba(0,0,0,.35),0 6px 20px rgba(0,0,0,.20)' },
-};
-const PS_MOULDING_WIDTH = '14px';
-
 function TemplateWizard({ template }) {
   useScrollReveal();
   const { addToCartWithFrame } = useCart();
@@ -644,12 +621,7 @@ function TemplateWizard({ template }) {
   const selectedFrameOption = getFrameOption(selectedSize, selectedColour);
 
   const isPortrait  = selectedOrientation === 'Vertical';
-  const dims        = SIZE_DIMS[selectedSize] || { w:18, h:24 };
-  const scaleH      = FRAME_SCALE_H[selectedSize] || 320;
-  const scaleW      = Math.round(scaleH * dims.w / dims.h);
-  const frameH      = isPortrait ? scaleH : scaleW;
-  const frameW      = isPortrait ? scaleW : scaleH;
-  const actualSize  = isPortrait ? `${dims.w} × ${dims.h} inches` : `${dims.h} × ${dims.w} inches`;
+  const { frameH, frameW, actualSize } = frameGeometry(selectedSize, selectedOrientation);
 
   const handleSizeChange = (size) => {
     setSelectedSize(size);
@@ -727,9 +699,6 @@ function TemplateWizard({ template }) {
       setAdding(false);
     }
   };
-
-  const fb = FRAME_BORDER[selectedColour] || FRAME_BORDER.Black;
-  const fw = `${FRAME_BW_MAP[selectedSize] || 14}px`;
 
   // Quality chip text/emoji
   const qualityLabel = (q) => {
@@ -1112,18 +1081,14 @@ function TemplateWizard({ template }) {
                 alignItems:'center',
                 transition:'all .45s ease',
               }}>
-                {/* Physical frame — proportional per size + orientation */}
-                <div style={{
-                  border: `${fw} solid ${fb.color}`,
-                  borderRadius:'3px',
-                  boxShadow: fb.shadow,
-                  overflow:'hidden',
-                  height:`${frameH}px`,
-                  width:`${frameW}px`,
-                  maxWidth:'100%',
-                  flexShrink:0,
-                  transition:'border-color .35s,border-width .35s,box-shadow .35s,height .45s,width .45s',
-                }}>
+                {/* Physical JHAYRA frame — proportional per size + orientation,
+                    rendered by the website around the clean template composition. */}
+                <FramedArt
+                  size={selectedSize}
+                  orientation={selectedOrientation}
+                  colour={selectedColour}
+                  style={{ height:`${frameH}px`, width:`${frameW}px`, maxWidth:'100%' }}
+                >
                   <TemplateRenderer
                     template={template} photos={photos} texts={texts}
                     fill={!isPortrait} framed={true}
@@ -1131,7 +1096,7 @@ function TemplateWizard({ template }) {
                     calendarOverride={template.hasCalendar ? {month:calMonth,year:calYear,highlightDate:calHighlight,visible:true} : null}
                     photoTransforms={photoTransforms}
                   />
-                </div>
+                </FramedArt>
 
                 {/* Label below frame */}
                 <div style={{

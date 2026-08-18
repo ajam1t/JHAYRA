@@ -3,6 +3,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { PRODUCT_ART } from '../data/artwork';
+import FramedArt from './FramedArt';
 
 // Maps every category slug to an existing /Images/ file so cards never appear blank
 const CAT_IMG = {
@@ -42,46 +43,28 @@ export default function ProductCard({ product, className = '' }) {
   return (
     <Link to={`/product/${product.id}`} className={`product-card reveal ${className}`}>
       <div className="product-card-img-wrap">
-        {realImg ? (
-          /* Actual uploaded product photo from Supabase Storage */
-          <img
-            src={realImg}
+        {/* Clean artwork (Supabase photo › studio SVG › category fallback) is
+            always framed dynamically by JHAYRA — the frame is never baked in,
+            so a frame-inside-frame is impossible. Cards show a representative
+            A4 · Portrait · Black frame; size/colour are chosen on the detail page. */}
+        <div style={{
+          width:'100%', height:'100%',
+          background:'var(--bg)',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          padding:'.65rem',
+        }}>
+          <FramedArt
+            fitContainer
+            size="A4"
+            orientation="Vertical"
+            colour="Black"
+            fit="cover"
+            src={realImg || (!art ? catImg : undefined)}
+            svg={!realImg && art ? art.art : undefined}
+            background={!realImg && art ? `${art.fc}cc` : '#F3ECDD'}
             alt={product.name}
-            loading="lazy"
-            style={{width:'100%',height:'100%',objectFit:'contain',display:'block'}}
           />
-        ) : art ? (
-          /* SVG artwork (existing design for known products) */
-          <div style={{
-            width:'100%', height:'100%',
-            background:'var(--bg)',
-            display:'flex', alignItems:'center', justifyContent:'center',
-            padding:'.65rem',
-          }}>
-            <div style={{
-              height:'90%',
-              aspectRatio:'200/260',
-              width:'auto',
-              border:`12px solid ${art.fc}`,
-              borderRadius:'2px',
-              overflow:'hidden',
-              boxShadow:'0 8px 28px rgba(0,0,0,.22),0 2px 8px rgba(0,0,0,.12)',
-              position:'relative',
-              flexShrink:0,
-            }}>
-              <div className="pc-art-frame" dangerouslySetInnerHTML={{__html: art.art}} />
-              <div style={{position:'absolute',inset:0,background:'linear-gradient(148deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.03) 38%,transparent 60%)',pointerEvents:'none'}} />
-            </div>
-          </div>
-        ) : (
-          /* Category fallback image — always visible, never blank */
-          <img
-            src={catImg}
-            alt={product.name}
-            loading="lazy"
-            style={{width:'100%',height:'100%',objectFit:'cover',display:'block',opacity:0.88}}
-          />
-        )}
+        </div>
         <div className="product-card-badges">
           {product.newArrival && <span className="badge" style={{background:'var(--gold)',color:'#fff'}}>New</span>}
         </div>
