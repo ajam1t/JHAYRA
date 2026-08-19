@@ -68,10 +68,19 @@ export default function Shop() {
   if (priceFilter === 'under1k')   products = products.filter(p => p.price < 1000);
   else if (priceFilter === '1k-2k') products = products.filter(p => p.price >= 1000 && p.price <= 2000);
   else if (priceFilter === 'above2k') products = products.filter(p => p.price > 2000);
-  if (sort === 'price-asc')  products = [...products].sort((a,b) => a.price - b.price);
-  if (sort === 'price-desc') products = [...products].sort((a,b) => b.price - a.price);
-  if (sort === 'new')  products = products.filter(p => p.newArrival);
-  if (sort === 'best') products = products.filter(p => p.bestSeller);
+
+  // Sorting REORDERS the list — it never filters products out (that previously made
+  // e.g. Best Sellers → New Arrivals show an empty grid when a category had no
+  // flagged items). Each option applies cleanly from the current selection every time.
+  const bool = (v) => (v ? 1 : 0);
+  const byRating = (a, b) => (b.rating || 0) - (a.rating || 0) || (b.reviewCount || 0) - (a.reviewCount || 0);
+  if (sort === 'best') {
+    products = [...products].sort((a, b) => bool(b.bestSeller) - bool(a.bestSeller) || byRating(a, b));
+  } else if (sort === 'new') {
+    products = [...products].sort((a, b) => bool(b.newArrival) - bool(a.newArrival) || byRating(a, b));
+  } else { // 'popular'
+    products = [...products].sort(byRating);
+  }
 
   const activeCats = CATALOG.filter(c => c.active);
   const activeFilterCount = (filter !== 'all' ? 1 : 0) + (priceFilter !== 'all' ? 1 : 0);
@@ -107,11 +116,9 @@ export default function Shop() {
   }
 
   const sortOptions = [
-    { label: 'Most Popular',        value: 'popular' },
-    { label: 'Best Sellers',        value: 'best' },
-    { label: 'New Arrivals',        value: 'new' },
-    { label: 'Price: Low to High',  value: 'price-asc' },
-    { label: 'Price: High to Low',  value: 'price-desc' },
+    { label: 'Most Popular', value: 'popular' },
+    { label: 'Best Sellers', value: 'best' },
+    { label: 'New Arrivals', value: 'new' },
   ];
   const priceOptions = [
     { label: 'All Prices',    value: 'all' },

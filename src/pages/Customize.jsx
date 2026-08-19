@@ -265,6 +265,8 @@ function ScratchBuilder() {
   const [selectedOrientation, setSelectedOrientation] = useState('Vertical');
   const [photo, setPhoto] = useState(null);
   const [photoMeta, setPhotoMeta] = useState(null); // {name,width,height,size,type} of the ORIGINAL upload
+  const [photoTransform, setPhotoTransform] = useState({ zoom: 1, panX: 0, panY: 0 }); // crop/zoom/reposition
+  const [editingPhoto, setEditingPhoto] = useState(false);
   const [adding, setAdding] = useState(false);
   const czRoomRef = useRef(null);
 
@@ -307,11 +309,13 @@ function ScratchBuilder() {
       img.onload = () => {
         setPhoto(dataUrl);
         setPhotoMeta({ name: f.name || null, size: f.size || null, type: f.type || null, width: img.naturalWidth, height: img.naturalHeight });
+        setPhotoTransform({ zoom: 1, panX: 0, panY: 0 });
         toast('Photo updated! ✓');
       };
       img.onerror = () => {
         setPhoto(dataUrl);
         setPhotoMeta({ name: f.name || null, size: f.size || null, type: f.type || null, width: null, height: null });
+        setPhotoTransform({ zoom: 1, panX: 0, panY: 0 });
         toast('Photo updated! ✓');
       };
       img.src = dataUrl;
@@ -415,6 +419,7 @@ function ScratchBuilder() {
                       source: 'scratch-builder',
                       orientation: isPortrait ? 'Vertical' : 'Horizontal',
                       artworkMeta: up.meta,
+                      transform: photoTransform,
                     },
                   });
                   toast('Custom frame added to cart ✓');
@@ -444,35 +449,49 @@ function ScratchBuilder() {
             <div className="cz-preview">
               <div ref={czRoomRef} style={{
                 background:'var(--bg)',
-                minHeight:`${frameH + 80}px`,
+                height:'clamp(340px,52vh,520px)',
                 display:'flex',flexDirection:'column',
                 alignItems:'center',justifyContent:'center',
-                padding:'2rem 1.5rem',
+                padding:'1.5rem',gap:'.9rem',
                 borderRadius:'1rem 1rem 0 0',
                 position:'relative',
-                transition:'transform .15s cubic-bezier(.16,1,.3,1), min-height .45s ease',
+                transition:'transform .15s cubic-bezier(.16,1,.3,1)',
                 cursor:'crosshair',
                 overflow:'hidden',
               }}>
-                {/* JHAYRA frame rendered around the customer's clean photo —
-                    fitted with object-fit (cover), never distorted, never
-                    pre-framed. Frame reacts live to size/orientation/colour. */}
-                <FramedArt
-                  size={selectedSize}
-                  orientation={selectedOrientation}
-                  colour={selectedColour}
-                  fit="cover"
-                  src={photo || undefined}
-                  background="linear-gradient(160deg,#F5EEE0,#EBE2D0)"
-                  alt="Your photo"
-                  placeholder={
-                    <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'.7rem',color:'#B8A080'}}>
-                      <svg viewBox="0 0 48 48" style={{width:'38px',height:'38px',opacity:.35,stroke:'#B8A080',fill:'none',strokeWidth:1.5}}><rect x="4" y="4" width="40" height="40" rx="4"/><circle cx="16" cy="16" r="5"/><path d="M4 33l12-13 8 8 6-6 14 14"/></svg>
-                      <span style={{fontSize:'.62rem',letterSpacing:'.16em',textTransform:'uppercase',opacity:.5}}>Your Photo Here</span>
-                    </div>
-                  }
-                />
-                <div style={{marginTop:'1rem',background:'rgba(26,18,8,.6)',color:'#fff',fontSize:'.68rem',letterSpacing:'.1em',padding:'.35rem 1.1rem',borderRadius:'var(--pill)',backdropFilter:'blur(10px)',textAlign:'center'}}>{sizeLabel}</div>
+                {/* JHAYRA frame rendered around the customer's clean photo — fitted
+                    with object-fit (cover) + the customer's crop/zoom transform,
+                    never distorted, never pre-framed. fitContainer scales the frame
+                    to fit for every size (incl. 24×36). */}
+                <div style={{flex:1,minHeight:0,width:'100%',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <FramedArt
+                    size={selectedSize}
+                    orientation={selectedOrientation}
+                    colour={selectedColour}
+                    fitContainer
+                    fit="cover"
+                    src={photo || undefined}
+                    transform={photo ? photoTransform : null}
+                    background="linear-gradient(160deg,#F5EEE0,#EBE2D0)"
+                    alt="Your photo"
+                    placeholder={
+                      <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'.7rem',color:'#B8A080'}}>
+                        <svg viewBox="0 0 48 48" style={{width:'38px',height:'38px',opacity:.35,stroke:'#B8A080',fill:'none',strokeWidth:1.5}}><rect x="4" y="4" width="40" height="40" rx="4"/><circle cx="16" cy="16" r="5"/><path d="M4 33l12-13 8 8 6-6 14 14"/></svg>
+                        <span style={{fontSize:'.62rem',letterSpacing:'.16em',textTransform:'uppercase',opacity:.5}}>Your Photo Here</span>
+                      </div>
+                    }
+                  />
+                </div>
+                <div style={{display:'flex',gap:'.5rem',alignItems:'center',flexWrap:'wrap',justifyContent:'center'}}>
+                  {photo && (
+                    <button type="button" onClick={()=>setEditingPhoto(true)}
+                      style={{display:'inline-flex',alignItems:'center',gap:'.35rem',background:'rgba(255,255,255,.9)',border:'1.5px solid var(--cream)',color:'var(--text)',fontSize:'.72rem',fontWeight:700,padding:'.4rem .9rem',borderRadius:'var(--pill)',cursor:'pointer',boxShadow:'0 2px 8px rgba(0,0,0,.08)'}}>
+                      <svg viewBox="0 0 24 24" style={{width:'13px',height:'13px',stroke:'currentColor',fill:'none',strokeWidth:2}}><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                      Crop · Zoom · Reposition
+                    </button>
+                  )}
+                  <div style={{background:'rgba(26,18,8,.6)',color:'#fff',fontSize:'.68rem',letterSpacing:'.08em',padding:'.35rem 1.1rem',borderRadius:'var(--pill)',backdropFilter:'blur(10px)',textAlign:'center'}}>{sizeLabel}</div>
+                </div>
               </div>
               <div style={{background:'#fff',padding:'.9rem 1.4rem',borderRadius:'0 0 1rem 1rem',borderTop:'1px solid rgba(0,0,0,.06)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <div>
@@ -482,6 +501,15 @@ function ScratchBuilder() {
                 <span style={{fontFamily:'var(--fd)',fontWeight:700,fontSize:'1.05rem'}}>₹{(frameOption?.price ?? MIN_FRAME_PRICE).toLocaleString('en-IN')}</span>
               </div>
             </div>
+            {editingPhoto && photo && (
+              <PhotoEditModal
+                photo={photo}
+                slotLabel="Your Photo"
+                initial={photoTransform}
+                onConfirm={(t)=>setPhotoTransform(t)}
+                onClose={()=>setEditingPhoto(false)}
+              />
+            )}
           </div>
         </div>
       </section>

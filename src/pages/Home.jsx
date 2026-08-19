@@ -57,8 +57,8 @@ export default function Home() {
               <span><b>Secure</b> Packaging</span>
             </div>
             <div className="benefit">
-              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>
-              <span><b>Easy</b> Returns</span>
+              <svg viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20"/><path d="M12 21 8 9l2-6M12 21l4-12-2-6"/></svg>
+              <span><b>Premium</b> Quality</span>
             </div>
           </div>
         </div>

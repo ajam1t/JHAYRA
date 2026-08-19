@@ -232,20 +232,21 @@ export default function Product() {
             <div className="gallery-main" ref={galleryRef} style={{transition:'transform .12s ease',cursor:'crosshair'}}>
               <div className="product-gallery-area" style={{
                 width:'100%',
-                minHeight:`${frameH + 80}px`,
+                height:'100%',
                 background:'var(--bg)',
                 display:'flex', alignItems:'center', justifyContent:'center',
-                borderRadius:'1rem', overflow:'hidden', padding:'2.5rem 2rem',
+                borderRadius:'1rem', overflow:'hidden', padding:'1.75rem',
                 position:'relative',
-                transition:'min-height .45s ease',
               }}>
                 {/* JHAYRA renders the frame — clean artwork is fitted into the
                     opening and the frame responds live to size, orientation and
-                    colour. Works identically for real photos and studio SVG art. */}
+                    colour. fitContainer makes the frame scale to fit this box for
+                    EVERY size (incl. 24×36) instead of overflowing at fixed px. */}
                 <FramedArt
                   size={selectedSize}
                   orientation={selectedOrientation}
                   colour={selectedColour}
+                  fitContainer
                   fit="cover"
                   src={realImg || undefined}
                   svg={useSvgArt ? art.art : undefined}

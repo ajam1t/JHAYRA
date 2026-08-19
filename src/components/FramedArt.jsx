@@ -54,7 +54,12 @@ export default function FramedArt({
   const hex    = FRAME_COLOUR_HEX[colour] || FRAME_COLOUR_HEX.Black;
   const shadow = FRAME_SHADOW[colour] || FRAME_SHADOW.Black;
 
-  /* Outer physical frame sizing */
+  /* Outer physical frame sizing.
+     In fitContainer mode the frame scales to fit its parent box while keeping
+     the exact per-size aspect ratio. minWidth/minHeight:0 + flexShrink:1 are
+     required so the frame's own content (opening/placeholder) can't force a
+     min-content width that would override the aspect-ratio (a flexbox default
+     that otherwise makes every size render at the same proportion). */
   const frameSizing = fitContainer
     ? {
         aspectRatio: `${geo.frameW} / ${geo.frameH}`,
@@ -62,6 +67,9 @@ export default function FramedArt({
         height: geo.isPortrait ? '100%' : 'auto',
         maxWidth:  '100%',
         maxHeight: '100%',
+        minWidth: 0,
+        minHeight: 0,
+        flexShrink: 1,
       }
     : {
         width:    `${geo.frameW}px`,

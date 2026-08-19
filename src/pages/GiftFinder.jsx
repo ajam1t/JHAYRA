@@ -6,6 +6,8 @@ import TemplateCard from '../components/TemplateCard';
 import { JHAYRA_DATA } from '../data/products';
 import { OCCASIONS, RECIPIENTS } from '../data/occasions';
 import { TEMPLATES } from '../data/templates';
+import { resolveGiftProducts } from '../data/giftMap';
+import { useProducts } from '../hooks/useProducts';
 import SEO from '../components/SEO';
 
 const WA_URL = `https://wa.me/917070728989?text=${encodeURIComponent("Hi JHAYRA! I need help finding the perfect gift frame. Can you guide me?")}`;
@@ -13,10 +15,17 @@ const WA_URL = `https://wa.me/917070728989?text=${encodeURIComponent("Hi JHAYRA!
 /* ── Result page rendered when a card is selected ─────────────────────────── */
 function GiftResultPage({ type, item, onBack }) {
   useScrollReveal();
+  const { products: liveProducts } = useProducts();
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [item.id]);
 
-  const products = item.productIds.map(id => JHAYRA_DATA.get(id)).filter(Boolean);
+  // Resolve recommendations from the LIVE catalogue by category so the gift card
+  // and the product detail page always show the SAME product. Fall back to the
+  // curated static ids only when the live catalogue isn't available.
+  const mapped = resolveGiftProducts(type, item.id, liveProducts);
+  const products = mapped.length
+    ? mapped
+    : (item.productIds || []).map(id => JHAYRA_DATA.get(id)).filter(Boolean);
 
   const matchedTemplates = TEMPLATES.filter(t => {
     const byGroup = item.templateGroups?.some(g => t.group === g);
