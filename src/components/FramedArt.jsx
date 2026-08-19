@@ -80,6 +80,19 @@ export default function FramedArt({
         maxWidth: 'calc(100% - 1rem)',
       };
 
+  /* Proportional moulding.
+     A fixed-px CSS border can't scale with the frame in fitContainer mode, so
+     when the frame renders small (mobile sticky preview, shop cards) the border
+     looks disproportionately thick and the artwork tiny. Here the moulding is
+     expressed as a PERCENTAGE of the rendered frame, so it stays thin, premium
+     and identical in proportion at any container size. Left/right use the % of
+     width; top/bottom are scaled by the aspect ratio so the physical moulding
+     is a uniform thickness on all four sides (never distorting the opening).
+     Non-fitContainer surfaces (fixed-px thumbnails) keep the classic css border. */
+  const mouldFrac = (geo.borderWidth / geo.frameW) * 0.6;      // ~5% → ~3% : thinner, premium
+  const bLR = +(mouldFrac * 100).toFixed(3);                   // % of width  (left / right)
+  const bTB = +(mouldFrac * 100 * (geo.frameW / geo.frameH)).toFixed(3); // % of height → equal px
+
   /* Inner artwork */
   let inner;
   if (children) {
@@ -117,13 +130,18 @@ export default function FramedArt({
         position: 'relative',
         boxSizing: 'border-box',
         flexShrink: 0,
-        border: `${geo.borderWidth}px solid ${hex}`,
+        // Proportional moulding uses the outer background as the frame face + an
+        // inset opening; fixed-px surfaces keep the classic css border.
+        ...(fitContainer ? {} : { border: `${geo.borderWidth}px solid ${hex}` }),
         background: hex,
         boxShadow: shadow,
         borderRadius: '2px',
         overflow: 'hidden',
-        transition:
-          'border-color .4s ease, border-width .4s ease, box-shadow .4s ease, height .45s ease, width .45s ease, aspect-ratio .45s ease',
+        // Only colour/shadow animate. Geometry (width/height/aspect-ratio) snaps
+        // instantly on selection: transitioning aspect-ratio leaves Chrome's
+        // resolved value stuck at the previous ratio, so the frame would render
+        // at the wrong proportion after a size/orientation change.
+        transition: 'border-color .4s ease, background .4s ease, box-shadow .4s ease',
         ...frameSizing,
         ...style,
       }}
@@ -131,14 +149,22 @@ export default function FramedArt({
       {/* Inner opening */}
       <div
         style={{
-          position: 'relative',
-          width: '100%',
-          height: '100%',
           overflow: 'hidden',
           background,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          ...(fitContainer
+            ? {
+                position: 'absolute',
+                top: `${bTB}%`,
+                bottom: `${bTB}%`,
+                left: `${bLR}%`,
+                right: `${bLR}%`,
+                // subtle rabbet edge so the moulding reads as a physical frame
+                boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.16)',
+              }
+            : { position: 'relative', width: '100%', height: '100%' }),
         }}
       >
         {inner}

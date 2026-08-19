@@ -940,7 +940,9 @@ body{padding-bottom:56px}
    controls scroll beneath it. Overrides the position:static reset at 1024px. */
 @media(max-width:820px){
 .cz-preview{position:sticky!important;top:calc(var(--nav) + var(--bar));z-index:2;background:#fff;margin-bottom:0!important;border-radius:0!important;box-shadow:0 2px 12px rgba(0,0,0,.06)!important}
-.cz-room{height:clamp(220px,38svh,310px)!important}
+/* Taller room + tighter padding so the framed artwork is the hero and fills
+   the width — the proportional moulding then reads thin & premium. */
+.cz-room{height:clamp(300px,44svh,380px)!important;padding:.9rem!important;gap:.55rem!important}
 }
 
 /* ── Mobile typography & spacing ───────────────────────────────────────── */
