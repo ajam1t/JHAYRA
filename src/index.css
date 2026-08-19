@@ -935,6 +935,14 @@ body{padding-bottom:56px}
 .gallery-thumbs{display:none!important}
 }
 
+/* ── Scratch Builder sticky preview on mobile ──────────────────────────── */
+/* Mirrors product-gallery-col: preview sticks to the top while config
+   controls scroll beneath it. Overrides the position:static reset at 1024px. */
+@media(max-width:820px){
+.cz-preview{position:sticky!important;top:calc(var(--nav) + var(--bar));z-index:2;background:#fff;margin-bottom:0!important;border-radius:0!important;box-shadow:0 2px 12px rgba(0,0,0,.06)!important}
+.cz-room{height:clamp(220px,38svh,310px)!important}
+}
+
 /* ── Mobile typography & spacing ───────────────────────────────────────── */
 @media(max-width:820px){
 .hero-title{font-size:clamp(1.9rem,8.5vw,2.8rem)!important}

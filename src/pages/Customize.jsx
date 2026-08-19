@@ -448,7 +448,7 @@ function ScratchBuilder() {
               </div>
             </div>
             <div className="cz-preview">
-              <div ref={czRoomRef} style={{
+              <div ref={czRoomRef} className="cz-room" style={{
                 background:'var(--bg)',
                 height:'clamp(340px,52vh,520px)',
                 display:'flex',flexDirection:'column',
