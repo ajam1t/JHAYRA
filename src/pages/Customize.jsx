@@ -69,6 +69,13 @@ function TemplateGallery() {
 
       <div className="container" style={{paddingTop:'2rem',paddingBottom:'4rem'}}>
 
+        {/* Build From Scratch — primary CTA at the top */}
+        <div style={{marginBottom:'2rem',padding:'2rem',background:'#F8F4EE',borderRadius:'16px',textAlign:'center',border:'1px solid #EAE4D8'}}>
+          <p className="eyebrow" style={{marginBottom:'.5rem'}}>Just want a simple custom print?</p>
+          <p style={{color:'#7A6E60',fontSize:'.9rem',marginBottom:'1.2rem'}}>Upload any photo and choose your frame size, material, and colour.</p>
+          <Link to="/customize/scratch" className="btn btn-gold">Build From Scratch</Link>
+        </div>
+
         {/* WhatsApp design service */}
         <div style={{
           marginBottom:'2rem',
@@ -243,13 +250,6 @@ function TemplateGallery() {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Basic custom frame option */}
-        <div style={{marginTop:'1.5rem',padding:'2rem',background:'#F8F4EE',borderRadius:'16px',textAlign:'center',border:'1px solid #EAE4D8'}}>
-          <p className="eyebrow" style={{marginBottom:'.5rem'}}>Just want a simple custom print?</p>
-          <p style={{color:'#7A6E60',fontSize:'.9rem',marginBottom:'1.2rem'}}>Upload any photo and choose your frame size, material, and colour.</p>
-          <Link to="/customize/scratch" className="btn btn-gold">Build From Scratch</Link>
         </div>
       </div>
     </div>
