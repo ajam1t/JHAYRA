@@ -25,6 +25,16 @@ const CAT_IMG = {
   'home-vastu':     '/Images/religious.jpg',
 };
 
+// Friendly product-type label per category so the card communicates WHAT it is
+const CAT_LABEL = {
+  'personalized': 'Personalised Frame', 'religious': 'Spiritual Art', 'running-horses': 'Vastu Art',
+  'nature': 'Nature Print', 'modern-art': 'Modern Art', 'canvas': 'Canvas Print',
+  'art-abstract': 'Abstract Art', 'love-romance': 'Couple Frame', 'wedding': 'Wedding Frame',
+  'family': 'Family Frame', 'baby-kids': 'Kids Frame', 'animals-pets': 'Pet & Wildlife',
+  'occasions': 'Occasion Frame', 'photography': 'Photo Print', 'quotes': 'Quote Art',
+  'home-vastu': 'Vastu Art',
+};
+
 export default function ProductCard({ product, className = '' }) {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, wishlist } = useWishlist();
@@ -49,9 +59,11 @@ export default function ProductCard({ product, className = '' }) {
             A4 · Portrait · Black frame; size/colour are chosen on the detail page. */}
         <div style={{
           width:'100%', height:'100%',
-          background:'var(--bg)',
+          /* Soft warm 'wall' backdrop so the framed art reads as a physical
+             product hanging on a wall, not a flat graphic. */
+          background:'radial-gradient(120% 100% at 50% 0%, #FBF7EF 0%, #F1E9DA 70%, #EAE0CE 100%)',
           display:'flex', alignItems:'center', justifyContent:'center',
-          padding:'.65rem',
+          padding:'1rem .9rem',
         }}>
           <FramedArt
             fitContainer
@@ -66,7 +78,8 @@ export default function ProductCard({ product, className = '' }) {
           />
         </div>
         <div className="product-card-badges">
-          {product.newArrival && <span className="badge" style={{background:'var(--gold)',color:'#fff'}}>New</span>}
+          {product.bestSeller && <span className="badge" style={{background:'var(--gold)',color:'#fff'}}>Best Seller</span>}
+          {product.newArrival && <span className="badge" style={{background:'#22C55E',color:'#fff'}}>New</span>}
         </div>
         <div className="product-card-action-row">
           <button className="product-action-btn" aria-label={isWished ? 'Remove from wishlist' : 'Add to wishlist'} onClick={toggleWishlist}>
@@ -75,6 +88,11 @@ export default function ProductCard({ product, className = '' }) {
         </div>
       </div>
       <div className="product-card-body">
+        {CAT_LABEL[product.category] && (
+          <div style={{fontSize:'.62rem',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--gold)',marginBottom:'.15rem'}}>
+            {CAT_LABEL[product.category]}
+          </div>
+        )}
         <div className="product-card-name">{product.name}</div>
         <div className="product-card-rating">
           <span className="stars">{'★'.repeat(Math.round(product.rating))}</span>

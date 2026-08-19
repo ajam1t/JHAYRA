@@ -6,6 +6,7 @@ const NAV = [
   { to: '/admin', label: 'Dashboard', icon: '◼' },
   { to: '/admin/orders', label: 'Orders', icon: '📦' },
   { to: '/admin/products', label: 'Products', icon: '🖼' },
+  { to: '/admin/catalog', label: 'Catalog', icon: '🎨' },
   { to: '/admin/categories', label: 'Categories', icon: '📂' },
   { to: '/admin/homepage', label: 'Homepage', icon: '🏠' },
 ];
@@ -49,12 +50,13 @@ export default function AdminLayout() {
     alignItems: 'center',
     gap: '0.6rem',
     padding: '0.65rem 0.75rem',
-    borderRadius: '6px',
+    borderRadius: '8px',
     textDecoration: 'none',
-    color: isActive ? '#c9a96e' : '#999',
+    color: isActive ? '#8A6A24' : '#6A5F52',
+    fontWeight: isActive ? 700 : 500,
     fontSize: '0.875rem',
-    marginBottom: '2px',
-    background: isActive ? 'rgba(201,169,110,0.12)' : 'transparent',
+    marginBottom: '3px',
+    background: isActive ? 'rgba(182,141,64,0.12)' : 'transparent',
     transition: 'all 0.15s',
   });
 
@@ -66,27 +68,28 @@ export default function AdminLayout() {
         bottom: 0,
         zIndex: 1000,
         width: '240px',
-        background: '#111',
-        borderRight: '1px solid #222',
+        background: '#FFFFFF',
+        borderRight: '1px solid #EAE4D8',
         display: 'flex',
         flexDirection: 'column',
         padding: '0 0 2rem',
         transform: drawerOpen ? 'translateX(0)' : 'translateX(-100%)',
         transition: 'transform 0.25s ease',
         overflowY: 'auto',
+        boxShadow: drawerOpen ? '0 0 40px rgba(0,0,0,0.12)' : 'none',
       }
     : {
-        width: '220px',
+        width: '224px',
         flexShrink: 0,
-        background: '#111',
-        borderRight: '1px solid #222',
+        background: '#FFFFFF',
+        borderRight: '1px solid #EAE4D8',
         display: 'flex',
         flexDirection: 'column',
         padding: '0 0 2rem',
       };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0a', color: '#e8e0d4', fontFamily: 'var(--fs, sans-serif)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#F7F3EC', color: '#2A2118', fontFamily: 'var(--fs, sans-serif)' }}>
 
       {/* Mobile overlay */}
       {isMobile && drawerOpen && (
@@ -98,16 +101,16 @@ export default function AdminLayout() {
 
       {/* Sidebar / Drawer */}
       <aside style={sidebarStyle}>
-        <div style={{ padding: '1.5rem 1.25rem 1rem', borderBottom: '1px solid #222', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ padding: '1.5rem 1.25rem 1rem', borderBottom: '1px solid #EAE4D8', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <span style={{ fontFamily: 'var(--fd, serif)', fontSize: '1.3rem', letterSpacing: '0.15em', color: '#c9a96e', display: 'block' }}>JHAYRA</span>
-            <span style={{ fontSize: '0.65rem', letterSpacing: '0.2em', color: '#666', textTransform: 'uppercase', display: 'block', marginTop: '2px' }}>Admin Panel</span>
+            <span style={{ fontFamily: 'var(--fd, serif)', fontSize: '1.3rem', letterSpacing: '0.15em', color: '#B68D40', display: 'block' }}>JHAYRA</span>
+            <span style={{ fontSize: '0.65rem', letterSpacing: '0.2em', color: '#9A8A6A', textTransform: 'uppercase', display: 'block', marginTop: '2px' }}>Admin Panel</span>
           </div>
           {isMobile && (
             <button
               onClick={() => setDrawerOpen(false)}
               aria-label="Close menu"
-              style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '1.1rem', lineHeight: 1, padding: '0.3rem' }}
+              style={{ background: 'none', border: 'none', color: '#9A8A6A', cursor: 'pointer', fontSize: '1.1rem', lineHeight: 1, padding: '0.3rem' }}
             >
               ✕
             </button>
@@ -130,21 +133,21 @@ export default function AdminLayout() {
 
       {/* Main content */}
       <div style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.5rem', borderBottom: '1px solid #1a1a1a', background: '#0d0d0d' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1.5rem', borderBottom: '1px solid #EAE4D8', background: '#FFFFFF', position: 'sticky', top: 0, zIndex: 50 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             {isMobile && (
               <button
                 onClick={() => setDrawerOpen(true)}
                 aria-label="Open menu"
-                style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0.2rem' }}
+                style={{ background: 'none', border: 'none', color: '#7A6E60', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0.2rem' }}
               >
                 <HamburgerIcon />
               </button>
             )}
-            <span style={{ fontSize: '0.8rem', color: '#555' }}>{user?.email}</span>
+            <span style={{ fontSize: '0.8rem', color: '#9A8A6A' }}>{user?.email}</span>
           </div>
           <button
-            style={{ background: 'none', border: '1px solid #333', color: '#999', borderRadius: '6px', padding: '0.4rem 0.9rem', cursor: 'pointer', fontSize: '0.8rem' }}
+            style={{ background: '#FFFFFF', border: '1px solid #E6DFD2', color: '#6A5F52', borderRadius: '8px', padding: '0.45rem 1rem', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
             onClick={handleSignOut}
           >
             Sign out

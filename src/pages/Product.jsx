@@ -4,9 +4,12 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useScrollReveal } from '../components/ScrollReveal';
 import { useProduct } from '../hooks/useProducts';
+import { useProductConfig } from '../hooks/useProductConfig';
 import { PRODUCT_ART } from '../data/artwork';
-import { FRAME_SIZES, coloursForSize, getFrameOption, frameGeometry } from '../data/frameOptions';
+import { frameGeometry } from '../data/frameOptions';
+import { uploadCustomerArtwork } from '../lib/artwork';
 import FramedArt from '../components/FramedArt';
+import PhotoEditModal from '../components/PhotoEditModal';
 import SEO from '../components/SEO';
 
 /* Show "Read more" when description exceeds this many characters */
@@ -19,35 +22,77 @@ export default function Product() {
   const galleryRef = useRef(null);
   const { id } = useParams();
   const { product, loading } = useProduct(id || 'p001');
+  const { config } = useProductConfig(product?.dbId);
   const art = PRODUCT_ART[product?.id];
-  /* Prefer a real uploaded product photo (Supabase) over SVG artwork — keeps the
-     detail image consistent with the Shop grid, which also prioritises the photo. */
-  const realImg = (product?.images && product.images[0]) || product?.thumbnail || '';
 
-  const [selectedSize,        setSelectedSize]        = useState(FRAME_SIZES[0]);
-  const [selectedColour,      setSelectedColour]      = useState(coloursForSize(FRAME_SIZES[0])[0]);
+  const [selectedSize,        setSelectedSize]        = useState('');
+  const [selectedColour,      setSelectedColour]      = useState('');
+  const [selectedMaterial,    setSelectedMaterial]    = useState('');
   const [selectedOrientation, setSelectedOrientation] = useState('Vertical');
+  const [artIdx,      setArtIdx]      = useState(0);
   const [qty,         setQty]         = useState(1);
   const [shareOpen,   setShareOpen]   = useState(false);
   const [copied,      setCopied]      = useState(false);
   const [descExpanded,setDescExpanded]= useState(false);
 
-  const availableColours = coloursForSize(selectedSize);
-  const frameOption      = getFrameOption(selectedSize, selectedColour);
-  const price            = frameOption?.price ?? product?.price ?? 499;
+  /* Replace-image (#7) — customer uploads their own photo into this frame config */
+  const [rpPhoto,     setRpPhoto]     = useState(null);
+  const [rpMeta,      setRpMeta]      = useState(null);
+  const [rpTransform, setRpTransform] = useState({ zoom: 1, panX: 0, panY: 0 });
+  const [rpEditing,   setRpEditing]   = useState(false);
+  const [rpAdding,    setRpAdding]    = useState(false);
 
-  /* Frame geometry — single source of truth (portrait dims flipped for landscape) */
-  const { frameH, frameW, actualSize } = frameGeometry(selectedSize, selectedOrientation);
+  /* Keep selections valid as the per-product config loads */
+  useEffect(() => {
+    if (!config) return;
+    const dSize = config.sizes.find(s => s.isDefault)?.name || config.sizes[0]?.name || '';
+    const dCol  = config.colours.find(c => c.isDefault)?.name || config.colours[0]?.name || '';
+    const dMat  = config.materials.find(m => m.isDefault)?.name || config.materials[0]?.name || '';
+    setSelectedSize(prev => config.sizes.some(s => s.name === prev) ? prev : dSize);
+    setSelectedColour(prev => config.colours.some(c => c.name === prev) ? prev : dCol);
+    setSelectedMaterial(prev => config.materials.some(m => m.name === prev) ? prev : dMat);
+  }, [config]);
 
-  /* Clean artwork source — a real product photo (Supabase) or a studio SVG.
-     Either way the JHAYRA frame is rendered dynamically around it below. */
-  const useSvgArt = !realImg && !!art;
+  /* Resolve the current selection against the config */
+  const sizeCfg = config.sizes.find(s => s.name === selectedSize)     || config.sizes[0];
+  const colCfg  = config.colours.find(c => c.name === selectedColour) || config.colours[0];
+  const matCfg  = config.materials.find(m => m.name === selectedMaterial) || config.materials[0];
+  const price   = sizeCfg?.price ?? product?.price ?? 499;
 
-  /* When size changes, reset colour to first available for that size */
-  const handleSizeChange = (size) => {
-    setSelectedSize(size);
-    const cols = coloursForSize(size);
-    if (!cols.includes(selectedColour)) setSelectedColour(cols[0]);
+  /* Frame geometry — driven by the selected size's aspect ratio */
+  const { frameH, frameW, actualSize } = frameGeometry(
+    sizeCfg?.name || 'A4', selectedOrientation, undefined,
+    sizeCfg?.ratioW && sizeCfg?.ratioH ? { w: sizeCfg.ratioW, h: sizeCfg.ratioH } : undefined,
+  );
+
+  /* Artwork variants (#6) — a product can have multiple swipeable artworks.
+     Falls back to a single studio SVG when no photos are uploaded. */
+  const artworks   = product?.imageRows || [];
+  const currentArt = artworks.length ? artworks[Math.min(artIdx, artworks.length - 1)] : null;
+  const realImg    = currentArt?.url || product?.thumbnail || '';
+  const useSvgArt  = !realImg && !!art;
+  const photoEligible = !!product?.customer_photo_eligible;
+
+  /* Preview shows the customer's replacement photo when present, else the artwork */
+  const previewSrc       = rpPhoto || realImg || undefined;
+  const previewTransform = rpPhoto ? rpTransform : null;
+
+  const handleSizeChange = (size) => setSelectedSize(size);
+
+  const handleReplaceUpload = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const dataUrl = ev.target.result;
+      const img = new Image();
+      const done = (w, h) => { setRpPhoto(dataUrl); setRpMeta({ name: f.name || null, size: f.size || null, type: f.type || null, width: w, height: h }); setRpTransform({ zoom: 1, panX: 0, panY: 0 }); toast('Your photo is in the frame — adjust & add to cart'); };
+      img.onload  = () => done(img.naturalWidth, img.naturalHeight);
+      img.onerror = () => done(null, null);
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(f);
+    e.target.value = '';
   };
 
   /* 3D tilt on desktop */
@@ -85,13 +130,42 @@ export default function Product() {
     </div>
   );
 
+  /* Synthetic frame option built from the per-product config selection */
+  const buildFrameOption = () => ({
+    id: `${sizeCfg?.slug || 'a4'}_${colCfg?.slug || 'black'}_${matCfg?.slug || 'ps-moulding'}`,
+    size: selectedSize, dimensions: sizeCfg?.dimensions || actualSize,
+    material: selectedMaterial, colour: selectedColour, price,
+  });
+
   const handleAddToCart = () => {
-    if (!frameOption) return;
-    addToCartWithFrame(product.id, frameOption, product.name, qty, selectedOrientation, frameOption?.price ?? product.price);
+    if (!sizeCfg || !colCfg) return;
+    addToCartWithFrame(product.id, buildFrameOption(), product.name, qty, selectedOrientation, price, {
+      customization: { material: selectedMaterial, artworkVariant: currentArt?.title || currentArt?.id || null },
+    });
     toast('Added to cart ✓');
   };
 
-  const waMsg = `Hello JHAYRA! I'd like to order:\n• ${product.name}\n  Frame: ${selectedSize} · ${selectedOrientation} · ${actualSize} · ${selectedColour} PS Moulding\n  Qty: ${qty} — ₹${(price * qty).toLocaleString('en-IN')}\n\nPlease confirm.`;
+  /* #7 — add the customer's own photo in this exact frame configuration */
+  const handleAddReplacement = async () => {
+    if (!rpPhoto || rpAdding) return;
+    setRpAdding(true);
+    try {
+      const up = await uploadCustomerArtwork([{ dataUrl: rpPhoto, name: rpMeta?.name, width: rpMeta?.width, height: rpMeta?.height }]);
+      if (up.supabaseEnabled && up.uploaded < up.requested) { toast('Photo upload failed — please try again.'); return; }
+      addToCartWithFrame('custom', buildFrameOption(), `${product.name} — Your Photo`, qty, selectedOrientation, price, {
+        artworkPaths: up.paths,
+        customization: {
+          source: 'product-replace', productId: product.id, productName: product.name,
+          material: selectedMaterial, orientation: selectedOrientation,
+          transform: rpTransform, artworkMeta: up.meta,
+        },
+      });
+      toast('Your custom photo frame was added to cart ✓');
+      setRpPhoto(null); setRpMeta(null);
+    } finally { setRpAdding(false); }
+  };
+
+  const waMsg = `Hello JHAYRA! I'd like to order:\n• ${product.name}\n  Frame: ${selectedSize} · ${selectedOrientation} · ${actualSize} · ${selectedColour} ${selectedMaterial}\n  Qty: ${qty} — ₹${(price * qty).toLocaleString('en-IN')}\n\nPlease confirm.`;
 
   const productId  = id || product.id;
   const productUrl = `https://jhayra.com/product/${productId}`;
@@ -243,13 +317,17 @@ export default function Product() {
                     colour. fitContainer makes the frame scale to fit this box for
                     EVERY size (incl. 24×36) instead of overflowing at fixed px. */}
                 <FramedArt
-                  size={selectedSize}
+                  size={selectedSize || 'A4'}
                   orientation={selectedOrientation}
                   colour={selectedColour}
+                  hex={colCfg?.hex}
+                  ratioW={sizeCfg?.ratioW}
+                  ratioH={sizeCfg?.ratioH}
                   fitContainer
                   fit="cover"
-                  src={realImg || undefined}
-                  svg={useSvgArt ? art.art : undefined}
+                  src={previewSrc}
+                  transform={previewTransform}
+                  svg={!previewSrc && useSvgArt ? art.art : undefined}
                   background={useSvgArt ? `${art.fc}cc` : 'linear-gradient(150deg,#F7F3EC,#EDE7D9)'}
                   alt={product.name}
                   placeholder={
@@ -259,17 +337,36 @@ export default function Product() {
                     </div>
                   }
                 />
+                {rpPhoto && (
+                  <button onClick={()=>setRpEditing(true)} style={{position:'absolute',bottom:'.8rem',left:'50%',transform:'translateX(-50%)',display:'inline-flex',alignItems:'center',gap:'.35rem',background:'rgba(255,255,255,.92)',border:'1.5px solid var(--cream)',color:'var(--text)',fontSize:'.72rem',fontWeight:700,padding:'.4rem .9rem',borderRadius:'var(--pill)',cursor:'pointer',boxShadow:'0 2px 8px rgba(0,0,0,.12)'}}>
+                    <svg viewBox="0 0 24 24" style={{width:'13px',height:'13px',stroke:'currentColor',fill:'none',strokeWidth:2}}><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    Crop · Zoom · Reposition
+                  </button>
+                )}
               </div>
             </div>
+
+            {/* Artwork variants (#6) — swipe/click through multiple product artworks */}
+            {artworks.length > 1 && !rpPhoto && (
+              <div style={{display:'flex',gap:'.5rem',marginTop:'.75rem',flexWrap:'wrap',justifyContent:'center'}}>
+                {artworks.map((a, i) => (
+                  <button key={a.id || i} onClick={()=>setArtIdx(i)} aria-label={`Artwork ${i+1}`}
+                    style={{width:'56px',height:'56px',borderRadius:'.5rem',overflow:'hidden',cursor:'pointer',padding:0,background:'#fff',
+                      border:`2px solid ${i===artIdx?'var(--gold)':'var(--cream)'}`,flexShrink:0}}>
+                    <img src={a.url} alt={a.alt_text||a.title||`Artwork ${i+1}`} loading="lazy" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} />
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Colour swatches — live frame-colour preview of THIS artwork.
                 Works for real photos and studio SVG alike (hidden on mobile via
                 CSS .gallery-thumbs{display:none}). */}
-            <div className="gallery-thumbs" style={{display:'flex',gap:'.5rem',marginTop:'.75rem'}}>
-              {availableColours.map(col => {
-                const isActive  = col === selectedColour;
+            <div className="gallery-thumbs" style={{display:'flex',gap:'.5rem',marginTop:'.75rem',flexWrap:'wrap'}}>
+              {config.colours.map(col => {
+                const isActive = col.name === selectedColour;
                 return (
-                  <div key={col} onClick={()=>setSelectedColour(col)} style={{
+                  <div key={col.slug} onClick={()=>setSelectedColour(col.name)} style={{
                     width:'64px',height:'64px',borderRadius:'.5rem',cursor:'pointer',
                     background:'var(--bg)',
                     border:`2px solid ${isActive?'var(--gold)':'var(--cream)'}`,
@@ -280,7 +377,8 @@ export default function Product() {
                     <FramedArt
                       size="A4"
                       orientation="Vertical"
-                      colour={col}
+                      colour={col.name}
+                      hex={col.hex}
                       fit="cover"
                       baseH={46}
                       gloss={false}
@@ -289,7 +387,7 @@ export default function Product() {
                       background={useSvgArt ? `${art.fc}cc` : '#EDE7D9'}
                       style={{boxShadow:'0 3px 10px rgba(0,0,0,.18)'}}
                     />
-                    <div style={{position:'absolute',bottom:'2px',left:0,right:0,textAlign:'center',fontSize:'.42rem',color:isActive?'var(--gold)':'var(--muted)',letterSpacing:'.06em',fontWeight:700,textTransform:'uppercase'}}>{col}</div>
+                    <div style={{position:'absolute',bottom:'2px',left:0,right:0,textAlign:'center',fontSize:'.42rem',color:isActive?'var(--gold)':'var(--muted)',letterSpacing:'.06em',fontWeight:700,textTransform:'uppercase'}}>{col.name}</div>
                   </div>
                 );
               })}
@@ -362,23 +460,39 @@ export default function Product() {
               <span className="price-now" style={{fontSize:'1.55rem',fontFamily:'var(--fd)',fontWeight:700}}>
                 ₹{price.toLocaleString('en-IN')}
               </span>
-              <span style={{fontSize:'.8rem',color:'var(--muted)'}}>PS Moulding · Free Delivery</span>
+              <span style={{fontSize:'.8rem',color:'var(--muted)'}}>{selectedMaterial || 'PS Moulding'} · Free Delivery</span>
             </div>
 
-            {/* Frame Size */}
+            {/* Frame Size — per-product options with per-size pricing */}
             <div>
               <div style={optLabel}>
                 Frame Size: <span style={{color:'var(--text)',fontWeight:500,textTransform:'none',letterSpacing:0}}>{selectedSize}</span>
               </div>
               <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
-                {FRAME_SIZES.map(s => (
-                  <button key={s} onClick={()=>handleSizeChange(s)} style={optBtn(selectedSize===s)}>{s}</button>
+                {config.sizes.map(s => (
+                  <button key={s.slug} onClick={()=>handleSizeChange(s.name)} style={optBtn(selectedSize===s.name)}>
+                    {s.name} <span style={{opacity:.7,fontSize:'.72rem'}}>· ₹{s.price.toLocaleString('en-IN')}</span>
+                  </button>
                 ))}
               </div>
               <div style={{fontSize:'.72rem',color:'var(--muted)',marginTop:'.3rem'}}>
                 Actual size: {actualSize}
               </div>
             </div>
+
+            {/* Frame Material — per-product options (#5) */}
+            {config.materials.length > 0 && (
+              <div>
+                <div style={optLabel}>
+                  Material: <span style={{color:'var(--text)',fontWeight:500,textTransform:'none',letterSpacing:0}}>{selectedMaterial}</span>
+                </div>
+                <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
+                  {config.materials.map(m => (
+                    <button key={m.slug} onClick={()=>setSelectedMaterial(m.name)} style={optBtn(selectedMaterial===m.name)}>{m.name}</button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Orientation */}
             <div>
@@ -402,17 +516,49 @@ export default function Product() {
               </div>
             </div>
 
-            {/* Frame Colour */}
+            {/* Frame Colour — per-product options with real colour swatch */}
             <div>
               <div style={optLabel}>
                 Frame Colour: <span style={{color:'var(--text)',fontWeight:500,textTransform:'none',letterSpacing:0}}>{selectedColour}</span>
               </div>
               <div style={{display:'flex',gap:'.4rem',flexWrap:'wrap'}}>
-                {availableColours.map(c => (
-                  <button key={c} onClick={()=>setSelectedColour(c)} style={optBtn(selectedColour===c)}>{c}</button>
+                {config.colours.map(c => (
+                  <button key={c.slug} onClick={()=>setSelectedColour(c.name)}
+                    style={{...optBtn(selectedColour===c.name),display:'flex',alignItems:'center',gap:'.4rem'}}>
+                    <span style={{width:'12px',height:'12px',borderRadius:'50%',background:c.hex,border:'1px solid rgba(0,0,0,.15)',flexShrink:0}} />
+                    {c.name}
+                  </button>
                 ))}
               </div>
             </div>
+
+            {/* Replace Image (#7) — customer's own photo, keeping this frame config */}
+            {photoEligible && (
+              <div style={{border:'1.5px dashed var(--cream)',borderRadius:'.6rem',padding:'.75rem .9rem',background:'var(--bg)'}}>
+                {!rpPhoto ? (
+                  <label style={{display:'flex',alignItems:'center',gap:'.6rem',cursor:'pointer'}}>
+                    <input type="file" accept="image/*" style={{display:'none'}} onChange={handleReplaceUpload} />
+                    <span style={{width:'34px',height:'34px',borderRadius:'50%',background:'var(--gold)',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                      <svg viewBox="0 0 24 24" style={{width:'17px',height:'17px',stroke:'#fff',fill:'none',strokeWidth:2}}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </span>
+                    <span>
+                      <span style={{display:'block',fontWeight:700,fontSize:'.85rem',color:'var(--text)'}}>Replace with your photo</span>
+                      <span style={{fontSize:'.72rem',color:'var(--muted)'}}>Same frame · size · colour — we fit your photo in.</span>
+                    </span>
+                  </label>
+                ) : (
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'.6rem',flexWrap:'wrap'}}>
+                    <span style={{fontSize:'.82rem',color:'#22873A',fontWeight:600,display:'inline-flex',alignItems:'center',gap:'.35rem'}}>
+                      ✓ Your photo is in the frame
+                    </span>
+                    <div style={{display:'flex',gap:'.4rem'}}>
+                      <button onClick={()=>setRpEditing(true)} style={{...optBtn(false),fontSize:'.75rem'}}>Adjust</button>
+                      <button onClick={()=>{setRpPhoto(null);setRpMeta(null);}} style={{...optBtn(false),fontSize:'.75rem'}}>Use original</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Qty + Add to Cart */}
             <div style={{display:'flex',gap:'.6rem',alignItems:'center',flexWrap:'wrap'}}>
@@ -421,9 +567,15 @@ export default function Product() {
                 <span style={{minWidth:'24px',textAlign:'center',fontWeight:600}}>{qty}</span>
                 <button onClick={()=>setQty(q=>q+1)} style={{width:'32px',height:'32px',border:'1.5px solid var(--cream)',borderRadius:'.4rem',background:'#fff',cursor:'pointer',fontSize:'1rem'}}>+</button>
               </div>
-              <button className="btn btn-gold btn-lg" style={{flex:1}} onClick={handleAddToCart}>
-                Add to Cart · ₹{(price * qty).toLocaleString('en-IN')}
-              </button>
+              {rpPhoto ? (
+                <button className="btn btn-gold btn-lg" style={{flex:1,opacity:rpAdding?0.7:1}} disabled={rpAdding} onClick={handleAddReplacement}>
+                  {rpAdding ? 'Adding…' : `Add My Photo Frame · ₹${(price * qty).toLocaleString('en-IN')}`}
+                </button>
+              ) : (
+                <button className="btn btn-gold btn-lg" style={{flex:1}} onClick={handleAddToCart}>
+                  Add to Cart · ₹{(price * qty).toLocaleString('en-IN')}
+                </button>
+              )}
             </div>
 
             {/* Replacement reassurance */}
@@ -530,7 +682,7 @@ export default function Product() {
               </div>
               <div style={{display:'flex',gap:'.5rem',alignItems:'center'}}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-                Handcrafted to order · PS Moulding
+                Handcrafted to order · {selectedMaterial || 'PS Moulding'}
               </div>
             </div>
 
@@ -539,6 +691,16 @@ export default function Product() {
 
         </div>
       </div>
+
+      {rpEditing && rpPhoto && (
+        <PhotoEditModal
+          photo={rpPhoto}
+          slotLabel="Your Photo"
+          initial={rpTransform}
+          onConfirm={(t)=>setRpTransform(t)}
+          onClose={()=>setRpEditing(false)}
+        />
+      )}
     </div>
   );
 }

@@ -36,6 +36,7 @@ import Dashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/Products';
 import ProductForm from './pages/admin/ProductForm';
 import AdminCategories from './pages/admin/Categories';
+import AdminCatalog from './pages/admin/Catalog';
 import AdminHomepage from './pages/admin/HomepageCollections';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminLayout from './components/admin/AdminLayout';
@@ -143,6 +144,7 @@ export default function App() {
                   <Route path="products" element={<AdminProducts />} />
                   <Route path="products/:id" element={<ProductForm />} />
                   <Route path="categories" element={<AdminCategories />} />
+                  <Route path="catalog" element={<AdminCatalog />} />
                   <Route path="homepage" element={<AdminHomepage />} />
                 </Route>
 

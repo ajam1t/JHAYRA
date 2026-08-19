@@ -2,15 +2,17 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
+import { T } from './adminUI';
+
 const s = {
-  heading: { fontFamily: 'var(--fd, serif)', fontSize: '1.5rem', color: '#c9a96e', marginBottom: '1.5rem' },
+  heading: { fontFamily: 'var(--fd, serif)', fontSize: '1.6rem', color: T.text, marginBottom: '1.5rem' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' },
-  card: { background: '#111', border: '1px solid #1e1e1e', borderRadius: '10px', padding: '1.25rem 1.5rem' },
-  stat: { fontSize: '2rem', fontWeight: '700', color: '#c9a96e', display: 'block' },
-  statLabel: { fontSize: '0.75rem', color: '#666', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: '4px', display: 'block' },
-  section: { background: '#111', border: '1px solid #1e1e1e', borderRadius: '10px', padding: '1.25rem 1.5rem', marginBottom: '1rem' },
-  secTitle: { fontSize: '0.8rem', letterSpacing: '0.12em', color: '#888', textTransform: 'uppercase', marginBottom: '1rem' },
-  linkBtn: { display: 'inline-block', padding: '0.5rem 1rem', background: 'rgba(201,169,110,0.1)', border: '1px solid rgba(201,169,110,0.2)', borderRadius: '6px', color: '#c9a96e', textDecoration: 'none', fontSize: '0.82rem', marginRight: '0.5rem', marginTop: '0.5rem' },
+  card: { background: T.surface, border: `1px solid ${T.border}`, borderRadius: '14px', padding: '1.25rem 1.5rem', boxShadow: T.shadow },
+  stat: { fontFamily: 'var(--fd, serif)', fontSize: '2.1rem', fontWeight: '700', color: T.gold, display: 'block' },
+  statLabel: { fontSize: '0.72rem', color: T.muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: '4px', display: 'block' },
+  section: { background: T.surface, border: `1px solid ${T.border}`, borderRadius: '14px', padding: '1.25rem 1.5rem', marginBottom: '1rem', boxShadow: T.shadow },
+  secTitle: { fontSize: '0.72rem', letterSpacing: '0.12em', color: T.muted, textTransform: 'uppercase', marginBottom: '1rem', fontWeight: 700 },
+  linkBtn: { display: 'inline-block', padding: '0.55rem 1.1rem', background: T.goldSoft, border: `1px solid ${T.border2}`, borderRadius: '9px', color: T.goldDeep, textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600, marginRight: '0.5rem', marginTop: '0.5rem' },
 };
 
 export default function Dashboard() {

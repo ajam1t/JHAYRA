@@ -6,8 +6,10 @@ import { JHAYRA_PRODUCTS } from '../data/products';
 // so ProductCard and all other components work without changes
 function normalize(p) {
   const imgs = [...(p.product_images || [])].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+  const activeImgs = imgs.filter(i => i.active !== false);
   return {
     ...p,
+    dbId: p.id,                       // Supabase UUID (id below is overwritten with legacy_id)
     id: p.legacy_id || p.id,
     category: p.category_slug,
     bestSeller: p.is_bestseller,
@@ -16,9 +18,10 @@ function normalize(p) {
     featured: p.homepage_visible,
     stockStatus: p.active ? 'in-stock' : 'out-of-stock',
     tags: p.tags || [],
-    images: imgs.map(i => i.url),
-    // use first image if none is marked primary (newly uploaded images default to is_primary=false)
-    thumbnail: imgs.find(i => i.is_primary)?.url || imgs[0]?.url || '',
+    imageRows: activeImgs,            // full rows (url, alt_text, title, is_primary, active) — artwork variants
+    images: activeImgs.map(i => i.url),
+    // primary first, else first image (newly uploaded images default to is_primary=false)
+    thumbnail: activeImgs.find(i => i.is_primary)?.url || activeImgs[0]?.url || '',
   };
 }
 

@@ -36,6 +36,9 @@ export default function FramedArt({
   size = 'A4',
   orientation = 'Vertical',
   colour = 'Black',
+  hex: hexProp,
+  ratioW,
+  ratioH,
   src,
   svg,
   children,
@@ -50,8 +53,8 @@ export default function FramedArt({
   className = '',
   style = {},
 }) {
-  const geo    = frameGeometry(size, orientation, baseH);
-  const hex    = FRAME_COLOUR_HEX[colour] || FRAME_COLOUR_HEX.Black;
+  const geo    = frameGeometry(size, orientation, baseH, ratioW && ratioH ? { w: ratioW, h: ratioH } : undefined);
+  const hex    = hexProp || FRAME_COLOUR_HEX[colour] || FRAME_COLOUR_HEX.Black;
   const shadow = FRAME_SHADOW[colour] || FRAME_SHADOW.Black;
 
   /* Outer physical frame sizing.

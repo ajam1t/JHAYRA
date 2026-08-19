@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { T } from './adminUI';
 
 // Ensure admin login is never indexed by search engines
 function AdminNoIndex() {
@@ -12,15 +13,15 @@ function AdminNoIndex() {
 }
 
 const s = {
-  page: { minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--fs, sans-serif)' },
-  card: { background: '#111', border: '1px solid #1e1e1e', borderRadius: '12px', padding: '2.5rem 2rem', width: '100%', maxWidth: '380px' },
+  page: { minHeight: '100vh', background: T.text, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--fs, sans-serif)' },
+  card: { background: T.surface, border: '1px solid #EAE4D8', borderRadius: '12px', padding: '2.5rem 2rem', width: '100%', maxWidth: '380px' },
   logo: { textAlign: 'center', marginBottom: '2rem' },
-  logoText: { fontFamily: 'var(--fd, serif)', fontSize: '1.8rem', letterSpacing: '0.2em', color: '#c9a96e', display: 'block' },
-  logoSub: { fontSize: '0.7rem', letterSpacing: '0.25em', color: '#555', textTransform: 'uppercase', display: 'block', marginTop: '4px' },
-  label: { display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', color: '#888', marginBottom: '0.4rem', textTransform: 'uppercase' },
-  input: { width: '100%', background: '#0d0d0d', border: '1px solid #252525', borderRadius: '6px', color: '#e8e0d4', fontSize: '0.9rem', padding: '0.65rem 0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '1rem' },
-  btn: { width: '100%', background: '#c9a96e', color: '#0a0a0a', border: 'none', borderRadius: '6px', padding: '0.8rem', fontSize: '0.9rem', fontWeight: '600', letterSpacing: '0.08em', cursor: 'pointer', marginTop: '0.5rem' },
-  err: { background: 'rgba(220,50,50,0.1)', border: '1px solid rgba(220,50,50,0.25)', borderRadius: '6px', color: '#e07070', fontSize: '0.82rem', padding: '0.6rem 0.8rem', marginBottom: '1rem' },
+  logoText: { fontFamily: 'var(--fd, serif)', fontSize: '1.8rem', letterSpacing: '0.2em', color: T.gold, display: 'block' },
+  logoSub: { fontSize: '0.7rem', letterSpacing: '0.25em', color: T.muted2, textTransform: 'uppercase', display: 'block', marginTop: '4px' },
+  label: { display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', color: T.muted, marginBottom: '0.4rem', textTransform: 'uppercase' },
+  input: { width: '100%', background: T.surface, border: '1px solid #E6DFD2', borderRadius: '6px', color: T.text, fontSize: '0.9rem', padding: '0.65rem 0.9rem', outline: 'none', boxSizing: 'border-box', marginBottom: '1rem' },
+  btn: { width: '100%', background: T.gold, color: '#fff', border: 'none', borderRadius: '6px', padding: '0.8rem', fontSize: '0.9rem', fontWeight: '600', letterSpacing: '0.08em', cursor: 'pointer', marginTop: '0.5rem' },
+  err: { background: 'rgba(220,50,50,0.1)', border: '1px solid rgba(220,50,50,0.25)', borderRadius: '6px', color: T.danger, fontSize: '0.82rem', padding: '0.6rem 0.8rem', marginBottom: '1rem' },
 };
 
 export default function AdminLogin() {

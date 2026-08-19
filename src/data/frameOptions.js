@@ -119,15 +119,18 @@ export const FRAME_SHADOW = {
  *                              cards/thumbnails); omit to use per-size scaling.
  * @returns {{frameW:number, frameH:number, borderWidth:number, dims:{w:number,h:number}, isPortrait:boolean, actualSize:string}}
  */
-export function frameGeometry(size, orientation = 'Vertical', baseH) {
-  const dims       = SIZE_DIMS[size] || SIZE_DIMS['18 × 24'];
+export function frameGeometry(size, orientation = 'Vertical', baseH, ratioOverride) {
+  // ratioOverride lets admin-added sizes (unknown to SIZE_DIMS) render correctly
+  // from their DB aspect ratio, with a size-scaled height derived from the ratio.
+  const dims       = ratioOverride || SIZE_DIMS[size] || SIZE_DIMS['18 × 24'];
   const isPortrait = orientation !== 'Horizontal';
-  const scaleH     = baseH || FRAME_SCALE_H[size] || 320;
+  const derivedH   = ratioOverride ? Math.round(320 + Math.min(240, Math.max(0, (dims.h / Math.max(dims.w, 1) - 1) * 260))) : (FRAME_SCALE_H[size] || 320);
+  const scaleH     = baseH || derivedH;
   const scaleW     = Math.round(scaleH * dims.w / dims.h);
   return {
     frameH:      isPortrait ? scaleH : scaleW,
     frameW:      isPortrait ? scaleW : scaleH,
-    borderWidth: FRAME_BW[size] || 14,
+    borderWidth: FRAME_BW[size] || 16,
     dims,
     isPortrait,
     actualSize:  isPortrait ? `${dims.w} × ${dims.h} inches` : `${dims.h} × ${dims.w} inches`,

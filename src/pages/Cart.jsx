@@ -52,7 +52,7 @@ export default function Cart() {
             ) : (
               cartItems.map(({product, id, qty, price, meta}) => {
               const art = PRODUCT_ART[product.id];
-              const frameLabel = meta?.size ? `${meta.size} · ${meta.colour} · PS Moulding` : product.category;
+              const frameLabel = meta?.size ? `${meta.size} · ${meta.colour} · ${meta.material || 'PS Moulding'}` : product.category;
               return (
                 <div key={id} className="cart-item">
                   <div className="cart-item-img" style={{overflow:'hidden'}}>
