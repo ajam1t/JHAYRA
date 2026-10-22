@@ -483,7 +483,7 @@ function RoomTeaser({ products }) {
             <Icon name="sofa" size={18} /> Try it in your room
           </Link>
         </div>
-        <RoomScene wall={wall} frames={[{ key: 'a', src: p.thumbnail, wIn: s[1], hIn: s[2], colour: '#1C1C1C', x: 0.5, y: 0.36 }]} />
+        <RoomScene wall={wall} frames={[{ key: 'a', src: p.thumbnail, wIn: s[1], hIn: s[2], colour: '#1C1C1C', x: 0.5 }]} />
       </div>
     </section>
   );

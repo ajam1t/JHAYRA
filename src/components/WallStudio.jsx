@@ -218,7 +218,7 @@ export default function WallStudio({ src, children, wIn, hIn, colour, compact = 
   const [wall, setWall] = useState(WALLS[0]);
   const [furniture, setFurniture] = useState('sofa');
   const [photo, setPhoto] = useState(null);
-  const [pos, setPos] = useState({ x: 0.5, y: 0.38 });
+  const [pos, setPos] = useState({ x: 0.5, y: null });
   const [scale, setScale] = useState(1);
   const [cam, setCam] = useState(false);
   const file = useRef(null);
@@ -250,7 +250,7 @@ export default function WallStudio({ src, children, wIn, hIn, colour, compact = 
         wall={wall}
         furniture={furniture}
         photo={mode === 'mine' ? photo : null}
-        frames={[{ key: 'f', src, children, wIn, hIn, colour, x: pos.x, y: pos.y, scale: mode === 'mine' ? scale : 1 }]}
+        frames={[{ key: 'f', src, children, wIn, hIn, colour, x: pos.x, y: pos.y ?? (mode === 'mine' ? 0.4 : undefined), scale: mode === 'mine' ? scale : 1 }]}
         onFrameDrag={(_, x, y) => setPos({ x, y })}
       />
       <div className="studio-controls">

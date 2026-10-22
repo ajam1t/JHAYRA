@@ -122,11 +122,15 @@ export default function RoomScene({ frames = [], wall = WALLS[0], furniture = 's
       )}
       {frames.map((fr) => {
         const wPx = fr.wIn * ppi * (fr.scale || 1);
+        // Auto-hang: bottom edge ~9in above the furniture (or eye level on an empty wall).
+        const H = (W * 11) / 16;
+        const top = { sofa: 0.558, bed: 0.554, console: 0.316 }[f.id];
+        const autoY = top ? top - ((9 + fr.hIn / 2) * ppi * (fr.scale || 1)) / H : 0.42;
         return (
           <div
             key={fr.key}
             className={`room-frame ${onFrameDrag ? 'draggable' : ''}`}
-            style={{ width: `${wPx}px`, left: `${(fr.x ?? 0.5) * 100}%`, top: `${(fr.y ?? 0.36) * 100}%` }}
+            style={{ width: `${wPx}px`, left: `${(fr.x ?? 0.5) * 100}%`, top: `${Math.max(0.06, fr.y ?? autoY) * 100}%` }}
             onPointerDown={down(fr.key)}
           >
             <Frame src={fr.src} ratio={{ w: fr.wIn, h: fr.hIn }} colour={fr.colour} sizes={`${Math.round(wPx)}px`} thickness={fr.thickness || 4.2}>

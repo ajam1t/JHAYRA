@@ -167,9 +167,23 @@ img.is-loaded {
 }
 .logo {
   display: inline-flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   line-height: 1;
   justify-self: start;
+}
+.logo-mark {
+  height: 40px;
+  width: auto;
+  filter: drop-shadow(0 2px 4px rgba(138, 103, 38, 0.25));
+  transition: transform 0.6s var(--ease-spring);
+}
+.logo:hover .logo-mark {
+  transform: rotate(-6deg) scale(1.06);
+}
+.logo-words {
+  display: inline-flex;
+  flex-direction: column;
 }
 .logo b {
   font-family: var(--fd);
@@ -240,7 +254,12 @@ img.is-loaded {
   .header .logo {
     justify-self: center;
     grid-column: 2;
-    align-items: center;
+  }
+  .header .logo-mark {
+    height: 34px;
+  }
+  .header .logo small {
+    display: none;
   }
   .header-menu {
     grid-column: 1;

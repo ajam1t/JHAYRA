@@ -22,8 +22,11 @@ const NAV = [
 function Logo() {
   return (
     <Link to="/" className="logo" aria-label="JHAYRA home">
-      <b>JHAYRA</b>
-      <small>{SITE.tagline}</small>
+      <img className="logo-mark" src="/logo-mark.webp" alt="" width="44" height="40" />
+      <span className="logo-words">
+        <b>JHAYRA</b>
+        <small>{SITE.tagline}</small>
+      </span>
     </Link>
   );
 }

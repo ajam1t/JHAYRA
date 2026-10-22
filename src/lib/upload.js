@@ -53,7 +53,18 @@ export function readPhoto(file) {
     const img = new Image();
     img.onload = () => {
       const px = img.naturalWidth * img.naturalHeight;
+      // Small JPEG kept with the cart so previews survive a page reload.
+      let thumb = '';
+      try {
+        const k = Math.min(1, 360 / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth * k);
+        c.height = Math.round(img.naturalHeight * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        thumb = c.toDataURL('image/jpeg', 0.72);
+      } catch {}
       resolve({
+        thumb,
         file,
         url,
         name: file.name,

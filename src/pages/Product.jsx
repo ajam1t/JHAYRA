@@ -179,7 +179,7 @@ export default function Product() {
             productId: 'custom',
             name: `${product.name} — Your Photo`,
             image: product.thumbnail,
-            preview: photo.url,
+            preview: photo.thumb || photo.url,
             price,
             category: 'personalized',
             colourHex: colour.hex,
