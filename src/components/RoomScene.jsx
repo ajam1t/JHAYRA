@@ -68,7 +68,7 @@ function Sofa({ id }) {
  * known real width, so every frame is drawn at (inches × pixels-per-inch).
  * `frames`: [{ key, src, children, wIn, hIn, colour, x (0–1), y (0–1) }]
  */
-export default function RoomScene({ frames = [], wall = WALLS[0], furniture = 'sofa', photo, onFrameDrag, children, className = '' }) {
+export default function RoomScene({ frames = [], wall = WALLS[0], furniture = 'sofa', photo, onFrameDrag, onFrameClick, selected, groupHeightIn, children, className = '' }) {
   const ref = useRef(null);
   const [W, setW] = useState(800);
   const drag = useRef(null);
@@ -125,12 +125,16 @@ export default function RoomScene({ frames = [], wall = WALLS[0], furniture = 's
         // Auto-hang: bottom edge ~9in above the furniture (or eye level on an empty wall).
         const H = (W * 11) / 16;
         const top = { sofa: 0.558, bed: 0.554, console: 0.316 }[f.id];
-        const autoY = top ? top - ((9 + fr.hIn / 2) * ppi * (fr.scale || 1)) / H : 0.42;
+        // Groups (gallery walls) hang as one block; dxIn/dyIn are inches from the block centre.
+        const blockH = groupHeightIn ?? fr.hIn;
+        const autoY = (top ? top - ((9 + blockH / 2) * ppi * (fr.scale || 1)) / H : 0.42) + ((fr.dyIn || 0) * ppi) / H;
+        const autoX = 0.5 + ((fr.dxIn || 0) * ppi) / W;
         return (
           <div
             key={fr.key}
-            className={`room-frame ${onFrameDrag ? 'draggable' : ''}`}
-            style={{ width: `${wPx}px`, left: `${(fr.x ?? 0.5) * 100}%`, top: `${Math.max(0.06, fr.y ?? autoY) * 100}%` }}
+            className={`room-frame ${onFrameDrag ? 'draggable' : ''} ${selected === fr.key ? 'selected' : ''}`}
+            style={{ width: `${wPx}px`, left: `${(fr.x ?? autoX) * 100}%`, top: `${Math.max(0.06, fr.y ?? autoY) * 100}%` }}
+            onClick={() => onFrameClick?.(fr.key)}
             onPointerDown={down(fr.key)}
           >
             <Frame src={fr.src} ratio={{ w: fr.wIn, h: fr.hIn }} colour={fr.colour} sizes={`${Math.round(wPx)}px`} thickness={fr.thickness || 4.2}>

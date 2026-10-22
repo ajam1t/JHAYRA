@@ -601,3 +601,16 @@ p {
     transform: none;
   }
 }
+
+/* Static content written by scripts/prerender.mjs; replaced when the app starts. */
+.prerender {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 120px 20px;
+  color: var(--muted);
+}
+.prerender h1 {
+  font-size: clamp(32px, 5vw, 56px);
+  color: var(--ink);
+  margin-bottom: 16px;
+}
