@@ -1,0 +1,296 @@
+/* ── Template canvas ────────────────────────────────────────────────────── */
+.tc {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--tint) 55%, transparent), transparent 70%),
+    var(--bg);
+  color: #2a2018;
+  padding: 7% 7% 5%;
+  gap: 4%;
+  container-type: inline-size;
+  overflow: hidden;
+}
+.tc-dark {
+  color: #efe9ff;
+  background:
+    radial-gradient(80% 60% at 70% 10%, rgba(144, 144, 208, 0.35), transparent 70%),
+    radial-gradient(60% 50% at 10% 90%, rgba(80, 60, 140, 0.4), transparent 70%),
+    var(--bg);
+}
+.tc-photos {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  gap: 2.4cqw;
+}
+.tc-textonly .tc-text {
+  flex: 1;
+  justify-content: center;
+}
+.tc-slot {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.2cqw;
+  background: color-mix(in srgb, var(--tint) 70%, #fff);
+  box-shadow: 0 0.6cqw 1.6cqw rgba(0, 0, 0, 0.12);
+}
+.tc-dark .tc-slot {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 0.3cqw rgba(255, 255, 255, 0.18);
+}
+.tc-slot.active {
+  outline: 0.8cqw solid var(--gold);
+  outline-offset: -0.8cqw;
+  z-index: 2;
+}
+.tc-slot-hit {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+}
+.tc-slot-hit:hover {
+  background: rgba(182, 141, 64, 0.12);
+}
+.tc-empty {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1.5cqw;
+  color: color-mix(in srgb, var(--acc) 80%, #000);
+  font-size: clamp(9px, 3.2cqw, 14px);
+  font-weight: 600;
+  text-align: center;
+  padding: 4%;
+  border: 0.35cqw dashed color-mix(in srgb, var(--acc) 50%, transparent);
+  border-radius: inherit;
+  transition: background 0.2s;
+}
+button.tc-empty:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+.tc-dark .tc-empty {
+  color: #d6d0ff;
+}
+.tc-ph {
+  border: 0;
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--c1) 70%, #fff) 0%, color-mix(in srgb, var(--c2) 60%, #fff) 100%);
+  opacity: calc(0.75 + var(--n) * 0.03);
+}
+.tc-ph::after {
+  /* abstract "people" silhouette so previews read as photos */
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 46%;
+  height: 62%;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 255, 255, 0.55) 0 18%, transparent 19%),
+    radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, 0.45) 0 52%, transparent 53%);
+}
+.tc-text {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.4cqw;
+}
+.tc-hero {
+  font-family: var(--fd);
+  font-size: clamp(10px, 8cqw, 46px);
+  line-height: 1.05;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  font-variation-settings: 'SOFT' 100, 'opsz' 72;
+}
+.tc-textonly .tc-hero {
+  font-size: clamp(12px, 10cqw, 60px);
+  font-style: italic;
+}
+.tc-sub {
+  font-size: clamp(6px, 3.1cqw, 15px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--acc) 85%, #000);
+  font-weight: 600;
+}
+.tc-dark .tc-sub {
+  color: #cfc8ff;
+}
+.tc-msg {
+  font-family: var(--fd);
+  font-style: italic;
+  font-size: clamp(7px, 4cqw, 20px);
+  opacity: 0.85;
+  max-width: 90%;
+}
+.tc-attr {
+  font-size: clamp(6px, 2.8cqw, 13px);
+  opacity: 0.7;
+}
+.tc-brand {
+  font-family: var(--fd);
+  font-size: clamp(5px, 2cqw, 10px);
+  letter-spacing: 0.4em;
+  opacity: 0.4;
+  margin-top: 1cqw;
+}
+.tc-mini .tc-text {
+  gap: 0.8cqw;
+}
+.tc-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: var(--acc);
+}
+.tc-border {
+  position: absolute;
+  inset: 3.2%;
+  border: 0.4cqw solid color-mix(in srgb, var(--acc) 70%, transparent);
+}
+.tc-border.double {
+  box-shadow: inset 0 0 0 1cqw transparent, inset 0 0 0 1.3cqw color-mix(in srgb, var(--acc) 50%, transparent);
+}
+.tc-corner {
+  position: absolute;
+  width: 14%;
+  height: auto;
+  opacity: 0.8;
+}
+.tc-corner.tl {
+  top: 1.6%;
+  left: 1.6%;
+}
+.tc-corner.tr {
+  top: 1.6%;
+  right: 1.6%;
+  transform: scaleX(-1);
+}
+.tc-corner.bl {
+  bottom: 1.6%;
+  left: 1.6%;
+  transform: scaleY(-1);
+}
+.tc-corner.br {
+  bottom: 1.6%;
+  right: 1.6%;
+  transform: scale(-1, -1);
+}
+.tc-moon {
+  position: absolute;
+  top: 2%;
+  right: 4%;
+  width: 22%;
+  color: var(--acc);
+}
+.tc-glyph {
+  position: absolute;
+  font-size: clamp(8px, 5cqw, 26px);
+  opacity: 0.55;
+}
+.tc-glyph.g1 {
+  top: 2.2%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.tc-glyph.g2 {
+  bottom: 1.6%;
+  left: 8%;
+  font-size: clamp(6px, 3.4cqw, 18px);
+}
+.tc-cal {
+  width: 74%;
+  margin-bottom: 1.4cqw;
+}
+.tc-cal-head {
+  font-family: var(--fd);
+  font-size: clamp(7px, 3.6cqw, 18px);
+  margin-bottom: 1cqw;
+}
+.tc-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5cqw;
+  font-size: clamp(5px, 2.3cqw, 11px);
+}
+.tc-cal-grid b {
+  opacity: 0.55;
+  font-weight: 600;
+}
+.tc-cal-grid span {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+.tc-cal-grid span.hl {
+  background: var(--acc);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ── Pan/zoom photo ─────────────────────────────────────────────────────── */
+.panzoom {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+}
+.panzoom.editable {
+  cursor: grab;
+}
+.panzoom.editable:active {
+  cursor: grabbing;
+}
+.panzoom img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.zoom-controls button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  display: grid;
+  place-items: center;
+  background: var(--line-2);
+}
+.zoom-controls button.reset {
+  width: auto;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.zoom-controls input {
+  flex: 1;
+  accent-color: var(--gold);
+}
