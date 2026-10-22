@@ -2149,3 +2149,11 @@
   color: var(--gold-deep);
   background: radial-gradient(circle, #fbf3e2, #ecdcbc);
 }
+.planner > *,
+.pdp > *,
+.editor > *,
+.checkout > *,
+.cart-page > *,
+.insp > * {
+  min-width: 0;
+}

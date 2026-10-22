@@ -128,17 +128,8 @@ img.is-loaded {
     transform: translateX(-50%);
   }
 }
-@media (min-width: 1100px) {
-  .announce {
-    justify-content: center;
-  }
-  .announce-track {
-    animation: none;
-    padding: 0;
-  }
-  .announce-track .dup {
-    display: none;
-  }
+.announce:hover .announce-track {
+  animation-play-state: paused;
 }
 .header {
   position: sticky;
@@ -931,6 +922,10 @@ kbd {
 /* ── Page hero (inner pages) ────────────────────────────────────────────── */
 .page-hero {
   padding: clamp(40px, 7vw, 88px) 0 clamp(28px, 4vw, 48px);
+}
+.wrap.page-hero {
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
 }
 .page-hero h1 {
   margin-top: 14px;
