@@ -86,6 +86,8 @@ for (const [path, title, description] of STATIC) {
   urls.push([path, path === '/' ? '1.0' : '0.8']);
 }
 for (const [path, title] of PRIVATE) write(path, page({ path, title, description: 'JHAYRA', noindex: true }));
+// Shell for routes created after this build (new products, admin): vercel.json rewrites to it.
+write('/app-shell', page({ path: '/', title: 'JHAYRA — Personalised Photo Frames & Wall Art', description: 'Handcrafted photo frames and wall art, made in India since 2017. Free delivery across India.' }));
 
 // 404: same app shell, marked noindex. Vercel serves it with a real 404 status.
 writeFileSync(join(dist, '404.html'), page({ path: '/404', title: 'Page Not Found | JHAYRA', description: 'This page has moved.', noindex: true }));
@@ -147,6 +149,6 @@ writeFileSync(
 );
 writeFileSync(
   join(dist, 'robots.txt'),
-  `User-agent: *\nAllow: /\nDisallow: /cart\nDisallow: /checkout\nDisallow: /orders\nDisallow: /wishlist\nDisallow: /admin\n\nSitemap: ${SITE}/sitemap.xml\n`,
+  `User-agent: *\nAllow: /\nDisallow: /cart\nDisallow: /checkout\nDisallow: /orders\nDisallow: /wishlist\nDisallow: /admin\nDisallow: /app-shell\n\nSitemap: ${SITE}/sitemap.xml\n`,
 );
 console.log(`[prerender] ${urls.length} indexable pages, ${products.length} products`);

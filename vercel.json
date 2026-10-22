@@ -6,10 +6,10 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/product/:id", "destination": "/index.html" },
-    { "source": "/customize/:id", "destination": "/index.html" },
-    { "source": "/admin", "destination": "/index.html" },
-    { "source": "/admin/:path*", "destination": "/index.html" }
+    { "source": "/product/:id", "destination": "/app-shell" },
+    { "source": "/customize/:id", "destination": "/app-shell" },
+    { "source": "/admin", "destination": "/app-shell" },
+    { "source": "/admin/:path*", "destination": "/app-shell" }
   ],
   "redirects": [
     { "source": "/stories", "destination": "/about", "permanent": true },
