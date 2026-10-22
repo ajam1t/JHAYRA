@@ -9,6 +9,7 @@ import { SITE, money, waLink } from '../lib/site';
 import { BRAND } from '../lib/brand';
 import { loadProducts, searchProducts } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
+import { useFestival } from '../state/festival';
 
 const NAV = [
   ['/shop', 'Shop'],
@@ -32,7 +33,9 @@ function Logo() {
 }
 
 function Announce() {
-  const msgs = ['Free delivery across India — on every order', `Trusted by ${BRAND.homes} homes since ${BRAND.since}`, 'Handcrafted to order in India', 'Free replacement if it arrives damaged'];
+  const festival = useFestival();
+  const msgs = [
+    ...(festival?.banner ? [festival.banner] : festival?.offer && festival?.coupon ? [`${festival.name}: ${festival.offer} — code ${festival.coupon}`] : []),'Free delivery across India — on every order', `Trusted by ${BRAND.homes} homes since ${BRAND.since}`, 'Handcrafted to order in India', 'Free replacement if it arrives damaged'];
   return (
     <div className="announce" aria-label="Store announcements">
       <div className="announce-track">

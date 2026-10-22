@@ -186,12 +186,43 @@ export const FESTIVALS = [
   },
 ];
 
-export const FESTIVAL_MAP = Object.fromEntries(FESTIVALS.map((f) => [f.id, f]));
+import { supabase } from './supabase';
+
+// Admin-edited copy lives in Supabase Storage next to the templates file.
+export const FESTIVALS_PATH = 'site-config/festivals.json';
+let list = FESTIVALS;
+export let FESTIVAL_MAP = Object.fromEntries(list.map((f) => [f.id, f]));
+function setList(next) {
+  list = next;
+  FESTIVAL_MAP = Object.fromEntries(list.map((f) => [f.id, f]));
+}
+export const festivalList = () => list;
+
+let loading = null;
+export function loadFestivals(force = false) {
+  if (loading && !force) return loading;
+  const { data } = supabase.storage.from('product-images').getPublicUrl(FESTIVALS_PATH);
+  loading = fetch(`${data.publicUrl}?v=${force ? Date.now() : Math.floor(Date.now() / 300000)}`)
+    .then((r) => (r.ok ? r.json() : null))
+    .then((json) => {
+      if (json && Array.isArray(json.festivals)) setList(json.festivals);
+      return list;
+    })
+    .catch(() => list);
+  return loading;
+}
+
+export async function saveFestivals(next) {
+  const blob = new Blob([JSON.stringify({ version: 1, updatedAt: new Date().toISOString(), festivals: next })], { type: 'application/json' });
+  const { error } = await supabase.storage.from('product-images').upload(FESTIVALS_PATH, blob, { upsert: true, contentType: 'application/json', cacheControl: '60' });
+  if (error) throw error;
+  setList(next);
+}
 
 const day = (s) => new Date(s + 'T00:00:00+05:30');
 
 export function activeFestival(now = new Date()) {
-  return FESTIVALS.find((f) => now >= day(f.from) && now < new Date(day(f.to).getTime() + 86400000)) || null;
+  return list.find((f) => f.enabled !== false && now >= day(f.from) && now < new Date(day(f.to).getTime() + 86400000)) || null;
 }
 
 export function daysUntil(f, now = new Date()) {

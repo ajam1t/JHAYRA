@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { activeFestival, FESTIVAL_MAP } from '../lib/festivals';
+import { activeFestival, FESTIVAL_MAP, loadFestivals } from '../lib/festivals';
 
 const FestivalCtx = createContext(null);
 const KEY = 'jhayra_festival_preview';
@@ -12,6 +12,11 @@ export function FestivalProvider({ children }) {
   useEffect(() => {
     setFestival(pick(search));
   }, [search]);
+
+  // Pick up festivals edited in the admin panel.
+  useEffect(() => {
+    loadFestivals().then(() => setFestival(pick(window.location.search)));
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
