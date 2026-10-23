@@ -1713,36 +1713,6 @@
   font-size: 14.5px;
   line-height: 1.65;
 }
-.team {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 240px));
-  gap: 28px;
-}
-.member {
-  display: grid;
-  gap: 4px;
-}
-.member .frame {
-  margin-bottom: 16px;
-}
-.member-init {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-  font-family: var(--fd);
-  font-size: 64px;
-  color: var(--gold-deep);
-  background: radial-gradient(circle at 50% 40%, #fbf3e2, #ecdcbc);
-}
-.member b {
-  font-family: var(--fd);
-  font-size: 20px;
-  font-weight: 500;
-}
-.member small {
-  color: var(--muted);
-}
 .contact {
   display: grid;
   gap: 40px;

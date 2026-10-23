@@ -133,7 +133,7 @@ export default function GiftFinder() {
                 {results.templates.map((t, i) => (
                   <Link key={t.id} to={`/customize/${t.id}`} className="tcard">
                     <div className="tcard-stage">
-                      <Frame ratio={{ w: 12, h: 16 }} colour={['#B8932A', '#1C1C1C'][i % 2]} glare={false}>
+                      <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false}>
                         <TemplateCanvas template={t} mini />
                       </Frame>
                     </div>

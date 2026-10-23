@@ -7,7 +7,9 @@ const STATUSES = ['pending', 'confirmed', 'personalization', 'processing', 'ship
 function Customization({ c }) {
   if (!c) return null;
   const rows = [];
-  if (c.source) rows.push(['Type', c.source === 'template' ? `Template: ${c.templateTitle || c.templateId}` : c.source === 'product-replace' ? `Own photo in “${c.productName}”` : c.source === 'scratch-builder' ? 'Custom photo frame' : c.source]);
+  if (c.source) rows.push(['Type', c.source === 'template' ? `Template: ${c.templateTitle || c.templateId}` : c.source === 'product-replace' ? `Own photo in “${c.productName}”` : c.source === 'scratch-builder' ? 'Custom photo frame' : c.source === 'living-studio' ? 'Living Art Studio' : c.source]);
+  if (c.treatment) rows.push(['Treatment', c.treatment]);
+  if (c.printReady) rows.push(['Print file', 'Ready to print — first image is the final cropped, treated, captioned artwork']);
   if (c.material) rows.push(['Finish', c.material]);
   if (c.texts) Object.entries(c.texts).forEach(([k, v]) => v && rows.push([k, v]));
   if (c.design) rows.push(['Design', `${c.design.layout} · ${c.design.photos} photos · ${c.design.palette} · ${(c.design.decorations || []).join(', ')}`]);
@@ -182,6 +184,7 @@ export default function Orders() {
                                   {it.artwork_paths.map((p) => (
                                     <div key={p}>
                                       {urls[p] ? <img src={urls[p]} alt="" /> : <span className="ad-muted">…</span>}
+                                      {it.customization?.artworkMeta?.find((m) => m.path === p)?.role && <small className="ad-muted">{it.customization.artworkMeta.find((m) => m.path === p).role}</small>}
                                       <button className="ad-btn" onClick={() => download(p)}>
                                         Download original
                                       </button>

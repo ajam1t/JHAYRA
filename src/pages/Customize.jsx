@@ -119,7 +119,7 @@ export default function Customize() {
                 <Link to={`/customize/${t.id}`} className="tcard">
                   <div className="tcard-stage">
                     {(t.bestSeller || t.popular || t.newArrival) && <span className="pill pill-gold tcard-badge">{t.bestSeller ? 'Bestseller' : t.newArrival ? 'New' : 'Popular'}</span>}
-                    <Frame ratio={{ w: 12, h: 16 }} colour={['#B8932A', '#1C1C1C', '#6B4423'][i % 3]} glare={false}>
+                    <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false}>
                       <TemplateCanvas template={t} mini />
                     </Frame>
                   </div>

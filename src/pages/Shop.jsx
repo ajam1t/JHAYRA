@@ -26,7 +26,7 @@ function PersonaliseCard() {
     <Link to="/customize" className="promo-card">
       <div className="promo-art">
         {t && (
-          <Frame ratio={{ w: 12, h: 16 }} colour="#B8932A" glare={false}>
+          <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false}>
             <TemplateCanvas template={t} mini />
           </Frame>
         )}

@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Frame from './Frame';
 import Img from './Img';
 import Icon from './Icon';
 import { useShop } from '../state/store';
-import { useCart } from '../state/cart';
+import QuickView from './QuickView';
 import { money } from '../lib/site';
 import { SIZES } from '../lib/frames';
 
@@ -29,36 +30,16 @@ export function categoryLabel(slug, categories) {
 
 export default function ProductCard({ product, categories, priority = false, index = 0, room = false }) {
   const { wish, toggleWish } = useShop();
-  const cart = useCart();
+  const [quick, setQuick] = useState(false);
   const on = wish.includes(product.id);
   const alt = product.images[1]?.url;
   const a4 = SIZES[0];
-
-  const quickAdd = (e) => {
-    e.preventDefault();
-    cart.add({
-      productId: product.id,
-      name: product.name,
-      image: product.thumbnail,
-      price: a4.price,
-      category: product.category,
-      option: {
-        id: 'a4_black_ps-moulding',
-        size: 'A4',
-        dimensions: a4.dimensions,
-        colour: 'Black',
-        material: 'PS Moulding',
-      },
-      orientation: 'Vertical',
-      customization: { material: 'PS Moulding', artworkVariant: null },
-    });
-  };
 
   return (
     <article className={`pcard ${room ? 'pcard-room' : ''}`} style={{ '--i': index }}>
       <div className="pcard-media">
         <Link to={`/product/${product.id}`} className="pcard-stage" aria-label={product.name}>
-          <Frame src={product.thumbnail} alt={product.name} sizes="(max-width: 760px) 40vw, (max-width: 1120px) 22vw, 16vw" priority={priority} glare={false} thickness={5.5} />
+          <Frame src={product.thumbnail} alt={product.name} sizes="(max-width: 760px) 40vw, (max-width: 1120px) 22vw, 16vw" priority={priority} glare={false} thickness={3.6} />
           {alt && (
             <div className="pcard-alt" aria-hidden="true">
               <Img src={alt} sizes="(max-width: 760px) 50vw, 25vw" />
@@ -73,11 +54,10 @@ export default function ProductCard({ product, categories, priority = false, ind
         <button type="button" className={`pcard-wish ${on ? 'on' : ''}`} aria-pressed={on} aria-label={on ? 'Remove from wishlist' : 'Save to wishlist'} onClick={() => toggleWish(product.id)}>
           <Icon name="heart" size={19} />
         </button>
-        <div className="pcard-quick">
-          <button className="btn btn-light btn-sm btn-block" onClick={quickAdd}>
-            <Icon name="plus" size={16} /> Quick add · A4 Black
-          </button>
-        </div>
+        <button type="button" className="pcard-qv" aria-label={`Quick view: ${product.name}`} onClick={() => setQuick(true)}>
+          <Icon name="plus" size={18} />
+          <span>Quick view</span>
+        </button>
       </div>
       <Link to={`/product/${product.id}`} className="pcard-body">
         <span className="pcard-cat">{categoryLabel(product.category, categories)}</span>
@@ -88,6 +68,7 @@ export default function ProductCard({ product, categories, priority = false, ind
           {product.compare_price ? <s className="muted"> {money(product.compare_price)}</s> : null}
         </span>
       </Link>
+      {quick && <QuickView product={product} onClose={() => setQuick(false)} />}
     </article>
   );
 }

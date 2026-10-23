@@ -12,9 +12,9 @@ import { PRESETS, presetFrames, addWallToCart } from './WallPlanner';
 
 const ROOMS = [
   { id: 'living', title: 'The living room', copy: 'A calm salon wall above the sofa — modern art with one spiritual anchor.', preset: 'salon', wall: 'ivory', furniture: 'sofa', colour: 'Black', cats: ['modern-art', 'art-abstract', 'religious', 'nature'] },
-  { id: 'pooja', title: 'The pooja corner', copy: 'Gold frames, divine art, warm walls. A space that feels blessed.', preset: 'hero', wall: 'terracotta', furniture: 'console', colour: 'Gold', cats: ['religious', 'home-vastu'] },
-  { id: 'bedroom', title: 'The bedroom', copy: 'Soft nature prints in a quiet row above the headboard.', preset: 'trio', wall: 'sage', furniture: 'bed', colour: 'Brown', cats: ['nature', 'photography', 'love-romance'] },
-  { id: 'study', title: 'The study', copy: 'One bold statement piece — motivation you’ll see every day.', preset: 'statement', wall: 'charcoal', furniture: 'console', colour: 'Gold', cats: ['running-horses', 'quotes', 'modern-art'] },
+  { id: 'pooja', title: 'The pooja corner', copy: 'Gold frames, divine art, warm walls. A space that feels blessed.', preset: 'hero', wall: 'terracotta', furniture: 'console', colour: 'Black', cats: ['religious', 'home-vastu'] },
+  { id: 'bedroom', title: 'The bedroom', copy: 'Soft nature prints in a quiet row above the headboard.', preset: 'trio', wall: 'sage', furniture: 'bed', colour: 'Black', cats: ['nature', 'photography', 'love-romance'] },
+  { id: 'study', title: 'The study', copy: 'One bold statement piece — motivation you’ll see every day.', preset: 'statement', wall: 'charcoal', furniture: 'console', colour: 'Black', cats: ['running-horses', 'quotes', 'modern-art'] },
   { id: 'stairs', title: 'The staircase', copy: 'Frames that climb with you — the classic family gallery.', preset: 'stairs', wall: 'blush', furniture: 'none', colour: 'Black', cats: ['family', 'photography', 'modern-art', 'nature'] },
 ];
 

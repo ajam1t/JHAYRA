@@ -2,42 +2,49 @@
    JHAYRA design system — tokens, base, layout primitives
    ════════════════════════════════════════════════════════════════════════ */
 :root {
-  --ink: #17130e;
-  --ink-2: #3a322a;
-  --muted: #776b5e;
-  --muted-2: #a2968a;
-  --line: #e9e1d4;
-  --line-2: #f1ebe1;
-  --paper: #fbf8f3;
-  --cream: #f4ede2;
-  --sand: #ece2d1;
-  --night: #14110d;
-  --night-2: #1f1a14;
-  --gold: #b68d40;
-  --gold-deep: #8a6726;
-  --gold-soft: #ead9b5;
-  --gold-glow: rgba(182, 141, 64, 0.35);
-  --rose: #c46d5e;
-  --ok: #2f7d4f;
-  --warn: #b26a12;
-  --danger: #b83b3b;
+  /* JHAYRA 2050 palette */
+  --porcelain: #f3efe7;
+  --obsidian: #171916;
+  --champagne: #b99a68;
+  --mist: #d8e1de;
+  --stone: #d4d0c8;
+
+  --ink: #171916;
+  --ink-2: #33362f;
+  --muted: #6b6d66;
+  --muted-2: #9a9b93;
+  --line: #d4d0c8;
+  --line-2: #e4e0d8;
+  --paper: #f3efe7;
+  --cream: #ebe6dc;
+  --sand: #e2ddd2;
+  --night: #171916;
+  --night-2: #222520;
+  --gold: #b99a68;
+  --gold-deep: #8a7149;
+  --gold-soft: #e5d7bd;
+  --gold-glow: rgba(185, 154, 104, 0.3);
+  --rose: #b4655a;
+  --ok: #2f6f4c;
+  --warn: #9a5f12;
+  --danger: #a83a3a;
   --wa: #25d366;
 
-  --fd: 'Fraunces', 'Playfair Display', Georgia, serif;
-  --fb: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fd: 'Instrument Serif', 'Times New Roman', serif;
+  --fb: 'Inter Tight', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
-  --r-sm: 8px;
-  --r: 14px;
-  --r-lg: 22px;
-  --r-xl: 32px;
-  --shadow-1: 0 1px 2px rgba(23, 19, 14, 0.06), 0 4px 14px rgba(23, 19, 14, 0.06);
-  --shadow-2: 0 10px 30px rgba(23, 19, 14, 0.1), 0 2px 8px rgba(23, 19, 14, 0.06);
-  --shadow-3: 0 30px 80px rgba(23, 19, 14, 0.18), 0 10px 24px rgba(23, 19, 14, 0.1);
+  --r-sm: 4px;
+  --r: 6px;
+  --r-lg: 10px;
+  --r-xl: 14px;
+  --shadow-1: 0 1px 2px rgba(23, 25, 22, 0.05), 0 2px 10px rgba(23, 25, 22, 0.04);
+  --shadow-2: 0 12px 30px rgba(23, 25, 22, 0.08), 0 2px 6px rgba(23, 25, 22, 0.05);
+  --shadow-3: 0 30px 80px rgba(23, 25, 22, 0.16), 0 10px 24px rgba(23, 25, 22, 0.08);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
   --header-h: 68px;
-  --gutter: clamp(16px, 4vw, 40px);
-  --max: 1280px;
+  --gutter: clamp(16px, 4vw, 48px);
+  --max: 1360px;
 }
 
 *,
@@ -93,21 +100,20 @@ h2,
 h3,
 h4 {
   font-family: var(--fd);
-  font-weight: 500;
-  line-height: 1.08;
-  letter-spacing: -0.02em;
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
   margin: 0;
-  font-variation-settings: 'SOFT' 50, 'opsz' 96;
 }
 p {
   margin: 0;
 }
 ::selection {
-  background: var(--gold-soft);
+  background: var(--mist);
   color: var(--ink);
 }
 :focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--ink);
   outline-offset: 3px;
   border-radius: 6px;
 }
@@ -169,11 +175,11 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--gold-deep);
+  color: var(--ink-2);
 }
 .eyebrow::before {
   content: '';
@@ -188,26 +194,26 @@ p {
   background: currentColor;
 }
 .display {
-  font-size: clamp(40px, 7vw, 92px);
-  line-height: 0.98;
-  letter-spacing: -0.035em;
+  font-size: clamp(44px, 7.4vw, 112px);
+  line-height: 0.94;
+  letter-spacing: -0.02em;
   font-weight: 400;
 }
 .display em,
 .h1 em,
 .h2 em {
   font-style: italic;
-  color: var(--gold-deep);
+  color: var(--ink-2);
   font-weight: 400;
 }
 .h1 {
-  font-size: clamp(34px, 5vw, 60px);
+  font-size: clamp(38px, 5.4vw, 72px);
 }
 .h2 {
-  font-size: clamp(28px, 4vw, 48px);
+  font-size: clamp(32px, 4.4vw, 58px);
 }
 .h3 {
-  font-size: clamp(20px, 2.2vw, 26px);
+  font-size: clamp(22px, 2.4vw, 30px);
 }
 .lead {
   font-size: clamp(16px, 1.5vw, 19px);
@@ -254,8 +260,8 @@ p {
   justify-content: center;
   gap: 10px;
   min-height: 52px;
-  padding: 0 26px;
-  border-radius: 999px;
+  padding: 0 28px;
+  border-radius: var(--r-sm);
   background: var(--bg);
   color: var(--fg);
   font-weight: 600;
@@ -290,12 +296,12 @@ p {
   pointer-events: none;
 }
 .btn-gold {
-  --bg: linear-gradient(135deg, #c9a24f, #a57c2f 60%, #8a6726);
-  background: var(--bg);
-  box-shadow: 0 8px 24px var(--gold-glow);
+  --bg: var(--obsidian);
+  --fg: var(--porcelain);
+  box-shadow: inset 0 -2px 0 var(--champagne);
 }
 .btn-gold:hover {
-  box-shadow: 0 14px 34px var(--gold-glow);
+  box-shadow: inset 0 -2px 0 var(--champagne), 0 14px 30px rgba(23, 25, 22, 0.22);
 }
 .btn-ghost {
   --bg: transparent;
@@ -361,7 +367,7 @@ p {
   height: 18px;
   padding: 0 5px;
   border-radius: 9px;
-  background: var(--gold);
+  background: var(--obsidian);
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -398,7 +404,7 @@ p {
   flex: none;
   min-height: 40px;
   padding: 0 16px;
-  border-radius: 999px;
+  border-radius: var(--r-sm);
   border: 1px solid var(--line);
   background: #fff;
   font-size: 14px;
@@ -422,9 +428,9 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 11px;
-  border-radius: 999px;
-  font-size: 11.5px;
+  padding: 5px 10px;
+  border-radius: 2px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
   background: rgba(255, 255, 255, 0.92);
@@ -432,8 +438,8 @@ p {
   backdrop-filter: blur(8px);
 }
 .pill-gold {
-  background: var(--gold);
-  color: #fff;
+  background: var(--obsidian);
+  color: var(--porcelain);
 }
 .pill-dark {
   background: var(--ink);
@@ -458,8 +464,8 @@ p {
   width: 100%;
   min-height: 52px;
   padding: 14px 16px;
-  border-radius: 12px;
-  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
   background: #fff;
   font-size: 16px;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -472,8 +478,8 @@ p {
 .select:focus,
 .textarea:focus {
   outline: none;
-  border-color: var(--gold);
-  box-shadow: 0 0 0 4px rgba(182, 141, 64, 0.14);
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(23, 25, 22, 0.08);
 }
 .input[aria-invalid='true'] {
   border-color: var(--danger);

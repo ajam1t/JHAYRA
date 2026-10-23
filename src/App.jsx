@@ -19,6 +19,8 @@ const Wishlist = lazy(() => import('./pages/Wishlist'));
 const GiftFinder = lazy(() => import('./pages/GiftFinder'));
 const Inspiration = lazy(() => import('./pages/Inspiration'));
 const WallPlanner = lazy(() => import('./pages/WallPlanner'));
+const Visualise = lazy(() => import('./pages/Visualise'));
+const Journal = lazy(() => import('./pages/Journal'));
 const Info = lazy(() => import('./pages/Info'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Admin = lazy(() => import('./admin/Admin'));
@@ -45,6 +47,10 @@ export default function App() {
                     <Route index element={<Home />} />
                     <Route path="shop" element={<Shop />} />
                     <Route path="collections" element={<Collections />} />
+                    <Route path="collections/:id" element={<Collections />} />
+                    <Route path="visualise" element={<Visualise />} />
+                    <Route path="journal" element={<Journal />} />
+                    <Route path="journal/:slug" element={<Journal />} />
                     <Route path="product/:id" element={<Product />} />
                     <Route path="product" element={<Navigate to="/shop" replace />} />
                     <Route path="customize" element={<Customize />} />

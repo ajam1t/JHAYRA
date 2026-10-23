@@ -53,17 +53,19 @@ async function rest(q) {
 }
 
 const STATIC = [
-  ['/', 'JHAYRA — Personalised Photo Frames & Wall Art, Made in India', 'Turn your favourite photo into a handcrafted frame. Personalised couple, family and wedding frames, spiritual and modern wall art. Free delivery across India. Since 2017.'],
+  ['/', 'JHAYRA — Art That Lives With You | Wall Art & Personalised Frames', 'Premium wall art and personalised photo art in black frames, handcrafted in India since 2017. Discover by room, create your own, and visualise it on your wall.'],
   ['/shop', 'Shop Personalised Photo Frames & Wall Art | JHAYRA', 'Handcrafted frames — spiritual, modern, nature, couple and family wall art in four sizes. Free delivery across India.'],
   ['/collections', 'Collections — Spiritual, Modern, Nature & Personalised Wall Art | JHAYRA', 'Browse JHAYRA collections: religious and Vastu art, modern and abstract, nature, running horses, couple and family frames.'],
   ['/customize', 'Personalised Photo Frames — Design Yours Live | JHAYRA', 'Choose from 100+ personalised frame designs for weddings, anniversaries, birthdays and festivals. Add photos, names and dates and see it live.'],
-  ['/customize/photo', 'Frame Your Photo — Custom Photo Frame Online | JHAYRA', 'Upload any photo and see it framed instantly. Four sizes, black, gold or brown frames, from ₹499. Free delivery across India.'],
+  ['/customize/photo', 'Living Art Studio — Turn Your Photo Into Framed Art | JHAYRA', 'Upload a photo, choose a treatment (original, monochrome, vintage, pencil sketch, soft glow), add names or a date, and order it in a black frame from ₹499.'],
   ['/customize/scratch', 'Design Your Own Photo Frame | JHAYRA', 'Design a personalised frame from scratch: any layout, up to 9 photos, your words, colours and decorations.'],
   ['/gift-finder', 'Gift Finder — The Perfect Personalised Gift in 30 Seconds | JHAYRA', 'Answer four quick questions and find the perfect personalised frame or wall art for anyone.'],
   ['/room-inspiration', 'Wall Décor Ideas — Room Inspiration | JHAYRA', 'Living room, pooja room, bedroom and staircase gallery wall ideas — shop each look in one tap, true to size.'],
   ['/wall-planner', 'Gallery Wall Planner — Design Your Wall | JHAYRA', 'Plan a gallery wall true to scale above your sofa or bed and add the whole set to your cart.'],
+  ['/visualise', 'Visualise Art in Your Room | JHAYRA', 'Upload a photo of your wall, choose any JHAYRA artwork, size and frame, and see how it looks before you buy.'],
+  ['/journal', 'Inspiration Journal — Wall Art Ideas & Guides | JHAYRA', 'Gallery wall planning, how high to hang art, styling by room, personalised gift ideas and framed art care.'],
   ['/about', 'About JHAYRA — Our Story Since 2017', 'From a small workshop to 10,000+ homes: handcrafted photo frames and wall art made in India since 2017.'],
-  ['/contact', 'Contact JHAYRA', 'WhatsApp +91 70707 28989, email hello@jhayra.in or Instagram @jhayra.in — talk to a real person.'],
+  ['/contact', 'Contact JHAYRA', 'WhatsApp +91 70707 28989, email hello@jhayra.in or Instagram @thejhayra — talk to a real person.'],
   ['/support', 'Help & FAQ | JHAYRA', 'Delivery times, replacements, photo quality and payments — answers to common questions.'],
   ['/corporate', 'Corporate Gifting — Personalised Wall Art in Bulk | JHAYRA', 'Branded, personalised frames for employees and clients. Volume pricing from ₹799/unit.'],
   ['/privacy', 'Privacy Policy | JHAYRA', 'How JHAYRA collects, uses and protects your personal information and photos.'],
@@ -127,6 +129,34 @@ for (const p of products) {
     }),
   );
   urls.push([path, '0.7']);
+}
+
+// Editorial collections and journal articles
+try {
+  const { COLLECTIONS } = await import('../src/lib/collections.js');
+  for (const c of COLLECTIONS) {
+    const path = `/collections/${c.id}`;
+    write(path, page({ path, title: `${c.title} — Wall Art Collection | JHAYRA`, description: c.story, body: `<h1>${esc(c.title)}</h1><p>${esc(c.story)}</p>` }));
+    urls.push([path, '0.7']);
+  }
+  const { ARTICLES } = await import('../src/lib/journal.js');
+  for (const a of ARTICLES) {
+    const path = `/journal/${a.slug}`;
+    const text = a.body.filter(([k]) => k === 'p' || k === 'h').map(([k, v]) => (k === 'h' ? `<h2>${esc(v)}</h2>` : `<p>${esc(v)}</p>`)).join('');
+    write(
+      path,
+      page({
+        path,
+        title: `${a.title} | JHAYRA Journal`,
+        description: a.dek,
+        jsonLd: { '@context': 'https://schema.org', '@type': 'Article', headline: a.title, description: a.dek, author: { '@type': 'Organization', name: 'JHAYRA' }, mainEntityOfPage: SITE + path },
+        body: `<h1>${esc(a.title)}</h1><p>${esc(a.dek)}</p>${text}`,
+      }),
+    );
+    urls.push([path, '0.6']);
+  }
+} catch (e) {
+  console.warn('[prerender] collections/journal skipped:', e.message);
 }
 
 // Personalised template pages

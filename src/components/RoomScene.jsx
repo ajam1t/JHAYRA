@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import Frame from './Frame';
 
 export const WALLS = [
+  { id: 'porcelain', label: 'Porcelain', c: '#eeeae2', c2: '#e3ded4' },
+  { id: 'mist', label: 'Digital mist', c: '#d8e1de', c2: '#c8d2ce' },
+  { id: 'stone', label: 'Stone', c: '#dcd8d0', c2: '#cdc8be' },
   { id: 'ivory', label: 'Ivory', c: '#efe8dc', c2: '#e3d9c8' },
   { id: 'sage', label: 'Sage', c: '#c9cfbd', c2: '#b6bda8' },
   { id: 'terracotta', label: 'Terracotta', c: '#d7a58a', c2: '#c48e72' },
@@ -14,6 +17,7 @@ export const FURNITURE = [
   { id: 'sofa', label: 'Sofa', width: 84 },
   { id: 'bed', label: 'Bed', width: 72 },
   { id: 'console', label: 'Console', width: 48 },
+  { id: 'dining', label: 'Dining', width: 72 },
   { id: 'none', label: 'Empty wall', width: 0 },
 ];
 
@@ -42,21 +46,40 @@ function Sofa({ id }) {
         <rect x="372" y="40" width="16" height="22" fill="#a77b56" />
       </svg>
     );
+  if (id === 'dining')
+    return (
+      <svg viewBox="0 0 720 300" className="room-furniture" aria-hidden="true">
+        <rect x="70" y="120" width="580" height="18" rx="3" fill="var(--rf-wood, #8a6a4c)" />
+        <rect x="110" y="138" width="12" height="150" fill="var(--rf-leg, #2a2622)" />
+        <rect x="598" y="138" width="12" height="150" fill="var(--rf-leg, #2a2622)" />
+        {[0, 1, 2].map((i) => (
+          <g key={i} transform={`translate(${150 + i * 170} 0)`}>
+            <path d="M10 60h70l-6 120H16z" fill="var(--rf-seat, #cfc8bb)" />
+            <rect x="12" y="176" width="66" height="10" rx="2" fill="var(--rf-seat2, #bdb5a6)" />
+            <rect x="18" y="186" width="6" height="100" fill="var(--rf-leg, #2a2622)" />
+            <rect x="66" y="186" width="6" height="100" fill="var(--rf-leg, #2a2622)" />
+          </g>
+        ))}
+        <ellipse cx="360" cy="104" rx="46" ry="18" fill="var(--rf-bowl, #e9e2d4)" />
+        <circle cx="344" cy="96" r="10" fill="#c98b4d" />
+        <circle cx="366" cy="92" r="11" fill="#9db06a" />
+      </svg>
+    );
   if (id === 'none') return null;
   return (
     <svg viewBox="0 0 840 300" className="room-furniture" aria-hidden="true">
       <defs>
         <linearGradient id="sofa-g" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor="#8b7d6b" />
-          <stop offset="1" stopColor="#6e6253" />
+          <stop offset="0" stopColor="var(--rf-sofa, #8b7d6b)" />
+          <stop offset="1" stopColor="var(--rf-sofa2, #6e6253)" />
         </linearGradient>
       </defs>
       <rect x="40" y="40" width="760" height="150" rx="34" fill="url(#sofa-g)" />
-      <rect x="0" y="110" width="110" height="150" rx="30" fill="#7b6e5e" />
-      <rect x="730" y="110" width="110" height="150" rx="30" fill="#7b6e5e" />
-      <rect x="90" y="150" width="660" height="100" rx="20" fill="#93867a" />
-      <rect x="140" y="80" width="150" height="100" rx="26" fill="#d8c9a8" transform="rotate(-6 215 130)" />
-      <rect x="560" y="80" width="150" height="100" rx="26" fill="#b98a6b" transform="rotate(5 635 130)" />
+      <rect x="0" y="110" width="110" height="150" rx="30" fill="var(--rf-arm, #7b6e5e)" />
+      <rect x="730" y="110" width="110" height="150" rx="30" fill="var(--rf-arm, #7b6e5e)" />
+      <rect x="90" y="150" width="660" height="100" rx="20" fill="var(--rf-seat, #93867a)" />
+      <rect x="140" y="80" width="150" height="100" rx="26" fill="var(--rf-cush1, #d8c9a8)" transform="rotate(-6 215 130)" />
+      <rect x="560" y="80" width="150" height="100" rx="26" fill="var(--rf-cush2, #b98a6b)" transform="rotate(5 635 130)" />
       <rect x="70" y="250" width="14" height="40" rx="3" fill="#3d3329" />
       <rect x="756" y="250" width="14" height="40" rx="3" fill="#3d3329" />
     </svg>
@@ -68,7 +91,7 @@ function Sofa({ id }) {
  * known real width, so every frame is drawn at (inches × pixels-per-inch).
  * `frames`: [{ key, src, children, wIn, hIn, colour, x (0–1), y (0–1) }]
  */
-export default function RoomScene({ frames = [], wall = WALLS[0], furniture = 'sofa', photo, onFrameDrag, onFrameClick, selected, groupHeightIn, zoom = 1, furnitureWidth = 0.62, decor = false, children, className = '' }) {
+export default function RoomScene({ frames = [], wall = WALLS[0], furniture = 'sofa', photo, onFrameDrag, onFrameClick, selected, groupHeightIn, zoom = 1, furnitureWidth = 0.62, decor = false, tone = '', children, className = '' }) {
   const ref = useRef(null);
   const [{ W, H }, setSize] = useState({ W: 800, H: 550 });
   const drag = useRef(null);
@@ -86,7 +109,7 @@ export default function RoomScene({ frames = [], wall = WALLS[0], furniture = 's
   // `zoom` enlarges frames for decorative scenes (true scale when 1).
   const ppi = (f.width ? (W * furnitureWidth) / f.width : W / 120) * zoom;
   // Top edge of the furniture as a fraction of the scene height (it sits 12% above the bottom).
-  const ASPECT = { sofa: 300 / 840, bed: 260 / 720, console: 300 / 480 };
+  const ASPECT = { sofa: 300 / 840, bed: 260 / 720, console: 300 / 480, dining: 180 / 720 };
   const top = ASPECT[f.id] ? 1 - 0.12 - (W * furnitureWidth * ASPECT[f.id]) / H : null;
 
   const down = (key) => (e) => {
@@ -106,7 +129,7 @@ export default function RoomScene({ frames = [], wall = WALLS[0], furniture = 's
   return (
     <div
       ref={ref}
-      className={`room ${photo ? 'room-photo' : ''} ${className}`}
+      className={`room ${photo ? 'room-photo' : ''} ${tone ? `room-${tone}` : ''} ${className}`}
       style={{ '--wall': wall.c, '--wall2': wall.c2, backgroundImage: photo ? `url(${photo})` : undefined }}
       onPointerMove={move}
       onPointerUp={up}
@@ -167,9 +190,14 @@ export default function RoomScene({ frames = [], wall = WALLS[0], furniture = 's
             onClick={() => onFrameClick?.(fr.key)}
             onPointerDown={down(fr.key)}
           >
-            <Frame src={fr.src} ratio={{ w: fr.wIn, h: fr.hIn }} colour={fr.colour} sizes={`${Math.round(wPx)}px`} thickness={fr.thickness || 4.2}>
+            <Frame src={fr.src} ratio={{ w: fr.wIn, h: fr.hIn }} colour={fr.colour} sizes={`${Math.round(wPx)}px`} thickness={fr.thickness || 3.4}>
               {fr.children}
             </Frame>
+            {fr.hotspot && (
+              <button type="button" className={`room-hotspot ${selected === fr.key ? 'on' : ''}`} aria-label={fr.hotspot} aria-pressed={selected === fr.key}>
+                <span />
+              </button>
+            )}
           </div>
         );
       })}

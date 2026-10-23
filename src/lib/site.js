@@ -5,7 +5,7 @@ export const SITE = {
   whatsapp: '917070728989',
   phoneDisplay: '+91 70707 28989',
   email: 'hello@jhayra.in',
-  instagram: 'https://www.instagram.com/jhayra.in/',
+  instagram: 'https://www.instagram.com/thejhayra/',
   ogImage: 'https://www.jhayra.com/og-image.jpg',
   hours: [
     ['Mon – Sat', '9:00 AM – 7:00 PM'],

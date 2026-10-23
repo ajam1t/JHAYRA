@@ -27,7 +27,7 @@ export default function Frame({
   children,
   className = '',
   style,
-  thickness = 4.6,
+  thickness = 3.4,
   onPointerDown,
   artRef,
 }) {

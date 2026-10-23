@@ -12,12 +12,11 @@ import { useTemplates } from '../lib/templates';
 import { useFestival } from '../state/festival';
 
 const NAV = [
-  ['/shop', 'Shop'],
-  ['/customize', 'Personalise'],
+  ['/shop', 'Shop Art'],
+  ['/customize', 'Personalised Art'],
+  ['/visualise', 'Visualise in My Room'],
   ['/collections', 'Collections'],
-  ['/gift-finder', 'Gift Finder'],
-  ['/room-inspiration', 'Inspiration'],
-  ['/corporate', 'Corporate'],
+  ['/journal', 'Inspiration'],
 ];
 
 function Logo() {
@@ -90,6 +89,9 @@ function Header({ onMenu }) {
           <button className="icon-btn" onClick={() => setSearchOpen(true)} aria-label="Search (Ctrl K)">
             <Icon name="search" />
           </button>
+          <Link to="/orders" className="icon-btn hide-sm" aria-label="My account and orders">
+            <Icon name="user" />
+          </Link>
           <Link to="/wishlist" className="icon-btn hide-sm" aria-label={`Wishlist, ${wish.length} items`}>
             <Icon name="heart" />
             {wish.length > 0 && <span className="badge">{wish.length}</span>}
@@ -129,6 +131,10 @@ function MenuSheet({ onClose }) {
             ))}
           </nav>
           <div className="menu-sub">
+            <Link to="/customize/photo">Living Art Studio</Link>
+            <Link to="/wall-planner">Gallery wall planner</Link>
+            <Link to="/gift-finder">Gift finder</Link>
+            <Link to="/corporate">Corporate gifting</Link>
             <Link to="/wishlist">Wishlist</Link>
             <Link to="/orders">My orders</Link>
             <Link to="/support">Help & FAQ</Link>
@@ -163,9 +169,9 @@ function BottomNav() {
         <Icon name="sparkle" size={21} />
         Create
       </NavLink>
-      <NavLink to="/gift-finder">
-        <Icon name="gift" size={21} />
-        Gifts
+      <NavLink to="/visualise">
+        <Icon name="wall" size={21} />
+        Visualise
       </NavLink>
       <button onClick={() => setDrawerOpen(true)}>
         <Icon name="bag" size={21} />
@@ -208,7 +214,7 @@ function CartDrawer() {
         <div className="sheet-body">
           {items.length === 0 ? (
             <div className="empty">
-              <Frame colour="#B8932A" glare={false} />
+              <Frame colour="#1C1C1C" glare={false} />
               <h3 className="h3">Your walls are waiting</h3>
               <p className="muted" style={{ margin: '10px 0 22px' }}>
                 Pick a design, or turn your own photo into a frame.
@@ -410,100 +416,68 @@ function SearchPalette() {
 }
 
 function Footer() {
+  const cols = [
+    ['Shop', [['/shop', 'All art'], ['/collections', 'Collections'], ['/shop?room=living', 'Living room'], ['/shop?room=bedroom', 'Bedroom'], ['/shop?room=office', 'Office'], ['/collections/art-for-gifting', 'Gifts']]],
+    ['Personalised art', [['/customize/photo', 'Living Art Studio'], ['/customize', 'Personalised designs'], ['/customize/scratch', 'Design from scratch'], ['/wall-planner', 'Gallery wall planner'], ['/visualise', 'Visualise in my room']]],
+    ['Help', [['/support', 'FAQ & support'], ['/orders', 'Track my order'], ['/shipping-policy', 'Shipping'], ['/replacement-policy', 'Replacements'], ['/refund', 'Returns & refunds'], ['/contact', 'Contact us']]],
+    ['Jhayra', [['/about', 'Our story'], ['/journal', 'Inspiration journal'], ['/corporate', 'Corporate gifting'], ['/gift-finder', 'Gift finder']]],
+  ];
   return (
     <footer className="footer">
       <div className="wrap">
         <div className="footer-top">
-          <div>
+          <div className="footer-brand">
             <Logo />
-            <p style={{ marginTop: 18, maxWidth: 360, lineHeight: 1.7 }}>
-              Handcrafted photo frames and wall art, made to order in India since {BRAND.since}. {BRAND.homes} homes have hung a JHAYRA.
+            <p className="footer-claim">Art that lives with you.</p>
+            <p>
+              Wall art and personalised photo art, handcrafted in India since {BRAND.since}. {BRAND.homes} homes and counting.
             </p>
-            <div className="footer-promise">
-              <span>
-                <Icon name="truck" size={16} /> Free delivery
-              </span>
-              <span>
-                <Icon name="refresh" size={16} /> Free replacement
-              </span>
-              <span>
-                <Icon name="lock" size={16} /> Secure payments
-              </span>
+            <div className="footer-join">
+              <b>New collections, first</b>
+              <span>Get a WhatsApp message when we launch new art — no spam, leave any time.</span>
+              <a className="btn btn-light btn-sm" href={waLink('Hi JHAYRA! Please send me updates about new collections.')} target="_blank" rel="noopener noreferrer">
+                <WhatsAppGlyph size={16} /> Join on WhatsApp
+              </a>
             </div>
           </div>
-          <div>
-            <h4>Shop</h4>
-            <ul>
-              <li>
-                <Link to="/shop">All frames</Link>
-              </li>
-              <li>
-                <Link to="/customize">Personalise a frame</Link>
-              </li>
-              <li>
-                <Link to="/collections">Collections</Link>
-              </li>
-              <li>
-                <Link to="/gift-finder">Gift finder</Link>
-              </li>
-              <li>
-                <Link to="/corporate">Corporate gifting</Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4>Help</h4>
-            <ul>
-              <li>
-                <Link to="/support">FAQ & support</Link>
-              </li>
-              <li>
-                <Link to="/orders">Track my order</Link>
-              </li>
-              <li>
-                <Link to="/shipping-policy">Shipping</Link>
-              </li>
-              <li>
-                <Link to="/replacement-policy">Replacement promise</Link>
-              </li>
-              <li>
-                <Link to="/contact">Contact us</Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4>Talk to us</h4>
-            <ul>
-              <li>
-                <a href={waLink()} target="_blank" rel="noopener noreferrer">
-                  WhatsApp {SITE.phoneDisplay}
-                </a>
-              </li>
-              <li>
-                <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
-              </li>
-              <li>
-                <a href={SITE.instagram} target="_blank" rel="noopener noreferrer">
-                  Instagram @jhayra.in
-                </a>
-              </li>
-              <li className="small">Mon–Sat 9–7 · Sun 10–4</li>
-            </ul>
-          </div>
+          {cols.map(([title, links]) => (
+            <div key={title}>
+              <h4>{title}</h4>
+              <ul>
+                {links.map(([to, label]) => (
+                  <li key={to}>
+                    <Link to={to}>{label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="footer-contact">
+          <a href={waLink()} target="_blank" rel="noopener noreferrer">
+            <WhatsAppGlyph size={16} /> {SITE.phoneDisplay}
+          </a>
+          <a href={`mailto:${SITE.email}`}>
+            <Icon name="mail" size={16} /> {SITE.email}
+          </a>
+          <a href={SITE.instagram} target="_blank" rel="noopener noreferrer">
+            <Icon name="instagram" size={16} /> @thejhayra
+          </a>
+          <span>
+            <Icon name="clock" size={16} /> Mon–Sat 9–7 · Sun 10–4
+          </span>
         </div>
         <div className="footer-word" aria-hidden="true">
           JHAYRA
         </div>
         <div className="footer-bottom">
-          <span>
-            © {new Date().getFullYear()} JHAYRA · Made with love in India
-          </span>
+          <span>© {new Date().getFullYear()} JHAYRA · Made in India</span>
           <nav aria-label="Legal">
             <Link to="/privacy">Privacy</Link>
             <Link to="/terms">Terms</Link>
             <Link to="/refund">Refunds</Link>
+            <Link to="/shipping-policy">Shipping</Link>
             <Link to="/cookie-policy">Cookies</Link>
-            <Link to="/about">About</Link>
           </nav>
         </div>
       </div>

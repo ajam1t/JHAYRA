@@ -8,7 +8,7 @@ export default function NotFound() {
       <Seo title="Page Not Found" path="/404" noindex />
       <section className="wrap section center nf">
         <div className="nf-frame">
-          <Frame colour="#B8932A" ratio={{ w: 12, h: 14 }} tilt>
+          <Frame colour="#1C1C1C" ratio={{ w: 12, h: 14 }} tilt>
             <div className="nf-empty">404</div>
           </Frame>
         </div>

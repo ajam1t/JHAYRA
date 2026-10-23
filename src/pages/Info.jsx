@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon, { WhatsAppGlyph } from '../components/Icon';
-import Frame from '../components/Frame';
 import Reveal from '../components/Reveal';
 import { Seo } from '../lib/seo';
 import { SITE, waLink } from '../lib/site';
@@ -203,33 +202,6 @@ function About() {
           </div>
         </div>
       </section>
-      <section className="section">
-        <div className="wrap">
-          <div className="section-head">
-            <div>
-              <span className="eyebrow">The people</span>
-              <h2 className="h2">
-                Behind <em>every frame.</em>
-              </h2>
-            </div>
-          </div>
-          <div className="team">
-            {[
-              ['Sandeep Jha', 'Founder & CEO'],
-              ['AJ', 'IT Infrastructure & Developer Head'],
-              ['Sumit Jha', 'Production Head'],
-            ].map(([n, r], i) => (
-              <div key={n} className="member">
-                <Frame colour={['#B8932A', '#1C1C1C', '#6B4423'][i]} ratio={{ w: 12, h: 14 }} glare={false}>
-                  <div className="member-init">{n[0]}</div>
-                </Frame>
-                <b>{n}</b>
-                <small>{r}</small>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
       <section className="section-sm center">
         <div className="wrap">
           <h2 className="h2">
@@ -280,7 +252,7 @@ function Contact() {
             <span>
               <b>Instagram</b>
               <a href={SITE.instagram} target="_blank" rel="noopener noreferrer">
-                @jhayra.in
+                @thejhayra
               </a>
             </span>
           </li>
