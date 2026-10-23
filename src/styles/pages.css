@@ -2157,3 +2157,13 @@
 .insp > * {
   min-width: 0;
 }
+.chip-room {
+  border-color: var(--gold-soft);
+  background: #fbf5e8;
+}
+.chip-sep {
+  flex: none;
+  width: 1px;
+  background: var(--line);
+  margin: 4px 2px;
+}

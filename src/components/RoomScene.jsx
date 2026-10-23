@@ -68,22 +68,26 @@ function Sofa({ id }) {
  * known real width, so every frame is drawn at (inches × pixels-per-inch).
  * `frames`: [{ key, src, children, wIn, hIn, colour, x (0–1), y (0–1) }]
  */
-export default function RoomScene({ frames = [], wall = WALLS[0], furniture = 'sofa', photo, onFrameDrag, onFrameClick, selected, groupHeightIn, children, className = '' }) {
+export default function RoomScene({ frames = [], wall = WALLS[0], furniture = 'sofa', photo, onFrameDrag, onFrameClick, selected, groupHeightIn, zoom = 1, furnitureWidth = 0.62, decor = false, children, className = '' }) {
   const ref = useRef(null);
-  const [W, setW] = useState(800);
+  const [{ W, H }, setSize] = useState({ W: 800, H: 550 });
   const drag = useRef(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const ro = new ResizeObserver(([e]) => setW(e.contentRect.width));
+    const ro = new ResizeObserver(([e]) => setSize({ W: e.contentRect.width, H: e.contentRect.height || (e.contentRect.width * 11) / 16 }));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
   const f = FURNITURE.find((x) => x.id === furniture) || FURNITURE[0];
-  // Furniture spans 62% of the scene; an empty wall shows ~120 inches across.
-  const ppi = f.width ? (W * 0.62) / f.width : W / 120;
+  // Furniture spans `furnitureWidth` of the scene; an empty wall shows ~120 inches across.
+  // `zoom` enlarges frames for decorative scenes (true scale when 1).
+  const ppi = (f.width ? (W * furnitureWidth) / f.width : W / 120) * zoom;
+  // Top edge of the furniture as a fraction of the scene height (it sits 12% above the bottom).
+  const ASPECT = { sofa: 300 / 840, bed: 260 / 720, console: 300 / 480 };
+  const top = ASPECT[f.id] ? 1 - 0.12 - (W * furnitureWidth * ASPECT[f.id]) / H : null;
 
   const down = (key) => (e) => {
     if (!onFrameDrag) return;
@@ -115,16 +119,42 @@ export default function RoomScene({ frames = [], wall = WALLS[0], furniture = 's
           <div className="room-skirting" />
         </>
       )}
+      {!photo && decor && (
+        <>
+          <div className="room-rug" />
+          <svg className="room-lamp" viewBox="0 0 60 300" aria-hidden="true">
+            <path d="M12 0h36l10 44H2z" fill="#efe3cc" />
+            <path d="M12 0h36l10 44H2z" fill="url(#lamp-glow)" opacity=".5" />
+            <rect x="28" y="44" width="4" height="240" fill="#3d3329" />
+            <ellipse cx="30" cy="290" rx="20" ry="6" fill="#3d3329" />
+            <defs>
+              <radialGradient id="lamp-glow" cx="50%" cy="100%" r="80%">
+                <stop offset="0" stopColor="#fff6dc" />
+                <stop offset="1" stopColor="#efe3cc" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+          </svg>
+          <svg className="room-plant" viewBox="0 0 120 220" aria-hidden="true">
+            <g fill="#5f7a52">
+              <path d="M60 150C40 120 18 110 6 70c26 6 44 30 54 80z" />
+              <path d="M62 150c4-40 20-70 50-96-4 40-22 70-50 96z" fill="#6e8a5f" />
+              <path d="M58 152C46 100 50 50 70 12c10 44 4 96-12 140z" fill="#4f6a45" />
+              <path d="M60 152c-18-20-40-26-58-24 18 16 38 26 58 24z" fill="#6e8a5f" />
+              <path d="M62 152c16-24 38-34 56-34-14 18-34 30-56 34z" />
+            </g>
+            <path d="M34 150h52l-8 66H42z" fill="#d9cbb4" />
+            <path d="M34 150h52l-2 10H36z" fill="#c4b49a" />
+          </svg>
+        </>
+      )}
       {!photo && f.width > 0 && (
-        <div className="room-furniture-wrap" style={{ width: `${62}%` }}>
+        <div className="room-furniture-wrap" style={{ width: `${furnitureWidth * 100}%` }}>
           <Sofa id={f.id} />
         </div>
       )}
       {frames.map((fr) => {
         const wPx = fr.wIn * ppi * (fr.scale || 1);
         // Auto-hang: bottom edge ~9in above the furniture (or eye level on an empty wall).
-        const H = (W * 11) / 16;
-        const top = { sofa: 0.558, bed: 0.554, console: 0.316 }[f.id];
         // Groups (gallery walls) hang as one block; dxIn/dyIn are inches from the block centre.
         const blockH = groupHeightIn ?? fr.hIn;
         const autoY = (top ? top - ((9 + blockH / 2) * ppi * (fr.scale || 1)) / H : 0.42) + ((fr.dyIn || 0) * ppi) / H;

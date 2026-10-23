@@ -9,6 +9,7 @@ import { searchProducts, useCategories, useProducts } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
 import { BRAND } from '../lib/brand';
 import { waLink } from '../lib/site';
+import { ROOMS, ROOM_MAP } from '../lib/rooms';
 
 const SORTS = [
   ['featured', 'Featured'],
@@ -47,6 +48,7 @@ export default function Shop() {
   const sort = params.get('sort') || 'featured';
   const q = params.get('q') || '';
   const photo = params.get('photo') === '1';
+  const room = ROOM_MAP[params.get('room')];
 
   const set = (k, v) => {
     const n = new URLSearchParams(params);
@@ -64,6 +66,7 @@ export default function Shop() {
   const list = useMemo(() => {
     let l = products || [];
     if (category) l = l.filter((p) => p.category === category);
+    if (room) l = l.filter((p) => room.cats.includes(p.category));
     if (photo) l = l.filter((p) => p.customer_photo_eligible);
     if (q) l = searchProducts(l, q);
     else if (sort === 'bestsellers') l = [...l].sort((a, b) => b.is_bestseller - a.is_bestseller || (b.review_count || 0) - (a.review_count || 0));
@@ -71,30 +74,36 @@ export default function Shop() {
     else if (sort === 'rating') l = [...l].sort((a, b) => (b.rating || 0) - (a.rating || 0));
     else if (sort === 'az') l = [...l].sort((a, b) => a.name.localeCompare(b.name));
     return l;
-  }, [products, category, photo, q, sort]);
+  }, [products, category, photo, q, sort, room]);
 
   const cat = categories?.find((c) => c.slug === category);
-  const title = q ? `Results for “${q}”` : cat ? cat.name : 'All frames & wall art';
+  const title = q ? `Results for “${q}”` : cat ? cat.name : room ? `Wall art for your ${room.label.toLowerCase()}` : 'All frames & wall art';
 
   return (
     <>
       <Seo
         title={cat ? `${cat.name} Frames & Wall Art` : 'Shop Personalised Photo Frames & Wall Art'}
         description={cat?.description || `Shop handcrafted frames — spiritual, modern, nature, couple and family wall art. Free delivery across India. Since ${BRAND.since}.`}
-        path={category ? `/shop?category=${category}` : '/shop'}
+        path={category ? `/shop?category=${category}` : room ? `/shop?room=${room.id}` : '/shop'}
         noindex={!!q}
       />
       <section className="page-hero shop-hero">
         <div className="wrap">
           <span className="eyebrow">Shop</span>
           <h1 className="h1">{title}</h1>
-          <p className="lead">{cat?.description || 'Handcrafted to order in India. Every design comes in four sizes and a choice of frame finishes — all delivered free.'}</p>
+          <p className="lead">{cat?.description || room?.blurb || 'Handcrafted to order in India. Every design comes in four sizes and a choice of frame finishes — all delivered free.'}</p>
         </div>
       </section>
       <div className="filterbar">
         <div className="wrap">
           <div className="chips scroll" role="toolbar" aria-label="Filter by category">
-            <button className="chip" aria-pressed={!category} onClick={() => set('category', '')}>
+            {ROOMS.map((r) => (
+              <button key={r.id} className="chip chip-room" aria-pressed={room?.id === r.id} onClick={() => set('room', room?.id === r.id ? '' : r.id)}>
+                {r.label}
+              </button>
+            ))}
+            <span className="chip-sep" aria-hidden="true" />
+            <button className="chip" aria-pressed={!category && !room} onClick={() => setParams({}, { replace: true })}>
               All <span className="chip-n">{products?.length || ''}</span>
             </button>
             {usedCats.map((c) => (

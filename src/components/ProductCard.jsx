@@ -27,7 +27,7 @@ export function categoryLabel(slug, categories) {
   return (slug || '').replace(/-/g, ' ');
 }
 
-export default function ProductCard({ product, categories, priority = false, index = 0 }) {
+export default function ProductCard({ product, categories, priority = false, index = 0, room = false }) {
   const { wish, toggleWish } = useShop();
   const cart = useCart();
   const on = wish.includes(product.id);
@@ -55,7 +55,7 @@ export default function ProductCard({ product, categories, priority = false, ind
   };
 
   return (
-    <article className="pcard" style={{ '--i': index }}>
+    <article className={`pcard ${room ? 'pcard-room' : ''}`} style={{ '--i': index }}>
       <div className="pcard-media">
         <Link to={`/product/${product.id}`} className="pcard-stage" aria-label={product.name}>
           <Frame src={product.thumbnail} alt={product.name} sizes="(max-width: 760px) 40vw, (max-width: 1120px) 22vw, 16vw" priority={priority} glare={false} thickness={5.5} />

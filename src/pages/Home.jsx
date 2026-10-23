@@ -1,16 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Frame from '../components/Frame';
 import Img from '../components/Img';
 import Icon from '../components/Icon';
 import Reveal from '../components/Reveal';
+import RoomScene, { WALLS } from '../components/RoomScene';
 import Particles from '../components/Particles';
 import TemplateCanvas from '../components/TemplateCanvas';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard';
 import { Seo } from '../lib/seo';
-import { useCategories, useCollections, useProducts } from '../lib/catalog';
-import { useTemplates, MOMENTS } from '../lib/templates';
-import { readPhoto, photoHandoff } from '../lib/upload';
+import { useCategories, useProducts } from '../lib/catalog';
+import { useTemplates } from '../lib/templates';
+import { ROOMS } from '../lib/rooms';
 import { useFestival } from '../state/festival';
 import { useToast } from '../state/store';
 import { daysUntil, orderBy } from '../lib/festivals';
@@ -163,158 +164,109 @@ function FestivalPicks({ festival, products, categories }) {
   );
 }
 
-/* ── Default hero: drop your photo ────────────────────────────────────── */
-function PhotoHero({ products, compact = false }) {
-  const [photo, setPhoto] = useState(null);
-  const [drag, setDrag] = useState(false);
-  const [i, setI] = useState(0);
-  const input = useRef(null);
-  const navigate = useNavigate();
-  const toast = useToast();
-  const art = (products || []).filter((p) => p.thumbnail && p.is_bestseller).slice(0, 6);
+/* ── Hero: a styled room with real bestsellers on the wall ─────────────── */
+const ART_CATS = ['nature', 'personalized', 'modern-art', 'art-abstract', 'canvas', 'religious', 'home-vastu', 'running-horses'];
+const WALL = Object.fromEntries(WALLS.map((w) => [w.id, w]));
+const FINISH = ['#B8932A', '#1C1C1C', '#6B4423'];
 
-  useEffect(() => {
-    if (photo || art.length < 2) return;
-    const t = setInterval(() => setI((x) => (x + 1) % art.length), 3800);
-    return () => clearInterval(t);
-  }, [photo, art.length]);
+function RoomHero({ products }) {
+  const sets = useMemo(() => {
+    const art = (products || []).filter((p) => p.thumbnail && ART_CATS.includes(p.category)).sort((a, b) => b.is_bestseller - a.is_bestseller);
+    const out = [];
+    for (let i = 0; i + 3 <= art.length && out.length < 4; i += 3) out.push(art.slice(i, i + 3));
+    return out;
+  }, [products]);
+  const [n, setN] = useState(0);
+  const set = sets[n % Math.max(1, sets.length)] || [];
+  const frames = set.map((p, i) => ({ key: `${n}-${i}`, src: p.thumbnail, wIn: 12, hIn: 18, dxIn: (i - 1) * 14.5, dyIn: 0, colour: FINISH[n % 3] }));
 
-  const pick = async (file) => {
-    try {
-      const p = await readPhoto(file);
-      setPhoto(p);
-    } catch (e) {
-      toast(e.message, 'warn');
-    }
-  };
-  const go = () => {
-    photoHandoff.set(photo);
-    navigate('/customize/photo');
-  };
-
-  const Tag = compact ? 'section' : 'section';
   return (
-    <Tag className={`hero ${compact ? 'hero-compact' : ''}`}>
-      <div className="wrap hero-grid">
-        <div className="hero-copy">
-          <span className="eyebrow">Since {BRAND.since} · {BRAND.homes} homes</span>
-          {compact ? (
-            <h2 className="h1">
-              Or frame <em>your own</em> photo.
-            </h2>
-          ) : (
-            <h1 className="display">
-              The photo you keep going back to <em>deserves a frame.</em>
-            </h1>
-          )}
-          <p className="lead">Drop any photo here and watch it become a handcrafted frame — sized, finished and delivered free across India. From {money(MIN_PRICE)}.</p>
-          <div className="row hero-ctas">
-            {photo ? (
-              <>
-                <button className="btn btn-gold btn-lg" onClick={go}>
-                  Frame this photo <Icon name="arrow" size={18} />
-                </button>
-                <button className="btn btn-ghost btn-lg" onClick={() => input.current?.click()}>
-                  Try another
-                </button>
-              </>
-            ) : (
-              <>
-                <button className="btn btn-gold btn-lg" onClick={() => input.current?.click()}>
-                  <Icon name="upload" size={18} /> Upload your photo
-                </button>
-                <Link to="/shop" className="btn btn-ghost btn-lg">
-                  Explore designs
-                </Link>
-              </>
-            )}
-          </div>
-          <ul className="hero-proof">
-            <li>
-              <Icon name="truck" size={18} /> Free delivery, all India
-            </li>
-            <li>
-              <Icon name="refresh" size={18} /> Free replacement if damaged
-            </li>
-            <li>
-              <Icon name="lock" size={18} /> UPI · Cards · Netbanking
-            </li>
-          </ul>
+    <section className="rh">
+      <div className="rh-copy wrap">
+        <span className="eyebrow">Since {BRAND.since} · {BRAND.homes} homes</span>
+        <h1 className="display">
+          Turn your moments into <em>timeless art.</em>
+        </h1>
+        <p className="lead">Premium wall art and personalised frames, handcrafted in India and delivered free — so your walls finally feel like you.</p>
+        <div className="row rh-ctas">
+          <Link to="/shop" className="btn btn-gold btn-lg">
+            Explore collection <Icon name="arrow" size={18} />
+          </Link>
+          <Link to="/customize/photo" className="btn btn-ghost btn-lg">
+            Frame your photo
+          </Link>
         </div>
-        <div
-          className={`hero-stage ${drag ? 'drag' : ''}`}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDrag(true);
-          }}
-          onDragLeave={() => setDrag(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDrag(false);
-            const f = e.dataTransfer.files?.[0];
-            if (f) pick(f);
-          }}
-        >
-          <div className="hero-wall">
-            <div className="hero-spot" />
-            <div className="hero-frame">
-              {photo ? (
-                <Frame key={photo.url} src={photo.url} ratio={{ w: 12, h: 18 }} orientation={photo.width > photo.height * 1.15 ? 'Horizontal' : 'Vertical'} colour="#1C1C1C" tilt priority />
-              ) : (
-                <Frame key={art[i]?.id || 'ph'} src={art[i]?.thumbnail} alt={art[i]?.name || ''} ratio={{ w: 12, h: 18 }} colour={['#1C1C1C', '#B8932A', '#6B4423'][i % 3]} tilt priority />
-              )}
-            </div>
-            <button className="hero-drop" onClick={() => input.current?.click()}>
-              <Icon name="image" size={18} />
-              {photo ? 'Change photo' : 'Drop a photo to see it framed'}
-            </button>
-            {photo && (
-              <span className={`hero-q q-${photo.quality}`}>
-                {photo.quality === 'low' ? 'Low resolution — best at A4' : photo.quality === 'unknown' ? 'Photo ready' : 'Great print quality'}
-              </span>
-            )}
-          </div>
-        </div>
+        <ul className="rh-trust">
+          <li>
+            <Icon name="sparkle" size={20} />
+            <span>
+              <b>Premium quality</b>Frames & prints
+            </span>
+          </li>
+          <li>
+            <Icon name="truck" size={20} />
+            <span>
+              <b>Free delivery</b>Across India
+            </span>
+          </li>
+          <li>
+            <Icon name="brush" size={20} />
+            <span>
+              <b>Personalised</b>Just for you
+            </span>
+          </li>
+          <li>
+            <Icon name="refresh" size={20} />
+            <span>
+              <b>Free replacement</b>If it arrives damaged
+            </span>
+          </li>
+        </ul>
       </div>
-      <input ref={input} type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && pick(e.target.files[0])} />
-    </Tag>
+      <div className="rh-room">
+        <RoomScene wall={WALL.ivory} furniture="sofa" frames={frames} groupHeightIn={18} zoom={1.9} furnitureWidth={0.6} decor className="room-hero" />
+        {sets.length > 1 && (
+            <span className="rh-arrows rh-arrows-room">
+              <button className="icon-btn" aria-label="Previous wall" onClick={() => setN((x) => (x + sets.length - 1) % sets.length)}>
+                <Icon name="arrowL" size={18} />
+              </button>
+              <button className="icon-btn" aria-label="Next wall" onClick={() => setN((x) => (x + 1) % sets.length)}>
+                <Icon name="arrow" size={18} />
+              </button>
+            </span>
+          )}
+
+        {set.length > 0 && (
+          <div className="rh-tags">
+            {set.map((p) => (
+              <Link key={p.id} to={`/product/${p.id}`}>
+                {p.name} <span>from {money(p.price)}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
-/* ── Shop by moment ───────────────────────────────────────────────────── */
-function Moments() {
-  const { active } = useTemplates();
+/* ── Shop by room ─────────────────────────────────────────────────────── */
+function ShopByRoom({ products }) {
   return (
-    <section className="section">
+    <section className="section-sm">
       <div className="wrap">
-        <div className="section-head">
-          <div>
-            <span className="eyebrow">Personalise</span>
-            <h2 className="h2">
-              Every moment has <em>a frame.</em>
-            </h2>
-          </div>
-          <Link to="/customize" className="link">
-            All {active.length} designs <Icon name="arrow" size={16} />
-          </Link>
-        </div>
-        <div className="moments">
-          {MOMENTS.slice(0, 4).map((m, i) => {
-            const t = active.find((x) => m.groups.includes(x.group));
+        <div className="rooms-rail">
+          {ROOMS.map((r, i) => {
+            const pick = (products || []).filter((p) => p.thumbnail && r.cats.includes(p.category)).slice(0, 2);
+            const frames = pick.map((p, k) => ({ key: p.id, src: p.thumbnail, wIn: 9.5, hIn: 13, dxIn: pick.length > 1 ? (k ? 6 : -6) : 0, colour: FINISH[(i + k) % 3] }));
             return (
-              <Reveal key={m.id} delay={i * 0.05}>
-                <Link to={`/customize?moment=${m.id}`} className="moment">
-                  <div className="moment-art">
-                    {t && (
-                      <Frame ratio={{ w: 12, h: 16 }} colour={i % 2 ? '#1C1C1C' : '#B8932A'} glare={false}>
-                        <TemplateCanvas template={t} mini />
-                      </Frame>
-                    )}
-                  </div>
-                  <div>
-                    <b>{m.label}</b>
-                    <small>{m.hint}</small>
-                  </div>
+              <Reveal key={r.id} delay={i * 0.05}>
+                <Link to={`/shop?room=${r.id}`} className="room-card">
+                  <RoomScene wall={WALL[r.wall]} furniture={r.furniture} frames={frames} groupHeightIn={13} zoom={2.1} furnitureWidth={0.78} className="room-mini" />
+                  <b>{r.label}</b>
+                  <span className="link-sm">
+                    Shop now <Icon name="arrow" size={14} />
+                  </span>
                 </Link>
               </Reveal>
             );
@@ -325,96 +277,113 @@ function Moments() {
   );
 }
 
-/* ── Collections from the admin panel ─────────────────────────────────── */
-function Collections({ collections }) {
-  if (!collections?.length) return null;
-  return (
-    <section className="section surface-cream">
-      <div className="wrap">
-        <div className="section-head">
-          <div>
-            <span className="eyebrow">Collections</span>
-            <h2 className="h2">
-              Every wall <em>has a story.</em>
-            </h2>
-          </div>
-          <Link to="/collections" className="link">
-            Browse collections <Icon name="arrow" size={16} />
-          </Link>
-        </div>
-        <div className="bento">
-          {collections.slice(0, 6).map((c, i) => (
-            <Reveal key={c.id} delay={i * 0.06} className={`bento-item b${i}`}>
-              <Link to={c.link || '/shop'} className="bento-link">
-                <Img src={c.image_url} alt={c.alt_text || c.title} sizes="(max-width: 760px) 100vw, 40vw" width={900} />
-                <div className="bento-cap">
-                  <small>{c.subtitle}</small>
-                  <b>{c.title}</b>
-                  <span className="bento-go">
-                    <Icon name="arrow" size={18} />
-                  </span>
-                </div>
-              </Link>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FinalCta() {
-  const ref = useRef(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const move = (e) => {
-      const r = el.getBoundingClientRect();
-      el.style.setProperty('--mx', `${e.clientX - r.left}px`);
-      el.style.setProperty('--my', `${e.clientY - r.top}px`);
-    };
-    el.addEventListener('pointermove', move);
-    return () => el.removeEventListener('pointermove', move);
-  }, []);
-  return (
-    <section ref={ref} className="final-cta surface-night">
-      <div className="wrap center">
-        <span className="eyebrow center">Since {BRAND.since} · {BRAND.homes} homes · {BRAND.gifts} gifts</span>
-        <h2 className="h1" style={{ marginTop: 18 }}>
-          Make a wall <em>worth stopping at.</em>
-        </h2>
-        <div className="row" style={{ justifyContent: 'center', marginTop: 28, flexWrap: 'wrap' }}>
-          <Link to="/customize" className="btn btn-gold btn-lg">
-            Start personalising
-          </Link>
-          <Link to="/gift-finder" className="btn btn-ghost-light btn-lg">
-            Find a gift in 30 seconds
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-const TRUST = [
-  ['truck', 'Free delivery', 'Every order, every pincode'],
-  ['refresh', 'Free replacement', 'If it arrives damaged'],
-  ['shield', 'Secure checkout', 'Razorpay · UPI · Cards'],
-  ['sparkle', `Since ${BRAND.since}`, `${BRAND.homes} homes on Amazon & beyond`],
+/* ── Personalised wall art studio ─────────────────────────────────────── */
+const STUDIO = [
+  ['Single photo frame', '/customize/photo', 'single-photo'],
+  ['Couple frame', '/customize?moment=anniversary', 'couple-frame'],
+  ['Photo collage', '/customize?group=collage-frame', 'collage-frame'],
+  ['Moon & stars', '/customize?moment=moon', 'moon-style'],
 ];
+
+function Studio({ products }) {
+  const { active } = useTemplates();
+  const photo = (products || []).find((p) => p.category === 'love-romance' && p.thumbnail) || (products || []).find((p) => p.thumbnail);
+  const couple = active.find((t) => t.group === 'couple-frame' && t.slots?.length === 1) || active.find((t) => t.slots?.length === 1);
+  return (
+    <section className="section studio-sec">
+      <div className="wrap studio-grid">
+        <div className="studio-copy">
+          <span className="eyebrow">Our signature</span>
+          <h2 className="h1" style={{ margin: '14px 0 16px' }}>
+            Personalised <em>wall art studio.</em>
+          </h2>
+          <p className="lead">Turn your favourite photo into a framed keepsake. Add names, dates and a message, choose the size and finish, and see a live preview before you order.</p>
+          <Link to="/customize" className="btn btn-lg" style={{ marginTop: 26 }}>
+            Create your artwork <Icon name="arrow" size={18} />
+          </Link>
+        </div>
+        <div className="studio-visual" aria-hidden="true">
+          {photo && (
+            <div className="studio-polaroid">
+              <Img src={photo.thumbnail} alt="" sizes="200px" width={400} />
+            </div>
+          )}
+          <span className="studio-arrow">
+            <Icon name="arrow" size={26} />
+          </span>
+          <div className="studio-frame">
+            {couple && (
+              <Frame ratio={{ w: 12, h: 16 }} colour="#B8932A" mat tilt>
+                <TemplateCanvas template={couple} photos={photo ? { [couple.slots[0].id]: photo.thumbnail } : {}} texts={{ name1: 'Aarav', name2: 'Ananya', name: 'Aarav & Ananya', date: '14 February 2024', msg: 'Forever starts here' }} />
+              </Frame>
+            )}
+          </div>
+        </div>
+        <ul className="studio-opts">
+          {STUDIO.map(([label, to, group]) => {
+            const t = active.find((x) => x.group === group);
+            return (
+              <li key={label}>
+                <Link to={to}>
+                  <span className="studio-thumb">
+                    {t && (
+                      <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false} thickness={6}>
+                        <TemplateCanvas template={t} mini />
+                      </Frame>
+                    )}
+                  </span>
+                  {label}
+                  <Icon name="chevron" size={16} />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/* ── See it on your wall ──────────────────────────────────────────────── */
+function WallBanner({ products }) {
+  const p = (products || []).find((x) => x.is_bestseller && x.thumbnail);
+  if (!p) return null;
+  return (
+    <section className="wall-banner surface-night">
+      <div className="wrap wall-banner-grid">
+        <div className="phone" aria-hidden="true">
+          <div className="phone-screen">
+            <RoomScene wall={WALL.sage} furniture="sofa" frames={[{ key: 'p', src: p.thumbnail, wIn: 18, hIn: 24, colour: '#B8932A' }]} zoom={2.2} furnitureWidth={0.8} className="room-phone" />
+            <span className="phone-a4">A4</span>
+            <span className="phone-shutter" />
+          </div>
+        </div>
+        <div>
+          <span className="eyebrow">Visualise</span>
+          <h2 className="h1" style={{ margin: '14px 0 16px' }}>
+            See it on <em>your wall.</em>
+          </h2>
+          <p className="lead">Point your phone at your wall and see any frame hanging there, at its real size — or try it in a room with your wall colour before you buy.</p>
+          <Link to={`/product/${p.id}?view=room`} className="btn btn-light btn-lg" style={{ marginTop: 26 }}>
+            Try the room visualiser <Icon name="arrow" size={18} />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   const festival = useFestival();
   const { data: products, loading } = useProducts();
   const { data: categories } = useCategories();
-  const { data: collections } = useCollections();
   const featured = (products || []).filter((p) => p.homepage_visible || p.is_bestseller).slice(0, 8);
 
   return (
     <>
       <Seo
         title={festival ? `${festival.name} Gifts — Personalised Frames | JHAYRA` : 'JHAYRA — Personalised Photo Frames & Wall Art, Made in India'}
-        description={festival ? festival.lead : 'Turn your favourite photo into a handcrafted frame. Personalised couple, family and wedding frames, spiritual and modern wall art. Free delivery across India.'}
+        description={festival ? festival.lead : 'Premium wall art and personalised photo frames, handcrafted in India since 2017. Shop by room, design your own, and see it on your wall. Free delivery across India.'}
         path="/"
         jsonLd={{
           '@context': 'https://schema.org',
@@ -427,45 +396,34 @@ export default function Home() {
           contactPoint: { '@type': 'ContactPoint', telephone: '+91-7070728989', contactType: 'customer service', availableLanguage: ['English', 'Hindi'] },
         }}
       />
-      {festival ? <FestivalHero festival={festival} /> : <PhotoHero products={products} />}
-      <div className="trust">
-        {TRUST.map(([ic, b, s]) => (
-          <div key={b}>
-            <Icon name={ic} />
-            <span>
-              <b>{b}</b>
-              <small>{s}</small>
-            </span>
-          </div>
-        ))}
-      </div>
+      {festival ? <FestivalHero festival={festival} /> : <RoomHero products={products} />}
       {festival && <FestivalPicks festival={festival} products={products} categories={categories} />}
+      <ShopByRoom products={products} />
+      <Studio products={products} />
       <section className="section">
         <div className="wrap">
           <div className="section-head">
             <div>
-              <span className="eyebrow">Bestsellers</span>
-              <h2 className="h2">
-                Loved on <em>thousands of walls.</em>
-              </h2>
+              <h2 className="h2">Bestsellers</h2>
+              <p className="muted" style={{ marginTop: 8 }}>
+                Our most-loved wall art, chosen by {BRAND.homes} happy homes.
+              </p>
             </div>
-            <Link to="/shop" className="link">
-              Shop all <Icon name="arrow" size={16} />
+            <Link to="/shop?sort=bestsellers" className="link">
+              View all <Icon name="arrow" size={16} />
             </Link>
           </div>
           <div className="grid-products home-best">
             {loading
               ? Array.from({ length: 8 }, (_, i) => <ProductCardSkeleton key={i} />)
-              : featured.map((p, i) => <ProductCard key={p.id} product={p} categories={categories} index={i} />)}
+              : featured.map((p, i) => <ProductCard key={p.id} product={p} categories={categories} index={i} room />)}
           </div>
           <p className="small muted" style={{ marginTop: 18 }}>
             ★ {BRAND.ratingSource}.
           </p>
         </div>
       </section>
-      <Moments />
-      <Collections collections={collections} />
-      <FinalCta />
+      <WallBanner products={products} />
     </>
   );
 }
