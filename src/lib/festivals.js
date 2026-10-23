@@ -38,6 +38,7 @@ export const FESTIVALS = [
   {
     id: 'diwali',
     name: 'Diwali',
+    enabled: false,
     date: '2026-11-08',
     from: '2026-10-30',
     to: '2026-11-09',
@@ -59,6 +60,7 @@ export const FESTIVALS = [
   {
     id: 'bhai-dooj',
     name: 'Bhai Dooj',
+    enabled: false,
     date: '2026-11-11',
     from: '2026-11-10',
     to: '2026-11-11',
@@ -78,6 +80,7 @@ export const FESTIVALS = [
   {
     id: 'christmas',
     name: 'Christmas & New Year',
+    enabled: false,
     date: '2026-12-25',
     from: '2026-12-12',
     to: '2027-01-01',
@@ -96,6 +99,7 @@ export const FESTIVALS = [
   {
     id: 'valentines',
     name: 'Valentine’s Day',
+    enabled: false,
     date: '2027-02-14',
     from: '2027-01-30',
     to: '2027-02-14',
@@ -114,6 +118,7 @@ export const FESTIVALS = [
   {
     id: 'holi',
     name: 'Holi',
+    enabled: false,
     date: '2027-03-22',
     from: '2027-03-12',
     to: '2027-03-22',
@@ -133,6 +138,7 @@ export const FESTIVALS = [
   {
     id: 'mothers-day',
     name: 'Mother’s Day',
+    enabled: false,
     date: '2027-05-09',
     from: '2027-04-28',
     to: '2027-05-09',
@@ -151,6 +157,7 @@ export const FESTIVALS = [
   {
     id: 'fathers-day',
     name: 'Father’s Day',
+    enabled: false,
     date: '2027-06-20',
     from: '2027-06-09',
     to: '2027-06-20',
@@ -169,6 +176,7 @@ export const FESTIVALS = [
   {
     id: 'raksha-bandhan',
     name: 'Raksha Bandhan',
+    enabled: false,
     date: '2027-08-17',
     from: '2027-08-06',
     to: '2027-08-17',
