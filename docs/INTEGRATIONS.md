@@ -84,7 +84,7 @@ The live camera mode overlays the frame on the camera feed and uses an A4 sheet 
 
 ## Worlds (/worlds)
 
-Twenty themed worlds, defined in `src/lib/worlds.js`. Each one fills itself from live products (by category slug and name keywords) and from personalised templates (by group). No backend work is needed. A world with nothing live shows an honest "Launching soon" page with a WhatsApp notify link.
+Twenty-three themed worlds, defined in `src/lib/worlds.js`. Each one fills itself from live products (by category slug and name keywords) and from personalised templates (by group). No backend work is needed. A world with nothing live shows an honest "Launching soon" page with a WhatsApp notify link.
 
 To fill the empty worlds, add products under these category slugs. Admin → Worlds can create any missing category in one click:
 
@@ -92,3 +92,8 @@ To fill the empty worlds, add products under these category slugs. Admin → Wor
 - `mithila`: hand-painted originals for the premium Heritage world.
 - `sikh`, `buddhist`, `jain`, `christian`, `islamic`: the faith tabs in Divine.
 - `genz-quotes`, `desi-quotes`: optional ready-made prints. These worlds already list editable quote templates.
+- `sports`, `cities`, `name-boards`: optional ready-made prints. These worlds already have live builders (jersey, city skyline, kids' name board) on editable templates.
+
+Template links can pre-fill text: `/customize/<template-id>?text.<field>=<value>`, for example `/customize/tmpl-name-aarav?text.name=Myra`. The Worlds builders and the homepage "Thought of the day" (`src/lib/thoughts.js`) use this.
+
+Note: bundled templates live in `src/templates.json`. If an admin saves templates from Admin → Templates, the saved copy in storage replaces the bundled list. Any templates added to the code after that save will not appear until they are added in the admin too.

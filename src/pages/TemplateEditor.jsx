@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Frame from '../components/Frame';
 import TemplateCanvas from '../components/TemplateCanvas';
 import Icon from '../components/Icon';
@@ -53,6 +53,7 @@ const DEFAULT_SCRATCH = {
 
 export default function TemplateEditor({ scratch = false }) {
   const { templateId } = useParams();
+  const [params] = useSearchParams();
   const { map, active } = useTemplates();
   const navigate = useNavigate();
   const cart = useCart();
@@ -76,7 +77,8 @@ export default function TemplateEditor({ scratch = false }) {
 
   useEffect(() => {
     if (!base) return;
-    setTexts((t) => (Object.keys(t).length ? t : Object.fromEntries(base.textFields.map((f) => [f.id, f.defaultValue || '']))));
+    // Links can pre-fill text, e.g. /customize/tmpl-name-aarav?text.name=Myra
+    setTexts((t) => (Object.keys(t).length ? t : Object.fromEntries(base.textFields.map((f) => [f.id, (params.get(`text.${f.id}`) ?? f.defaultValue ?? '').slice(0, f.maxChars || 80)]))));
     if (base.calendar && !cal) setCal({ ...base.calendar });
     if (base.hasCalendar && !base.calendar && !cal) setCal({ month: new Date().getMonth() + 1, year: new Date().getFullYear(), highlightDate: new Date().getDate() });
   }, [base?.id]); // eslint-disable-line react-hooks/exhaustive-deps

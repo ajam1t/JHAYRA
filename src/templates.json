@@ -137,6 +137,24 @@
    "label": "Desi Quotes",
    "color": "#2E3A33",
    "accent": "#F4F1E8"
+  },
+  {
+   "id": "sports",
+   "label": "Sports & Cricket",
+   "color": "#13281F",
+   "accent": "#F3EFE7"
+  },
+  {
+   "id": "cities",
+   "label": "City Love",
+   "color": "#F2E3C9",
+   "accent": "#1F2A33"
+  },
+  {
+   "id": "names",
+   "label": "Kids' Name Boards",
+   "color": "#FFF4E6",
+   "accent": "#3B2B4F"
   }
  ],
  "templates": [
@@ -9402,6 +9420,1639 @@
    "calendar": null,
    "decoratives": [
     "chalk"
+   ]
+  },
+  {
+   "id": "tmpl-sports-jersey-blue",
+   "title": "Home Jersey — Blue",
+   "group": "sports",
+   "subtitle": "Your name and number on a jersey — edit both",
+   "occasion": [
+    "fathers-day",
+    "birthday"
+   ],
+   "recipient": [
+    "father",
+    "grandparents"
+   ],
+   "description": "A framed jersey with any name and number, on a stadium-green background. “PAPA 01” is just an example — make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 124,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "Name on the back",
+     "defaultValue": "PAPA",
+     "maxChars": 12,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "number",
+     "label": "Number",
+     "defaultValue": "01",
+     "maxChars": 3,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Line under the jersey (optional)",
+     "defaultValue": "Captain of our home",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "jersey"
+   ],
+   "colors": {
+    "color": "#1E4FA8",
+    "accent": "#F3EFE7"
+   }
+  },
+  {
+   "id": "tmpl-sports-jersey-saffron",
+   "title": "Home Jersey — Saffron",
+   "group": "sports",
+   "subtitle": "Your name and number on a jersey — edit both",
+   "occasion": [
+    "birthday"
+   ],
+   "recipient": [
+    "friend",
+    "sibling",
+    "self"
+   ],
+   "description": "A framed jersey with any name and number, on a stadium-green background. “ROHAN 23” is just an example — make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 125,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "Name on the back",
+     "defaultValue": "ROHAN",
+     "maxChars": 12,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "number",
+     "label": "Number",
+     "defaultValue": "23",
+     "maxChars": 3,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Line under the jersey (optional)",
+     "defaultValue": "Birthday boy · Est. 2003",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "jersey"
+   ],
+   "colors": {
+    "color": "#E8772E",
+    "accent": "#171916"
+   }
+  },
+  {
+   "id": "tmpl-sports-jersey-green",
+   "title": "Home Jersey — Green",
+   "group": "sports",
+   "subtitle": "Your name and number on a jersey — edit both",
+   "occasion": [
+    "mothers-day",
+    "birthday"
+   ],
+   "recipient": [
+    "mother",
+    "parents"
+   ],
+   "description": "A framed jersey with any name and number, on a stadium-green background. “MAA 01” is just an example — make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 126,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "Name on the back",
+     "defaultValue": "MAA",
+     "maxChars": 12,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "number",
+     "label": "Number",
+     "defaultValue": "01",
+     "maxChars": 3,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Line under the jersey (optional)",
+     "defaultValue": "Our all-rounder",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "jersey"
+   ],
+   "colors": {
+    "color": "#2E8B57",
+    "accent": "#F3EFE7"
+   }
+  },
+  {
+   "id": "tmpl-sports-jersey-white",
+   "title": "Home Jersey — White",
+   "group": "sports",
+   "subtitle": "Your name and number on a jersey — edit both",
+   "occasion": [
+    "birthday",
+    "graduation"
+   ],
+   "recipient": [
+    "kids",
+    "friend",
+    "self"
+   ],
+   "description": "A framed jersey with any name and number, on a stadium-green background. “ANAYA 12” is just an example — make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 127,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "Name on the back",
+     "defaultValue": "ANAYA",
+     "maxChars": 12,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "number",
+     "label": "Number",
+     "defaultValue": "12",
+     "maxChars": 3,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Line under the jersey (optional)",
+     "defaultValue": "Player of the year",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "jersey"
+   ],
+   "colors": {
+    "color": "#F3EFE7",
+    "accent": "#171916"
+   }
+  },
+  {
+   "id": "tmpl-sports-cricket-is-life",
+   "title": "Cricket Is Life",
+   "group": "sports",
+   "subtitle": "Sports quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "fathers-day"
+   ],
+   "recipient": [
+    "friend",
+    "father",
+    "self"
+   ],
+   "description": "“Cricket is life. Rest is details.” — a bold scoreboard-style frame for the den, the dorm or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 128,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Cricket is life. Rest is details.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "est. gully cricket",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#13281F",
+    "accent": "#F3EFE7"
+   }
+  },
+  {
+   "id": "tmpl-sports-match-day",
+   "title": "Sunday Match Day",
+   "group": "sports",
+   "subtitle": "Sports quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "fathers-day"
+   ],
+   "recipient": [
+    "friend",
+    "father",
+    "self"
+   ],
+   "description": "“Sunday = match day.” — a bold scoreboard-style frame for the den, the dorm or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 129,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Sunday = match day.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "no meetings, please",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#F3EFE7",
+    "accent": "#13281F"
+   }
+  },
+  {
+   "id": "tmpl-sports-not-out",
+   "title": "Not Out Since",
+   "group": "sports",
+   "subtitle": "Sports quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "fathers-day"
+   ],
+   "recipient": [
+    "friend",
+    "father",
+    "self"
+   ],
+   "description": "“Not out since 1985.” — a bold scoreboard-style frame for the den, the dorm or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 130,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Not out since 1985.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "still batting, still smiling",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#B3261E",
+    "accent": "#F3EFE7"
+   }
+  },
+  {
+   "id": "tmpl-sports-eat-sleep-play",
+   "title": "Eat Sleep Play",
+   "group": "sports",
+   "subtitle": "Sports quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "fathers-day"
+   ],
+   "recipient": [
+    "friend",
+    "father",
+    "self"
+   ],
+   "description": "“Eat. Sleep. Play. Repeat.” — a bold scoreboard-style frame for the den, the dorm or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 131,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Eat. Sleep. Play. Repeat.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#14213D",
+    "accent": "#FCA311"
+   }
+  },
+  {
+   "id": "tmpl-sports-at-the-nets",
+   "title": "At The Nets",
+   "group": "sports",
+   "subtitle": "Sports quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "fathers-day"
+   ],
+   "recipient": [
+    "friend",
+    "father",
+    "self"
+   ],
+   "description": "“Out of office. At the nets.” — a bold scoreboard-style frame for the den, the dorm or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 132,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Out of office. At the nets.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "back after tea",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#FCD34D",
+    "accent": "#13281F"
+   }
+  },
+  {
+   "id": "tmpl-sports-gully-legend",
+   "title": "Gully Cricket Legend",
+   "group": "sports",
+   "subtitle": "Sports quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "fathers-day"
+   ],
+   "recipient": [
+    "friend",
+    "father",
+    "self"
+   ],
+   "description": "“Gully cricket legend.” — a bold scoreboard-style frame for the den, the dorm or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 133,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Gully cricket legend.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "one tip, one hand",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#F3EFE7",
+    "accent": "#B3261E"
+   }
+  },
+  {
+   "id": "tmpl-city-mumbai",
+   "title": "Mumbai Skyline",
+   "group": "cities",
+   "subtitle": "City name, tagline and coordinates — edit all three",
+   "occasion": [
+    "housewarming",
+    "birthday",
+    "farewell"
+   ],
+   "recipient": [
+    "self",
+    "friend",
+    "family"
+   ],
+   "description": "Mumbai in big type over a city skyline, with its map coordinates. Change the city, tagline and coordinates to make it your hometown, your first apartment or where you met.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 134,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "City",
+     "defaultValue": "Mumbai",
+     "maxChars": 16,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "tagline",
+     "label": "Tagline",
+     "defaultValue": "Aamchi Mumbai",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "coords",
+     "label": "Coordinates or a date",
+     "defaultValue": "19.0760° N, 72.8777° E",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "skyline"
+   ],
+   "colors": {
+    "color": "#F6D7B0",
+    "accent": "#1F2A33"
+   },
+   "variant": 0
+  },
+  {
+   "id": "tmpl-city-delhi",
+   "title": "Delhi Skyline",
+   "group": "cities",
+   "subtitle": "City name, tagline and coordinates — edit all three",
+   "occasion": [
+    "housewarming",
+    "birthday",
+    "farewell"
+   ],
+   "recipient": [
+    "self",
+    "friend",
+    "family"
+   ],
+   "description": "Delhi in big type over a city skyline, with its map coordinates. Change the city, tagline and coordinates to make it your hometown, your first apartment or where you met.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 135,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "City",
+     "defaultValue": "Delhi",
+     "maxChars": 16,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "tagline",
+     "label": "Tagline",
+     "defaultValue": "Dilli Dilwalon Ki",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "coords",
+     "label": "Coordinates or a date",
+     "defaultValue": "28.6139° N, 77.2090° E",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "skyline"
+   ],
+   "colors": {
+    "color": "#F2E3C9",
+    "accent": "#5A2A1A"
+   },
+   "variant": 1
+  },
+  {
+   "id": "tmpl-city-bengaluru",
+   "title": "Bengaluru Skyline",
+   "group": "cities",
+   "subtitle": "City name, tagline and coordinates — edit all three",
+   "occasion": [
+    "housewarming",
+    "birthday",
+    "farewell"
+   ],
+   "recipient": [
+    "self",
+    "friend",
+    "family"
+   ],
+   "description": "Bengaluru in big type over a city skyline, with its map coordinates. Change the city, tagline and coordinates to make it your hometown, your first apartment or where you met.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 136,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "City",
+     "defaultValue": "Bengaluru",
+     "maxChars": 16,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "tagline",
+     "label": "Tagline",
+     "defaultValue": "Namma Bengaluru",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "coords",
+     "label": "Coordinates or a date",
+     "defaultValue": "12.9716° N, 77.5946° E",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "skyline"
+   ],
+   "colors": {
+    "color": "#D8E7DD",
+    "accent": "#1F3B2C"
+   },
+   "variant": 0
+  },
+  {
+   "id": "tmpl-city-kolkata",
+   "title": "Kolkata Skyline",
+   "group": "cities",
+   "subtitle": "City name, tagline and coordinates — edit all three",
+   "occasion": [
+    "housewarming",
+    "birthday",
+    "farewell"
+   ],
+   "recipient": [
+    "self",
+    "friend",
+    "family"
+   ],
+   "description": "Kolkata in big type over a city skyline, with its map coordinates. Change the city, tagline and coordinates to make it your hometown, your first apartment or where you met.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 137,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "City",
+     "defaultValue": "Kolkata",
+     "maxChars": 16,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "tagline",
+     "label": "Tagline",
+     "defaultValue": "City of Joy",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "coords",
+     "label": "Coordinates or a date",
+     "defaultValue": "22.5726° N, 88.3639° E",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "skyline"
+   ],
+   "colors": {
+    "color": "#F3D9D2",
+    "accent": "#3B1E2A"
+   },
+   "variant": 2
+  },
+  {
+   "id": "tmpl-city-jaipur",
+   "title": "Jaipur Skyline",
+   "group": "cities",
+   "subtitle": "City name, tagline and coordinates — edit all three",
+   "occasion": [
+    "housewarming",
+    "birthday",
+    "farewell"
+   ],
+   "recipient": [
+    "self",
+    "friend",
+    "family"
+   ],
+   "description": "Jaipur in big type over a city skyline, with its map coordinates. Change the city, tagline and coordinates to make it your hometown, your first apartment or where you met.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 138,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "City",
+     "defaultValue": "Jaipur",
+     "maxChars": 16,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "tagline",
+     "label": "Tagline",
+     "defaultValue": "The Pink City",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "coords",
+     "label": "Coordinates or a date",
+     "defaultValue": "26.9124° N, 75.7873° E",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "skyline"
+   ],
+   "colors": {
+    "color": "#F7D3CF",
+    "accent": "#7A2E3A"
+   },
+   "variant": 1
+  },
+  {
+   "id": "tmpl-city-chennai",
+   "title": "Chennai Skyline",
+   "group": "cities",
+   "subtitle": "City name, tagline and coordinates — edit all three",
+   "occasion": [
+    "housewarming",
+    "birthday",
+    "farewell"
+   ],
+   "recipient": [
+    "self",
+    "friend",
+    "family"
+   ],
+   "description": "Chennai in big type over a city skyline, with its map coordinates. Change the city, tagline and coordinates to make it your hometown, your first apartment or where you met.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 139,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "City",
+     "defaultValue": "Chennai",
+     "maxChars": 16,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "tagline",
+     "label": "Tagline",
+     "defaultValue": "Namma Chennai",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "coords",
+     "label": "Coordinates or a date",
+     "defaultValue": "13.0827° N, 80.2707° E",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "skyline"
+   ],
+   "colors": {
+    "color": "#D6E6F2",
+    "accent": "#12304A"
+   },
+   "variant": 2
+  },
+  {
+   "id": "tmpl-city-hyderabad",
+   "title": "Hyderabad Skyline",
+   "group": "cities",
+   "subtitle": "City name, tagline and coordinates — edit all three",
+   "occasion": [
+    "housewarming",
+    "birthday",
+    "farewell"
+   ],
+   "recipient": [
+    "self",
+    "friend",
+    "family"
+   ],
+   "description": "Hyderabad in big type over a city skyline, with its map coordinates. Change the city, tagline and coordinates to make it your hometown, your first apartment or where you met.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 140,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "City",
+     "defaultValue": "Hyderabad",
+     "maxChars": 16,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "tagline",
+     "label": "Tagline",
+     "defaultValue": "City of Pearls",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "coords",
+     "label": "Coordinates or a date",
+     "defaultValue": "17.3850° N, 78.4867° E",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "skyline"
+   ],
+   "colors": {
+    "color": "#ECE3F5",
+    "accent": "#3A2560"
+   },
+   "variant": 1
+  },
+  {
+   "id": "tmpl-city-pune",
+   "title": "Pune Skyline",
+   "group": "cities",
+   "subtitle": "City name, tagline and coordinates — edit all three",
+   "occasion": [
+    "housewarming",
+    "birthday",
+    "farewell"
+   ],
+   "recipient": [
+    "self",
+    "friend",
+    "family"
+   ],
+   "description": "Pune in big type over a city skyline, with its map coordinates. Change the city, tagline and coordinates to make it your hometown, your first apartment or where you met.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 141,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "City",
+     "defaultValue": "Pune",
+     "maxChars": 16,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "tagline",
+     "label": "Tagline",
+     "defaultValue": "Punekar Forever",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "coords",
+     "label": "Coordinates or a date",
+     "defaultValue": "18.5204° N, 73.8567° E",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "skyline"
+   ],
+   "colors": {
+    "color": "#E9EDD5",
+    "accent": "#38431E"
+   },
+   "variant": 0
+  },
+  {
+   "id": "tmpl-city-varanasi",
+   "title": "Varanasi Skyline",
+   "group": "cities",
+   "subtitle": "City name, tagline and coordinates — edit all three",
+   "occasion": [
+    "housewarming",
+    "birthday",
+    "farewell"
+   ],
+   "recipient": [
+    "self",
+    "friend",
+    "family"
+   ],
+   "description": "Varanasi in big type over a city skyline, with its map coordinates. Change the city, tagline and coordinates to make it your hometown, your first apartment or where you met.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 142,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "City",
+     "defaultValue": "Varanasi",
+     "maxChars": 16,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "tagline",
+     "label": "Tagline",
+     "defaultValue": "Kashi · City of Light",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "coords",
+     "label": "Coordinates or a date",
+     "defaultValue": "25.3176° N, 82.9739° E",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "skyline"
+   ],
+   "colors": {
+    "color": "#F9DFB5",
+    "accent": "#6A3410"
+   },
+   "variant": 1
+  },
+  {
+   "id": "tmpl-city-patna",
+   "title": "Patna Skyline",
+   "group": "cities",
+   "subtitle": "City name, tagline and coordinates — edit all three",
+   "occasion": [
+    "housewarming",
+    "birthday",
+    "farewell"
+   ],
+   "recipient": [
+    "self",
+    "friend",
+    "family"
+   ],
+   "description": "Patna in big type over a city skyline, with its map coordinates. Change the city, tagline and coordinates to make it your hometown, your first apartment or where you met.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 143,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "City",
+     "defaultValue": "Patna",
+     "maxChars": 16,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "tagline",
+     "label": "Tagline",
+     "defaultValue": "Pataliputra",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "coords",
+     "label": "Coordinates or a date",
+     "defaultValue": "25.5941° N, 85.1376° E",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "skyline"
+   ],
+   "colors": {
+    "color": "#E7DECF",
+    "accent": "#2E2A20"
+   },
+   "variant": 2
+  },
+  {
+   "id": "tmpl-city-darbhanga",
+   "title": "My Hometown",
+   "group": "cities",
+   "subtitle": "City name, tagline and coordinates — edit all three",
+   "occasion": [
+    "housewarming",
+    "birthday",
+    "farewell"
+   ],
+   "recipient": [
+    "self",
+    "friend",
+    "family"
+   ],
+   "description": "Darbhanga in big type over a city skyline, with its map coordinates. Change the city, tagline and coordinates to make it your hometown, your first apartment or where you met.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 144,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "City",
+     "defaultValue": "Darbhanga",
+     "maxChars": 16,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "tagline",
+     "label": "Tagline",
+     "defaultValue": "Where my story began",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "coords",
+     "label": "Coordinates or a date",
+     "defaultValue": "26.1542° N, 85.8918° E",
+     "maxChars": 28,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "skyline"
+   ],
+   "colors": {
+    "color": "#EADFC8",
+    "accent": "#3A2A14"
+   },
+   "variant": 1
+  },
+  {
+   "id": "tmpl-name-aarav",
+   "title": "Name Board — Aarav",
+   "group": "names",
+   "subtitle": "Your child's name, its meaning and birth date",
+   "occasion": [
+    "birthday",
+    "new-baby",
+    "naming-ceremony"
+   ],
+   "recipient": [
+    "kids",
+    "baby",
+    "parents"
+   ],
+   "description": "A cheerful rainbow name board for the nursery door or kids’ room. “Aarav” is an example — type your child’s name, its meaning and birth details.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 145,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "Child's name",
+     "defaultValue": "Aarav",
+     "maxChars": 12,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "meaning",
+     "label": "Meaning (optional)",
+     "defaultValue": "Peaceful · Wise",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "born",
+     "label": "Birth details (optional)",
+     "defaultValue": "Born 14 March 2025",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "name-board"
+   ],
+   "colors": {
+    "color": "#FFF4E6",
+    "accent": "#3B2B4F"
+   },
+   "rainbow": [
+    "#D9542F",
+    "#B07A00",
+    "#2E8A5C",
+    "#3E6BC2"
+   ]
+  },
+  {
+   "id": "tmpl-name-myra",
+   "title": "Name Board — Myra",
+   "group": "names",
+   "subtitle": "Your child's name, its meaning and birth date",
+   "occasion": [
+    "birthday",
+    "new-baby",
+    "naming-ceremony"
+   ],
+   "recipient": [
+    "kids",
+    "baby",
+    "parents"
+   ],
+   "description": "A cheerful rainbow name board for the nursery door or kids’ room. “Myra” is an example — type your child’s name, its meaning and birth details.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 146,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "Child's name",
+     "defaultValue": "Myra",
+     "maxChars": 12,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "meaning",
+     "label": "Meaning (optional)",
+     "defaultValue": "Beloved",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "born",
+     "label": "Birth details (optional)",
+     "defaultValue": "Born 2 October 2024",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "name-board"
+   ],
+   "colors": {
+    "color": "#FCEFF4",
+    "accent": "#5A2A4A"
+   },
+   "rainbow": [
+    "#C2477A",
+    "#8E4FB0",
+    "#B86A00",
+    "#2C8A80"
+   ]
+  },
+  {
+   "id": "tmpl-name-vihaan",
+   "title": "Name Board — Vihaan",
+   "group": "names",
+   "subtitle": "Your child's name, its meaning and birth date",
+   "occasion": [
+    "birthday",
+    "new-baby",
+    "naming-ceremony"
+   ],
+   "recipient": [
+    "kids",
+    "baby",
+    "parents"
+   ],
+   "description": "A cheerful rainbow name board for the nursery door or kids’ room. “Vihaan” is an example — type your child’s name, its meaning and birth details.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 147,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "Child's name",
+     "defaultValue": "Vihaan",
+     "maxChars": 12,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "meaning",
+     "label": "Meaning (optional)",
+     "defaultValue": "Dawn · A new beginning",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "born",
+     "label": "Birth details (optional)",
+     "defaultValue": "Born 21 June 2025",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "name-board"
+   ],
+   "colors": {
+    "color": "#EAF4FB",
+    "accent": "#1F3A5A"
+   },
+   "rainbow": [
+    "#1F7FB8",
+    "#3C8A3F",
+    "#B07A00",
+    "#C9532B"
+   ]
+  },
+  {
+   "id": "tmpl-name-kiara",
+   "title": "Name Board — Kiara",
+   "group": "names",
+   "subtitle": "Your child's name, its meaning and birth date",
+   "occasion": [
+    "birthday",
+    "new-baby",
+    "naming-ceremony"
+   ],
+   "recipient": [
+    "kids",
+    "baby",
+    "parents"
+   ],
+   "description": "A cheerful rainbow name board for the nursery door or kids’ room. “Kiara” is an example — type your child’s name, its meaning and birth details.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 148,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "Child's name",
+     "defaultValue": "Kiara",
+     "maxChars": 12,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "meaning",
+     "label": "Meaning (optional)",
+     "defaultValue": "Bright · Clear",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "born",
+     "label": "Birth details (optional)",
+     "defaultValue": "Born 8 January 2025",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "name-board"
+   ],
+   "colors": {
+    "color": "#F3EEFB",
+    "accent": "#3D2C6B"
+   },
+   "rainbow": [
+    "#6E4FB8",
+    "#C2477A",
+    "#1F8A99",
+    "#B07A00"
+   ]
+  },
+  {
+   "id": "tmpl-name-ishaan",
+   "title": "Name Board — Ishaan",
+   "group": "names",
+   "subtitle": "Your child's name, its meaning and birth date",
+   "occasion": [
+    "birthday",
+    "new-baby",
+    "naming-ceremony"
+   ],
+   "recipient": [
+    "kids",
+    "baby",
+    "parents"
+   ],
+   "description": "A cheerful rainbow name board for the nursery door or kids’ room. “Ishaan” is an example — type your child’s name, its meaning and birth details.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 149,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "Child's name",
+     "defaultValue": "Ishaan",
+     "maxChars": 12,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "meaning",
+     "label": "Meaning (optional)",
+     "defaultValue": "The sun",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "born",
+     "label": "Birth details (optional)",
+     "defaultValue": "Born 30 August 2024",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "name-board"
+   ],
+   "colors": {
+    "color": "#FFF8DC",
+    "accent": "#4A3510"
+   },
+   "rainbow": [
+    "#B86A00",
+    "#C9532B",
+    "#3C8A3F",
+    "#2C6FB8"
+   ]
+  },
+  {
+   "id": "tmpl-name-diya",
+   "title": "Name Board — Diya",
+   "group": "names",
+   "subtitle": "Your child's name, its meaning and birth date",
+   "occasion": [
+    "birthday",
+    "new-baby",
+    "naming-ceremony"
+   ],
+   "recipient": [
+    "kids",
+    "baby",
+    "parents"
+   ],
+   "description": "A cheerful rainbow name board for the nursery door or kids’ room. “Diya” is an example — type your child’s name, its meaning and birth details.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 150,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "name",
+     "label": "Child's name",
+     "defaultValue": "Diya",
+     "maxChars": 12,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "meaning",
+     "label": "Meaning (optional)",
+     "defaultValue": "A lamp · Light",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    },
+    {
+     "id": "born",
+     "label": "Birth details (optional)",
+     "defaultValue": "Born 12 November 2025",
+     "maxChars": 40,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "name-board"
+   ],
+   "colors": {
+    "color": "#FDF0E8",
+    "accent": "#6A2E1F"
+   },
+   "rainbow": [
+    "#C9532B",
+    "#A86400",
+    "#C2477A",
+    "#8E4FB0"
    ]
   }
  ]

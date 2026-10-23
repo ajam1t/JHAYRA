@@ -1780,3 +1780,296 @@
 .d-polaroid-wall {
   overflow-x: clip;
 }
+
+/* ── Thought of the day (homepage) ─────────────────────────────────────── */
+.thought {
+  background: var(--porcelain);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.thought-in {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: clamp(16px, 4vw, 48px);
+  padding-top: 28px;
+  padding-bottom: 28px;
+}
+.thought-tag {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #6f5a37;
+  white-space: nowrap;
+}
+.thought blockquote {
+  margin: 0;
+}
+.thought blockquote p {
+  font-family: var(--fd);
+  font-size: clamp(22px, 2.6vw, 34px);
+  line-height: 1.15;
+}
+.thought blockquote footer {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (max-width: 760px) {
+  .thought-in {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+/* ── Live builders ──────────────────────────────────────────────────────── */
+.w-builder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  gap: clamp(28px, 5vw, 72px);
+  align-items: center;
+}
+.w-builder-form {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+  max-width: 520px;
+}
+.w-builder-form .h3 {
+  margin-bottom: 4px;
+}
+.w-field {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+}
+.world .w-field .input {
+  background: #fff;
+  color: #171916;
+  width: 100%;
+}
+.w-preview {
+  width: 100%;
+  max-width: 420px;
+  justify-self: center;
+  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.28));
+}
+.w-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.w-swatches button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--sw);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+  transition: outline-color 0.2s, transform 0.2s;
+}
+.w-swatches button[aria-checked='true'] {
+  outline-color: var(--wa);
+  transform: scale(1.08);
+}
+.world .w-builder .btn-gold {
+  margin-top: 6px;
+}
+
+/* ── 21 · Stadium ───────────────────────────────────────────────────────── */
+.d-stadium-hero {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 60px, rgba(255, 255, 255, 0.03) 60px 120px),
+    radial-gradient(80% 60% at 50% 120%, #1d4a36, transparent 70%),
+    var(--wb);
+}
+.d-stadium-hero .wrap {
+  position: relative;
+}
+.d-flood {
+  position: absolute;
+  top: -120px;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, rgba(255, 255, 230, 0.35), transparent 62%);
+  pointer-events: none;
+  animation: w-breathe 6s ease-in-out infinite;
+}
+.d-flood.l {
+  left: -160px;
+}
+.d-flood.r {
+  right: -160px;
+  animation-delay: -3s;
+}
+.d-stadium-board {
+  display: inline-grid;
+  grid-auto-flow: column;
+  gap: 2px;
+  margin-top: 28px;
+  background: #050c08;
+  padding: 2px;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(217, 242, 107, 0.25), 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+.d-stadium-board span {
+  display: grid;
+  gap: 4px;
+  padding: 12px 20px;
+  background: #0b1a12;
+  border-radius: 8px;
+  min-width: 96px;
+}
+.d-stadium-board small {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.d-stadium-board b {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 28px;
+  color: var(--wa);
+  text-shadow: 0 0 12px rgba(217, 242, 107, 0.5);
+}
+.world .d-stadium-builder .btn-gold {
+  background: var(--wa);
+  color: #0f2a1f;
+  border-color: var(--wa);
+}
+
+/* ── 22 · Skyline ───────────────────────────────────────────────────────── */
+.d-sky-hero {
+  background: linear-gradient(180deg, #f9d9b5 0%, #f4e6d4 55%, var(--wb) 100%);
+  padding-bottom: 0 !important;
+}
+.d-sky-layers {
+  position: relative;
+  height: clamp(110px, 16vw, 200px);
+  margin-top: 30px;
+}
+.d-sky-l {
+  position: absolute;
+  bottom: 0;
+  height: 100%;
+  width: 60%;
+}
+.d-sky-l path {
+  fill: var(--wi);
+}
+.d-sky-l.l0 {
+  left: -4%;
+  height: 70%;
+  opacity: 0.25;
+}
+.d-sky-l.l1 {
+  left: 30%;
+  height: 100%;
+  opacity: 0.45;
+}
+.d-sky-l.l2 {
+  right: -4%;
+  left: auto;
+  width: 50%;
+  height: 82%;
+  opacity: 0.85;
+}
+.d-sky-chips {
+  gap: 8px;
+}
+.world .d-sky-chips .chip {
+  background: #fff;
+  color: var(--wi);
+}
+.world .d-sky-chips .chip[aria-checked='true'] {
+  background: var(--wi);
+  color: var(--wb);
+  border-color: var(--wi);
+}
+
+/* ── 23 · Alphabet blocks ───────────────────────────────────────────────── */
+.d-blocks-hero {
+  background:
+    radial-gradient(circle at 88% 20%, #ffe0d1 0 120px, transparent 121px),
+    radial-gradient(circle at 70% 70%, #e0ecff 0 70px, transparent 71px),
+    var(--wb);
+}
+.d-blocks-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 30px;
+  perspective: 600px;
+}
+.d-block {
+  width: clamp(46px, 7vw, 76px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--c);
+  color: #fff;
+  font-family: var(--fb);
+  font-weight: 800;
+  font-size: clamp(24px, 4vw, 42px);
+  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.18), 0 10px 18px rgba(59, 43, 79, 0.18);
+  transform: rotate(calc((var(--i) - 2) * 2deg));
+  animation: w-drop 0.6s var(--ease-spring) both;
+  animation-delay: calc(var(--i) * 60ms);
+}
+.d-block:nth-child(even) {
+  transform: translateY(6px) rotate(calc((2 - var(--i)) * 2deg));
+}
+@keyframes w-drop {
+  from {
+    opacity: 0;
+    translate: 0 -30px;
+  }
+}
+
+/* ── Divine thought ─────────────────────────────────────────────────────── */
+.d-divine-thought {
+  position: relative;
+  max-width: 640px;
+  margin: 30px auto 0;
+  font-family: var(--fd);
+  font-size: clamp(20px, 2.4vw, 28px);
+  line-height: 1.25;
+}
+.d-divine-thought span {
+  display: block;
+  font-family: var(--fb);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--wa);
+  margin-bottom: 8px;
+}
+.d-divine-thought small {
+  font-family: var(--fb);
+  font-size: 14px;
+  opacity: 0.8;
+}
+.world .d-divine-thought .link {
+  font-family: var(--fb);
+  font-size: 14px;
+  color: var(--wa);
+}
+
+@media (max-width: 860px) {
+  .w-builder {
+    grid-template-columns: 1fr;
+  }
+  .w-preview {
+    max-width: 320px;
+    order: -1;
+  }
+  .d-flood {
+    width: 300px;
+    height: 300px;
+  }
+}

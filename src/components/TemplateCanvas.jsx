@@ -27,13 +27,15 @@ function areasFor(layout, n) {
   return AREAS[layout] || AREAS.single;
 }
 
+function fieldVal(t, texts, id) {
+  let v = texts?.[id];
+  if (v === undefined) v = t.textFields.find((f) => f.id === id)?.defaultValue || '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) v = new Date(v + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+  return v;
+}
+
 function composeText(t, texts) {
-  const val = (id) => {
-    let v = texts?.[id];
-    if (v === undefined) v = t.textFields.find((f) => f.id === id)?.defaultValue || '';
-    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) v = new Date(v + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-    return v;
-  };
+  const val = (id) => fieldVal(t, texts, id);
   const ids = t.textFields.map((f) => f.id);
   let hero = '';
   const used = new Set();
@@ -130,6 +132,67 @@ function Decor({ list, accent, dark }) {
   );
 }
 
+// Generic skylines (no real landmarks) so any city name works with any of them.
+export const SKYLINES = [
+  ['0 0 168 60', 'M0 60V44h8V30h6v-6h4v6h6v14h6V20h10v24h4V34h8v10h6V12l6-6 6 6v32h6V28h10v16h6V38h8v6h6V24h12v20h6V32h6v12h8V18h4v-6h4v6h4v26h8V36h10v24z'],
+  ['0 0 182 60', 'M0 60V46h10V38c0-6 6-10 10-10s10 4 10 10v8h6V30h4l2-6 2 6h4v16h8V36c0-8 8-14 14-14s14 6 14 14v10h6V26h3V18h4v8h3v20h8V40c0-5 5-9 9-9s9 4 9 9v6h10V34h4l2-5 2 5h4v12h8V40c0-4 4-7 7-7s7 3 7 7v6h12v14z'],
+  ['0 0 168 60', 'M0 60V42h6V32h8v10h6V22h4v-8h2v8h4v20h8V36c0-5 4-8 8-8s8 3 8 8v6h6V16h8v26h6V30l8-6 8 6v12h6V26h4l2-6 2 6h4v16h8V34h10v8h6V20h6v-6h2v6h6v22h10V36h12v24z'],
+];
+
+function SpecialArt({ kind, t, texts, mini }) {
+  const v = (id) => fieldVal(t, texts, id);
+  if (kind === 'jersey')
+    return (
+      <div className="tc-jersey">
+        <svg className="tc-jersey-shape" viewBox="0 0 100 100" aria-hidden="true">
+          <path d="M30 6 L18 10 L2 28 L14 42 L22 36 L22 96 L78 96 L78 36 L86 42 L98 28 L82 10 L70 6 C66 14 58 18 50 18 C42 18 34 14 30 6 Z" />
+        </svg>
+        <div className="tc-jersey-text">
+          <span className="tc-jersey-name">{v('name')}</span>
+          <span className="tc-jersey-no">{v('number')}</span>
+        </div>
+        {v('sign') && <div className="tc-jersey-sign">{v('sign')}</div>}
+        {!mini && <div className="tc-brand">JHAYRA</div>}
+      </div>
+    );
+  const sky = SKYLINES[(t.variant || 0) % SKYLINES.length];
+  if (kind === 'skyline')
+    return (
+      <div className="tc-city">
+        <div className="tc-city-text">
+          <span className="tc-city-coords">{v('coords')}</span>
+          <span className="tc-city-name">{v('name')}</span>
+          <span className="tc-city-tag">{v('tagline')}</span>
+        </div>
+        <svg className="tc-city-sky" viewBox={sky[0]} preserveAspectRatio="none" aria-hidden="true">
+          <path d={sky[1]} />
+        </svg>
+        {!mini && <div className="tc-brand">JHAYRA</div>}
+      </div>
+    );
+  // name-board
+  const name = v('name');
+  return (
+    <div className="tc-namebd">
+      <svg className="tc-namebd-arc" viewBox="0 0 100 50" aria-hidden="true">
+        {[0, 1, 2, 3].map((i) => (
+          <path key={i} d={`M${8 + i * 6} 50 A${42 - i * 6} ${42 - i * 6} 0 0 1 ${92 - i * 6} 50`} style={{ stroke: `var(--r${i})` }} />
+        ))}
+      </svg>
+      <div className="tc-namebd-name" aria-label={name}>
+        {[...name].map((ch, i) => (
+          <span key={i} style={{ color: `var(--r${i % 4})` }}>
+            {ch}
+          </span>
+        ))}
+      </div>
+      {v('meaning') && <div className="tc-namebd-meaning">{v('meaning')}</div>}
+      {v('born') && <div className="tc-namebd-born">{v('born')}</div>}
+      {!mini && <div className="tc-brand">JHAYRA</div>}
+    </div>
+  );
+}
+
 /**
  * Renders a personalised template (photos + text + ornaments) inside a frame.
  * In edit mode, empty slots are buttons and filled slots can be dragged & zoomed.
@@ -144,6 +207,13 @@ export default function TemplateCanvas({ template: t, photos = {}, transforms = 
   const showCal = t.hasCalendar || t.layout.startsWith('calendar');
   const textOnly = t.layout === 'text-only' || slots.length === 0;
   const [c1, c2] = t.previewColors || [];
+  const special = ['jersey', 'skyline', 'name-board'].find((k) => (t.decoratives || []).includes(k));
+  if (special)
+    return (
+      <div className={`tc tc-special tc-${special} ${mini ? 'tc-mini' : ''}`} style={{ '--tint': g.color, '--acc': g.accent, ...(t.rainbow ? Object.fromEntries(t.rainbow.map((c, i) => [`--r${i}`, c])) : {}) }}>
+        <SpecialArt kind={special} t={t} texts={texts} mini={mini} />
+      </div>
+    );
 
   return (
     <div

@@ -17,6 +17,7 @@ import { ARTICLES } from '../lib/journal';
 import LazyMount from '../components/LazyMount';
 import { WorldTile, useWorldCounts } from '../components/WorldTile';
 import { WORLDS } from '../lib/worlds';
+import { thoughtOfTheDay, frameThoughtLink } from '../lib/thoughts';
 import { CollectionBlock } from './Collections';
 import { JournalCard } from './Journal';
 import { useFestival } from '../state/festival';
@@ -35,13 +36,13 @@ function WorldsStrip() {
       <div className="wrap">
         <div className="section-head">
           <div>
-            <span className="eyebrow">Twenty worlds</span>
+            <span className="eyebrow">{WORLDS.length} worlds</span>
             <h2 className="h2">
               Find <em>your world.</em>
             </h2>
           </div>
           <Link to="/worlds" className="link">
-            Explore all 20 worlds <Icon name="arrow" size={16} />
+            Explore all {WORLDS.length} worlds <Icon name="arrow" size={16} />
           </Link>
         </div>
         <div className="worlds-strip">
@@ -50,6 +51,27 @@ function WorldsStrip() {
             return <WorldTile key={id} w={w} count={counts[id]} compact />;
           })}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Thought of the day ───────────────────────────────────────────────── */
+function Thought() {
+  const q = thoughtOfTheDay();
+  return (
+    <section className="thought" aria-label="Thought of the day">
+      <div className="wrap thought-in">
+        <span className="thought-tag">Thought of the day</span>
+        <blockquote>
+          <p>“{q.text}”</p>
+          <footer>
+            {q.source} · {q.faith}
+          </footer>
+        </blockquote>
+        <Link to={frameThoughtLink(q)} className="link">
+          Frame this thought <Icon name="arrow" size={16} />
+        </Link>
       </div>
     </section>
   );
@@ -464,6 +486,7 @@ export default function Home() {
       <LazyMount minHeight={300}>
         <WorldsStrip />
       </LazyMount>
+      <Thought />
       <section className="section studio-dark surface-night" id="studio">
         <div className="wrap">
           <div className="section-head">

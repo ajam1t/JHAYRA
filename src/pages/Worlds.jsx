@@ -3,13 +3,14 @@ import { Link, useParams } from 'react-router-dom';
 import Frame from '../components/Frame';
 import Img from '../components/Img';
 import Icon, { WhatsAppGlyph } from '../components/Icon';
-import TemplateCanvas from '../components/TemplateCanvas';
+import TemplateCanvas, { SKYLINES } from '../components/TemplateCanvas';
 import { WorldTile, useWorldCounts } from '../components/WorldTile';
 import { Seo } from '../lib/seo';
 import { useProducts } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
 import { WORLDS, WORLD_MAP, FAITHS, DIRECTIONS, matchProducts, worldProducts, worldTemplates } from '../lib/worlds';
 import { FESTIVALS, daysUntil } from '../lib/festivals';
+import { thoughtOfTheDay, frameThoughtLink } from '../lib/thoughts';
 import { SIZES, MIN_PRICE } from '../lib/frames';
 import { money, waLink, SITE } from '../lib/site';
 
@@ -150,6 +151,7 @@ function Divine({ w, products, templates }) {
   const d = f.deities?.find((x) => x.id === deity);
   if (d) list = matchProducts(products, { words: d.words });
   const items = toItems(list, faith === 'hindu' && !deity ? templates : []);
+  const q = thoughtOfTheDay();
   return (
     <>
       <header className="d-divine-hero">
@@ -168,6 +170,12 @@ function Divine({ w, products, templates }) {
               </button>
             ))}
           </div>
+          <p className="d-divine-thought">
+            <span>Thought of the day</span>“{q.text}” <small>— {q.source}</small>{' '}
+            <Link to={frameThoughtLink(q)} className="link">
+              Frame it <Icon name="arrow" size={14} />
+            </Link>
+          </p>
         </div>
       </header>
       <section className="wrap section-sm">
@@ -801,18 +809,226 @@ function MapWorld({ w, items }) {
   );
 }
 
-const DESIGNS = { manga: Manga, sticker: Sticker, divine: Divine, timeline: Timeline, window: Window, gallery: Gallery, heritage: Heritage, compass: Compass, polaroid: Polaroid, bubbles: Bubbles, paws: Paws, ticker: Ticker, speed: Speed, tree: Tree, invite: Invite, film: Film, chalk: Chalk, swiss: Swiss, ladder: Ladder, map: MapWorld };
+/* ── Live builders (jersey, city, name board) ─────────────────────────── */
+const fill = (t, texts) => `/customize/${t.id}?` + Object.entries(texts).map(([k, v]) => `text.${k}=${encodeURIComponent(v)}`).join('&');
+const def = (t, id) => t.textFields.find((f) => f.id === id)?.defaultValue || '';
+
+function Preview({ t, texts, label }) {
+  return (
+    <div className="w-preview" aria-label={label}>
+      <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" thickness={3} glare>
+        <TemplateCanvas template={t} texts={texts} />
+      </Frame>
+    </div>
+  );
+}
+
+function Swatches({ list, value, onChange, label, colourOf, nameOf }) {
+  return (
+    <div className="w-swatches" role="radiogroup" aria-label={label}>
+      {list.map((t) => (
+        <button key={t.id} type="button" role="radio" aria-checked={t.id === value} aria-label={nameOf(t)} title={nameOf(t)} onClick={() => onChange(t.id)} style={{ '--sw': colourOf(t) }} />
+      ))}
+    </div>
+  );
+}
+
+function ItemGrid({ items, className = '' }) {
+  return <Grid items={items} className={`w-grid-4 ${className}`} render={(it) => <Link key={it.key} to={it.to} className="w-card"><Art item={it} /><Caption item={it} /></Link>} />;
+}
+
+/* ── 21 · Stadium (sports) ────────────────────────────────────────────── */
+function Stadium({ w, items, templates }) {
+  const jerseys = templates.filter((t) => t.decoratives?.includes('jersey'));
+  const [jid, setJid] = useState(jerseys[0]?.id);
+  const [name, setName] = useState('');
+  const [no, setNo] = useState('');
+  const j = jerseys.find((x) => x.id === jid) || jerseys[0];
+  const texts = j ? { name: (name || def(j, 'name')).toUpperCase(), number: no || def(j, 'number'), sign: def(j, 'sign') } : {};
+  return (
+    <>
+      <header className="d-stadium-hero">
+        <span className="d-flood l" aria-hidden="true" />
+        <span className="d-flood r" aria-hidden="true" />
+        <div className="wrap">
+          <span className="eyebrow">{w.kicker}</span>
+          <h1 className="display">{w.title}</h1>
+          <p className="lead">{w.line}</p>
+          <div className="d-stadium-board" aria-label="At a glance">
+            <span>
+              <small>Jerseys</small>
+              <b>{String(jerseys.length).padStart(2, '0')}</b>
+            </span>
+            <span>
+              <small>Quotes</small>
+              <b>{String(templates.length - jerseys.length).padStart(2, '0')}</b>
+            </span>
+            <span>
+              <small>From</small>
+              <b>{money(MIN_PRICE)}</b>
+            </span>
+          </div>
+        </div>
+      </header>
+      {j && (
+        <section className="wrap section-sm w-builder d-stadium-builder">
+          <div className="w-builder-form">
+            <h2 className="h3">Build your jersey</h2>
+            <label className="w-field">
+              Name on the back
+              <input className="input" value={name} maxLength={12} placeholder={def(j, 'name')} onChange={(e) => setName(e.target.value.replace(/[^\p{L} .'-]/gu, ''))} />
+            </label>
+            <label className="w-field">
+              Number
+              <input className="input" inputMode="numeric" value={no} maxLength={3} placeholder={def(j, 'number')} onChange={(e) => setNo(e.target.value.replace(/\D/g, ''))} />
+            </label>
+            <span className="w-field">Jersey colour</span>
+            <Swatches list={jerseys} value={j.id} onChange={setJid} label="Jersey colour" colourOf={(t) => t.colors?.color} nameOf={(t) => t.title.replace('Home Jersey — ', '')} />
+            <Link to={fill(j, texts)} className="btn btn-gold">
+              Personalise this jersey · from {money(MIN_PRICE)} <Icon name="arrow" size={16} />
+            </Link>
+          </div>
+          <Preview t={j} texts={texts} label="Jersey preview" />
+        </section>
+      )}
+      <section className="wrap section-sm">{items.length ? <ItemGrid items={items} /> : <Soon w={w} />}</section>
+    </>
+  );
+}
+
+/* ── 22 · Skyline (cities) ────────────────────────────────────────────── */
+function Skyline({ w, items, templates }) {
+  const cities = templates.filter((t) => t.decoratives?.includes('skyline'));
+  const [cid, setCid] = useState(cities[0]?.id);
+  const [own, setOwn] = useState('');
+  const c = cities.find((x) => x.id === cid) || cities[0];
+  const texts = c ? (own.trim() ? { name: own.trim(), tagline: 'Where my story began', coords: '' } : { name: def(c, 'name'), tagline: def(c, 'tagline'), coords: def(c, 'coords') }) : {};
+  return (
+    <>
+      <header className="d-sky-hero">
+        <div className="wrap">
+          <span className="eyebrow">{w.kicker}</span>
+          <h1 className="display">{w.title}</h1>
+          <p className="lead">{w.line}</p>
+        </div>
+        <div className="d-sky-layers" aria-hidden="true">
+          {SKYLINES.map(([vb, d], i) => (
+            <svg key={i} className={`d-sky-l l${i}`} viewBox={vb} preserveAspectRatio="none">
+              <path d={d} />
+            </svg>
+          ))}
+        </div>
+      </header>
+      {c && (
+        <section className="wrap section-sm w-builder">
+          <div className="w-builder-form">
+            <h2 className="h3">Pick your city</h2>
+            <div className="chips d-sky-chips" role="radiogroup" aria-label="City">
+              {cities.map((t) => (
+                <button key={t.id} type="button" role="radio" className="chip" aria-checked={!own && t.id === c.id} onClick={() => (setCid(t.id), setOwn(''))}>
+                  {def(t, 'name')}
+                </button>
+              ))}
+            </div>
+            <label className="w-field">
+              Not on the list? Type any city or town
+              <input className="input" value={own} maxLength={16} placeholder="e.g. Madhubani" onChange={(e) => setOwn(e.target.value)} />
+            </label>
+            <Link to={fill(c, texts)} className="btn btn-gold">
+              Personalise {texts.name} · from {money(MIN_PRICE)} <Icon name="arrow" size={16} />
+            </Link>
+            <p className="small muted">Edit the tagline and add coordinates or a special date on the next step.</p>
+          </div>
+          <Preview t={c} texts={texts} label="City frame preview" />
+        </section>
+      )}
+      <section className="wrap section-sm">{items.length ? <ItemGrid items={items} /> : <Soon w={w} />}</section>
+    </>
+  );
+}
+
+/* ── 23 · Alphabet blocks (name boards) ───────────────────────────────── */
+function Blocks({ w, items, templates }) {
+  const boards = templates.filter((t) => t.decoratives?.includes('name-board'));
+  const [bid, setBid] = useState(boards[0]?.id);
+  const [name, setName] = useState('');
+  const [meaning, setMeaning] = useState('');
+  const [born, setBorn] = useState('');
+  const b = boards.find((x) => x.id === bid) || boards[0];
+  const typed = name.trim();
+  const texts = b ? (typed ? { name: typed, meaning, born } : { name: def(b, 'name'), meaning: def(b, 'meaning'), born: def(b, 'born') }) : {};
+  const letters = [...(texts.name || 'NAME')].slice(0, 12);
+  return (
+    <>
+      <header className="d-blocks-hero">
+        <div className="wrap">
+          <span className="eyebrow">{w.kicker}</span>
+          <h1 className="display">{w.title}</h1>
+          <p className="lead">{w.line}</p>
+          <div className="d-blocks-row" aria-hidden="true">
+            {letters.map((ch, i) => (
+              <span key={`${ch}${i}`} className="d-block" style={{ '--c': (b?.rainbow || ['#e2603f'])[i % 4], '--i': i }}>
+                {ch.toUpperCase()}
+              </span>
+            ))}
+          </div>
+        </div>
+      </header>
+      {b && (
+        <section className="wrap section-sm w-builder">
+          <div className="w-builder-form">
+            <h2 className="h3">Make their name board</h2>
+            <label className="w-field">
+              Child’s name
+              <input className="input" value={name} maxLength={12} placeholder={def(b, 'name')} onChange={(e) => setName(e.target.value)} />
+            </label>
+            {typed && (
+              <>
+                <label className="w-field">
+                  Meaning (optional)
+                  <input className="input" value={meaning} maxLength={40} placeholder="e.g. Light · Joy" onChange={(e) => setMeaning(e.target.value)} />
+                </label>
+                <label className="w-field">
+                  Birth details (optional)
+                  <input className="input" value={born} maxLength={40} placeholder="e.g. Born 14 March 2025" onChange={(e) => setBorn(e.target.value)} />
+                </label>
+              </>
+            )}
+            <span className="w-field">Colours</span>
+            <Swatches list={boards} value={b.id} onChange={setBid} label="Colours" colourOf={(t) => `conic-gradient(${t.rainbow.join(',')})`} nameOf={(t) => `${t.title.replace('Name Board — ', '')} palette`} />
+            <Link to={fill(b, texts)} className="btn btn-gold">
+              Personalise {texts.name}’s board · from {money(MIN_PRICE)} <Icon name="arrow" size={16} />
+            </Link>
+          </div>
+          <Preview t={b} texts={texts} label="Name board preview" />
+        </section>
+      )}
+      {!b && (
+        <section className="wrap section-sm">
+          <Soon w={w} />
+        </section>
+      )}
+      {b && items.some((x) => x.kind === 'p') && (
+        <section className="wrap section-sm">
+          <ItemGrid items={items.filter((x) => x.kind === 'p')} />
+        </section>
+      )}
+    </>
+  );
+}
+
+const DESIGNS = { manga: Manga, sticker: Sticker, divine: Divine, timeline: Timeline, window: Window, gallery: Gallery, heritage: Heritage, compass: Compass, polaroid: Polaroid, bubbles: Bubbles, paws: Paws, ticker: Ticker, speed: Speed, tree: Tree, invite: Invite, film: Film, chalk: Chalk, swiss: Swiss, ladder: Ladder, map: MapWorld, stadium: Stadium, skyline: Skyline, blocks: Blocks };
 
 /* ── Hub ──────────────────────────────────────────────────────────────── */
 function Hub() {
   const counts = useWorldCounts();
   return (
     <>
-      <Seo title="Worlds — Anime, Divine, Gen Z Quotes, Scenery & More" description="Twenty JHAYRA worlds: anime, Gen Z and desi quotes, divine art for every faith, festivals, scenery, Mithila heritage, Vastu, love, kids, pets and more." path="/worlds" />
+      <Seo title="Worlds — Anime, Divine, Gen Z Quotes, Scenery & More" description="JHAYRA worlds: anime, Gen Z and desi quotes, divine art for every faith, festivals, scenery, Mithila heritage, Vastu, sports, city love, kids’ name boards and more." path="/worlds" />
       <section className="wrap page-hero">
         <span className="eyebrow">Worlds</span>
         <h1 className="display" style={{ marginTop: 16, maxWidth: '12ch' }}>
-          Twenty worlds. <em>One for you.</em>
+          {WORLDS.length} worlds. <em>One for you.</em>
         </h1>
         <p className="lead" style={{ marginTop: 16 }}>
           From anime to Mithila heritage, chai-tapri quotes to the divine — every world has its own look. Wander in.

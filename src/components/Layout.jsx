@@ -421,7 +421,7 @@ function Footer() {
     ['Shop', [['/shop', 'All art'], ['/collections', 'Collections'], ['/shop?room=living', 'Living room'], ['/shop?room=bedroom', 'Bedroom'], ['/shop?room=office', 'Office'], ['/collections/art-for-gifting', 'Gifts']]],
     ['Personalised art', [['/customize/photo', 'Living Art Studio'], ['/customize', 'Personalised designs'], ['/customize/scratch', 'Design from scratch'], ['/wall-planner', 'Gallery wall planner'], ['/visualise', 'Visualise in my room']]],
     ['Help', [['/support', 'FAQ & support'], ['/orders', 'Track my order'], ['/shipping-policy', 'Shipping'], ['/replacement-policy', 'Replacements'], ['/refund', 'Returns & refunds'], ['/contact', 'Contact us']]],
-    ['Jhayra', [['/about', 'Our story'], ['/worlds', 'Explore 20 worlds'], ['/journal', 'Inspiration journal'], ['/corporate', 'Corporate gifting'], ['/gift-finder', 'Gift finder']]],
+    ['Jhayra', [['/about', 'Our story'], ['/worlds', 'Explore all worlds'], ['/journal', 'Inspiration journal'], ['/corporate', 'Corporate gifting'], ['/gift-finder', 'Gift finder']]],
   ];
   return (
     <footer className="footer">

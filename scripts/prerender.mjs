@@ -63,7 +63,7 @@ const STATIC = [
   ['/room-inspiration', 'Wall Décor Ideas — Room Inspiration | JHAYRA', 'Living room, pooja room, bedroom and staircase gallery wall ideas — shop each look in one tap, true to size.'],
   ['/wall-planner', 'Gallery Wall Planner — Design Your Wall | JHAYRA', 'Plan a gallery wall true to scale above your sofa or bed and add the whole set to your cart.'],
   ['/visualise', 'Visualise Art in Your Room | JHAYRA', 'Upload a photo of your wall, choose any JHAYRA artwork, size and frame, and see how it looks before you buy.'],
-  ['/worlds', 'Worlds — Anime, Divine, Gen Z Quotes, Scenery & More | JHAYRA', 'Twenty JHAYRA worlds: anime, Gen Z and desi quotes, divine art for every faith, festivals, scenery, Mithila heritage, Vastu, love, kids, pets and more.'],
+  ['/worlds', 'Worlds — Anime, Divine, Gen Z Quotes, Scenery & More | JHAYRA', 'JHAYRA worlds: anime, Gen Z and desi quotes, divine art for every faith, festivals, scenery, Mithila heritage, Vastu, sports, city love, kids’ name boards and more.'],
   ['/journal', 'Inspiration Journal — Wall Art Ideas & Guides | JHAYRA', 'Gallery wall planning, how high to hang art, styling by room, personalised gift ideas and framed art care.'],
   ['/about', 'About JHAYRA — Our Story Since 2017', 'From a small workshop to 10,000+ homes: handcrafted photo frames and wall art made in India since 2017.'],
   ['/contact', 'Contact JHAYRA', 'WhatsApp +91 84464 40469, email hello@jhayra.in or Instagram @thejhayra — talk to a real person.'],

@@ -73,6 +73,10 @@ export const MOMENTS = [
   { id: 'moon', label: 'Moon & Stars', groups: ['moon-style'], hint: 'The night you met' },
   { id: 'festivals', label: 'Festivals', groups: ['festivals', 'spiritual'], hint: 'Diwali, Rakhi & more' },
   { id: 'friends', label: 'Friends', groups: ['friendship', 'travel'], hint: 'Trips & inside jokes' },
+  { id: 'quotes', label: 'Quotes', groups: ['genz', 'desi', 'quotes'], hint: 'Witty lines, your words' },
+  { id: 'names', label: 'Name Boards', groups: ['names'], hint: 'For the nursery door' },
+  { id: 'sports', label: 'Sports', groups: ['sports'], hint: 'Your name, your number' },
+  { id: 'cities', label: 'City Love', groups: ['cities'], hint: 'Hometown in big type' },
 ];
 
 // Building blocks for the from-scratch designer and the admin template editor.
