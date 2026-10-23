@@ -380,7 +380,7 @@ img.is-loaded {
   color: var(--ink);
 }
 .bottom-nav .create {
-  color: var(--gold-deep);
+  color: #6f5a37;
 }
 .bottom-nav .badge {
   top: 4px;

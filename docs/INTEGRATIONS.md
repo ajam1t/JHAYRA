@@ -81,3 +81,14 @@ Collect through a link sent after delivery (tied to a paid `order_id`), moderate
 ### 5. True augmented reality
 
 The live camera mode overlays the frame on the camera feed and uses an A4 sheet for scale. Real AR (surface tracking, perspective lock) would use WebXR (`immersive-ar`, Android Chrome) and Quick Look with USDZ models (iOS). That needs 3D frame models per size and is a separate project.
+
+## Worlds (/worlds)
+
+Twenty themed worlds, defined in `src/lib/worlds.js`. Each one fills itself from live products (by category slug and name keywords) and from personalised templates (by group). No backend work is needed. A world with nothing live shows an honest "Launching soon" page with a WhatsApp notify link.
+
+To fill the empty worlds, add products under these category slugs. Admin → Worlds can create any missing category in one click:
+
+- `anime`: original anime-style art only, with no copyrighted characters.
+- `mithila`: hand-painted originals for the premium Heritage world.
+- `sikh`, `buddhist`, `jain`, `christian`, `islamic`: the faith tabs in Divine.
+- `genz-quotes`, `desi-quotes`: optional ready-made prints. These worlds already list editable quote templates.

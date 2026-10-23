@@ -10,6 +10,7 @@
     { "source": "/customize/:id", "destination": "/app-shell" },
     { "source": "/collections/:id", "destination": "/app-shell" },
     { "source": "/journal/:slug", "destination": "/app-shell" },
+    { "source": "/worlds/:id", "destination": "/app-shell" },
     { "source": "/admin", "destination": "/app-shell" },
     { "source": "/admin/:path*", "destination": "/app-shell" }
   ],

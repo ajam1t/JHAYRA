@@ -135,7 +135,7 @@ function Decor({ list, accent, dark }) {
  * In edit mode, empty slots are buttons and filled slots can be dragged & zoomed.
  */
 export default function TemplateCanvas({ template: t, photos = {}, transforms = {}, texts = {}, calendar, active, onSlot, onTransform, editable = false, mini = false }) {
-  const g = templatesSnapshot().groupMap[t.group] || t.colors || { color: '#F0EBE2', accent: '#B68D40' };
+  const g = t.colors || templatesSnapshot().groupMap[t.group] || { color: '#F0EBE2', accent: '#B68D40' };
   const dark = t.group === 'moon-style' || /^#[0-3]/.test(g.color);
   const { hero, sub, msg, attr } = composeText(t, texts);
   const slots = t.slots || [];
@@ -147,7 +147,7 @@ export default function TemplateCanvas({ template: t, photos = {}, transforms = 
 
   return (
     <div
-      className={`tc ${mini ? 'tc-mini' : ''} ${dark ? 'tc-dark' : ''} ${textOnly ? 'tc-textonly' : ''}`}
+      className={`tc ${mini ? 'tc-mini' : ''} ${dark ? 'tc-dark' : ''} ${textOnly ? 'tc-textonly' : ''} ${(t.decoratives || []).includes('bold-type') ? 'tc-bold' : ''} ${(t.decoratives || []).includes('chalk') ? 'tc-chalk' : ''}`}
       style={{ '--bg': dark ? g.color : '#FBF8F2', '--tint': g.color, '--acc': g.accent, '--c1': c1 || g.accent, '--c2': c2 || g.color }}
     >
       <Decor list={t.decoratives || []} accent={g.accent} dark={dark} />

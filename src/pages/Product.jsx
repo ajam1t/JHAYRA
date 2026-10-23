@@ -86,7 +86,7 @@ export default function Product() {
 
   const [view, setView] = useState(params.get('view') === 'room' ? 'room' : 'frame');
   const [img, setImg] = useState(0);
-  const [sizeSlug, setSizeSlug] = useState(null);
+  const [sizeSlug, setSizeSlug] = useState(() => params.get('size'));
   const [colourName, setColourName] = useState(null);
   const [material, setMaterial] = useState(null);
   const [photo, setPhoto] = useState(null);

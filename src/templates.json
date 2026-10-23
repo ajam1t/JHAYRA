@@ -125,6 +125,18 @@
    "label": "Moon Style Frame",
    "color": "#141828",
    "accent": "#9090D0"
+  },
+  {
+   "id": "genz",
+   "label": "Gen Z Quotes",
+   "color": "#D9F26B",
+   "accent": "#171916"
+  },
+  {
+   "id": "desi",
+   "label": "Desi Quotes",
+   "color": "#2E3A33",
+   "accent": "#F4F1E8"
   }
  ],
  "templates": [
@@ -8476,6 +8488,920 @@
    "calendar": null,
    "decoratives": [
     "moon-stars"
+   ]
+  },
+  {
+   "id": "tmpl-genz-main-character",
+   "title": "Main Character Energy",
+   "group": "genz",
+   "subtitle": "Bold quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "graduation",
+    "housewarming"
+   ],
+   "recipient": [
+    "friend",
+    "self",
+    "sibling"
+   ],
+   "description": "“Main character energy.” — a bold typographic frame for desks, dorms and first apartments. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": true,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 106,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Main character energy.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "framed.",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#D9F26B",
+    "accent": "#171916"
+   }
+  },
+  {
+   "id": "tmpl-genz-do-it-scared",
+   "title": "Do It Scared",
+   "group": "genz",
+   "subtitle": "Bold quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "graduation",
+    "housewarming"
+   ],
+   "recipient": [
+    "friend",
+    "self",
+    "sibling"
+   ],
+   "description": "“Do it scared.” — a bold typographic frame for desks, dorms and first apartments. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 107,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Do it scared.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#FF8FB8",
+    "accent": "#171916"
+   }
+  },
+  {
+   "id": "tmpl-genz-whole-era",
+   "title": "A Whole Era",
+   "group": "genz",
+   "subtitle": "Bold quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "graduation",
+    "housewarming"
+   ],
+   "recipient": [
+    "friend",
+    "self",
+    "sibling"
+   ],
+   "description": "“Not a phase. A whole era.” — a bold typographic frame for desks, dorms and first apartments. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 108,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Not a phase. A whole era.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#C9B8FF",
+    "accent": "#171916"
+   }
+  },
+  {
+   "id": "tmpl-genz-plot-twist",
+   "title": "Plot Twist",
+   "group": "genz",
+   "subtitle": "Bold quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "graduation",
+    "housewarming"
+   ],
+   "recipient": [
+    "friend",
+    "self",
+    "sibling"
+   ],
+   "description": "“Plot twist: I believed in me.” — a bold typographic frame for desks, dorms and first apartments. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 109,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Plot twist: I believed in me.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#9ED8FF",
+    "accent": "#171916"
+   }
+  },
+  {
+   "id": "tmpl-genz-rest-productive",
+   "title": "Rest Is Productive",
+   "group": "genz",
+   "subtitle": "Bold quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "graduation",
+    "housewarming"
+   ],
+   "recipient": [
+    "friend",
+    "self",
+    "sibling"
+   ],
+   "description": "“Rest is productive.” — a bold typographic frame for desks, dorms and first apartments. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 110,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Rest is productive.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "ask me how.",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#B9F0D2",
+    "accent": "#171916"
+   }
+  },
+  {
+   "id": "tmpl-genz-vibes-views",
+   "title": "Vibes Over Views",
+   "group": "genz",
+   "subtitle": "Bold quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "graduation",
+    "housewarming"
+   ],
+   "recipient": [
+    "friend",
+    "self",
+    "sibling"
+   ],
+   "description": "“Vibes > views.” — a bold typographic frame for desks, dorms and first apartments. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": true,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 111,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Vibes > views.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#FFB36B",
+    "accent": "#171916"
+   }
+  },
+  {
+   "id": "tmpl-genz-soft-life",
+   "title": "Soft Life, Strong Mind",
+   "group": "genz",
+   "subtitle": "Bold quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "graduation",
+    "housewarming"
+   ],
+   "recipient": [
+    "friend",
+    "self",
+    "sibling"
+   ],
+   "description": "“Soft life. Strong mind.” — a bold typographic frame for desks, dorms and first apartments. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 112,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Soft life. Strong mind.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#F3EFE7",
+    "accent": "#171916"
+   }
+  },
+  {
+   "id": "tmpl-genz-loading-greatness",
+   "title": "Loading Greatness",
+   "group": "genz",
+   "subtitle": "Bold quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "graduation",
+    "housewarming"
+   ],
+   "recipient": [
+    "friend",
+    "self",
+    "sibling"
+   ],
+   "description": "“Currently loading greatness…” — a bold typographic frame for desks, dorms and first apartments. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 113,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Currently loading greatness…",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "please wait",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#171916",
+    "accent": "#D9F26B"
+   }
+  },
+  {
+   "id": "tmpl-genz-not-in-this-house",
+   "title": "Not In This House",
+   "group": "genz",
+   "subtitle": "Bold quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "graduation",
+    "housewarming"
+   ],
+   "recipient": [
+    "friend",
+    "self",
+    "sibling"
+   ],
+   "description": "“Overthinking? Not in this house.” — a bold typographic frame for desks, dorms and first apartments. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 114,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Overthinking? Not in this house.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#FFE45C",
+    "accent": "#171916"
+   }
+  },
+  {
+   "id": "tmpl-genz-loud-results",
+   "title": "Small Steps, Loud Results",
+   "group": "genz",
+   "subtitle": "Bold quote frame — edit the words",
+   "occasion": [
+    "birthday",
+    "graduation",
+    "housewarming"
+   ],
+   "recipient": [
+    "friend",
+    "self",
+    "sibling"
+   ],
+   "description": "“Small steps. Loud results.” — a bold typographic frame for desks, dorms and first apartments. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 115,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Small steps. Loud results.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "bold-type"
+   ],
+   "colors": {
+    "color": "#FF6B5B",
+    "accent": "#171916"
+   }
+  },
+  {
+   "id": "tmpl-desi-chai-first",
+   "title": "Chai First",
+   "group": "desi",
+   "subtitle": "Chai-tapri chalkboard quote — edit the words",
+   "occasion": [
+    "housewarming",
+    "birthday"
+   ],
+   "recipient": [
+    "family",
+    "friend",
+    "parents"
+   ],
+   "description": "“Chai first. Decisions later.” — hand-lettered chalkboard style for the kitchen, the dining wall or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": true,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 116,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Chai first. Decisions later.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "chalk"
+   ]
+  },
+  {
+   "id": "tmpl-desi-jugaad",
+   "title": "Jugaad Love Language",
+   "group": "desi",
+   "subtitle": "Chai-tapri chalkboard quote — edit the words",
+   "occasion": [
+    "housewarming",
+    "birthday"
+   ],
+   "recipient": [
+    "family",
+    "friend",
+    "parents"
+   ],
+   "description": "“Jugaad is a love language.” — hand-lettered chalkboard style for the kitchen, the dining wall or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 117,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Jugaad is a love language.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "chalk"
+   ]
+  },
+  {
+   "id": "tmpl-desi-bas-thoda-aur",
+   "title": "Bas Thoda Aur",
+   "group": "desi",
+   "subtitle": "Chai-tapri chalkboard quote — edit the words",
+   "occasion": [
+    "housewarming",
+    "birthday"
+   ],
+   "recipient": [
+    "family",
+    "friend",
+    "parents"
+   ],
+   "description": "“Bas thoda aur.” — hand-lettered chalkboard style for the kitchen, the dining wall or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 118,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Bas thoda aur.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "— har din",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "chalk"
+   ]
+  },
+  {
+   "id": "tmpl-desi-ghar-ka-khana",
+   "title": "Ghar Ka Khana",
+   "group": "desi",
+   "subtitle": "Chai-tapri chalkboard quote — edit the words",
+   "occasion": [
+    "housewarming",
+    "birthday"
+   ],
+   "recipient": [
+    "family",
+    "friend",
+    "parents"
+   ],
+   "description": "“Ghar ka khana > everything.” — hand-lettered chalkboard style for the kitchen, the dining wall or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 119,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Ghar ka khana > everything.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "chalk"
+   ]
+  },
+  {
+   "id": "tmpl-desi-mummys-favourite",
+   "title": "Mummy’s Favourite",
+   "group": "desi",
+   "subtitle": "Chai-tapri chalkboard quote — edit the words",
+   "occasion": [
+    "housewarming",
+    "birthday"
+   ],
+   "recipient": [
+    "family",
+    "friend",
+    "parents"
+   ],
+   "description": "“Mummy’s favourite.” — hand-lettered chalkboard style for the kitchen, the dining wall or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 120,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Mummy’s favourite.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "(allegedly)",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "chalk"
+   ]
+  },
+  {
+   "id": "tmpl-desi-sab-theek",
+   "title": "Sab Theek Ho Jayega",
+   "group": "desi",
+   "subtitle": "Chai-tapri chalkboard quote — edit the words",
+   "occasion": [
+    "housewarming",
+    "birthday"
+   ],
+   "recipient": [
+    "family",
+    "friend",
+    "parents"
+   ],
+   "description": "“Sab theek ho jayega.” — hand-lettered chalkboard style for the kitchen, the dining wall or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 121,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Sab theek ho jayega.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "chalk"
+   ]
+  },
+  {
+   "id": "tmpl-desi-kal-se-pakka",
+   "title": "Kal Se Pakka",
+   "group": "desi",
+   "subtitle": "Chai-tapri chalkboard quote — edit the words",
+   "occasion": [
+    "housewarming",
+    "birthday"
+   ],
+   "recipient": [
+    "family",
+    "friend",
+    "parents"
+   ],
+   "description": "“Kal se pakka.” — hand-lettered chalkboard style for the kitchen, the dining wall or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 122,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Kal se pakka.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "— every Sunday night",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "chalk"
+   ]
+  },
+  {
+   "id": "tmpl-desi-dil-se",
+   "title": "Dil Se Banaya",
+   "group": "desi",
+   "subtitle": "Chai-tapri chalkboard quote — edit the words",
+   "occasion": [
+    "housewarming",
+    "birthday"
+   ],
+   "recipient": [
+    "family",
+    "friend",
+    "parents"
+   ],
+   "description": "“Dil se banaya.” — hand-lettered chalkboard style for the kitchen, the dining wall or the office. Change the words to make it yours.",
+   "photoSlots": 0,
+   "layout": "text-only",
+   "hasCalendar": false,
+   "popular": false,
+   "newArrival": true,
+   "bestSeller": false,
+   "sortOrder": 123,
+   "startingPrice": 499,
+   "status": "active",
+   "slots": [],
+   "textFields": [
+    {
+     "id": "quote",
+     "label": "Your line",
+     "defaultValue": "Dil se banaya.",
+     "maxChars": 60,
+     "required": true,
+     "editable": true
+    },
+    {
+     "id": "sign",
+     "label": "Small line (optional)",
+     "defaultValue": "handmade with love",
+     "maxChars": 32,
+     "required": false,
+     "editable": true
+    }
+   ],
+   "calendar": null,
+   "decoratives": [
+    "chalk"
    ]
   }
  ]

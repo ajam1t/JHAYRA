@@ -294,3 +294,78 @@ button.tc-empty:hover {
   flex: 1;
   accent-color: var(--gold);
 }
+
+/* Gen Z sticker type */
+.tc.tc-bold {
+  background: var(--tint);
+  color: var(--acc);
+  padding: 9% 9%;
+}
+.tc-bold .tc-text {
+  align-items: flex-start;
+  text-align: left;
+  justify-content: center;
+  flex: 1;
+}
+.tc-bold .tc-hero,
+.tc-textonly.tc-bold .tc-hero {
+  font-family: var(--fb);
+  font-style: normal;
+  font-weight: 800;
+  font-size: clamp(14px, 15cqw, 92px);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  color: var(--acc);
+}
+.tc-bold .tc-sub {
+  font-family: var(--fb);
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  font-weight: 500;
+  color: var(--acc);
+  opacity: 0.75;
+  font-size: clamp(7px, 4.6cqw, 26px);
+}
+.tc-bold .tc-brand {
+  position: absolute;
+  bottom: 5%;
+  right: 7%;
+  color: var(--acc);
+}
+.tc-bold .tc-decor {
+  display: none;
+}
+/* Desi chalkboard */
+.tc.tc-chalk {
+  background:
+    radial-gradient(60% 40% at 30% 30%, rgba(255, 255, 255, 0.06), transparent 70%),
+    radial-gradient(50% 40% at 70% 80%, rgba(255, 255, 255, 0.04), transparent 70%),
+    #2e3a33;
+  color: #f4f1e8;
+  box-shadow: inset 0 0 0 3cqw #6b4a2e, inset 0 0 0 3.6cqw #4f3622;
+  padding: 12% 12%;
+}
+.tc-chalk .tc-text {
+  flex: 1;
+  justify-content: center;
+}
+.tc-chalk .tc-hero,
+.tc-textonly.tc-chalk .tc-hero {
+  font-family: 'Caveat', cursive;
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(14px, 15cqw, 90px);
+  line-height: 0.95;
+  color: #f4f1e8;
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.6);
+}
+.tc-chalk .tc-sub {
+  font-family: 'Caveat', cursive;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: clamp(8px, 6cqw, 34px);
+  color: #e9d58a;
+}
+.tc-chalk .tc-brand {
+  color: #f4f1e8;
+}

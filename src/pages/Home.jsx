@@ -15,6 +15,8 @@ import { ROOMS } from '../lib/rooms';
 import { COLLECTION_MAP, collectionProducts } from '../lib/collections';
 import { ARTICLES } from '../lib/journal';
 import LazyMount from '../components/LazyMount';
+import { WorldTile, useWorldCounts } from '../components/WorldTile';
+import { WORLDS } from '../lib/worlds';
 import { CollectionBlock } from './Collections';
 import { JournalCard } from './Journal';
 import { useFestival } from '../state/festival';
@@ -23,6 +25,35 @@ import { daysUntil, orderBy } from '../lib/festivals';
 import { money, SITE, waLink } from '../lib/site';
 import { BRAND } from '../lib/brand';
 import { MIN_PRICE } from '../lib/frames';
+
+/* ── Worlds strip ─────────────────────────────────────────────────────── */
+const HOME_WORLDS = ['anime', 'gen-z', 'divine', 'heritage', 'scenery', 'desi', 'love', 'vastu'];
+function WorldsStrip() {
+  const counts = useWorldCounts();
+  return (
+    <section className="section-sm">
+      <div className="wrap">
+        <div className="section-head">
+          <div>
+            <span className="eyebrow">Twenty worlds</span>
+            <h2 className="h2">
+              Find <em>your world.</em>
+            </h2>
+          </div>
+          <Link to="/worlds" className="link">
+            Explore all 20 worlds <Icon name="arrow" size={16} />
+          </Link>
+        </div>
+        <div className="worlds-strip">
+          {HOME_WORLDS.map((id) => {
+            const w = WORLDS.find((x) => x.id === id);
+            return <WorldTile key={id} w={w} count={counts[id]} compact />;
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 /* ── Festival world hero ──────────────────────────────────────────────── */
 function Countdown({ festival }) {
@@ -429,6 +460,9 @@ export default function Home() {
       {festival && <FestivalPicks festival={festival} products={products} categories={categories} />}
       <LazyMount minHeight={900}>
         <Environments products={products} />
+      </LazyMount>
+      <LazyMount minHeight={300}>
+        <WorldsStrip />
       </LazyMount>
       <section className="section studio-dark surface-night" id="studio">
         <div className="wrap">

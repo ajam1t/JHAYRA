@@ -1,0 +1,299 @@
+// ════════════════════════════════════════════════════════════════════════
+// JHAYRA Worlds — 20 themed shopping worlds, each with its own UI design.
+// A world collects live products (by category slug and name keywords) and
+// personalised templates (by group). A world with nothing to sell yet shows
+// an honest "launching soon" state; add products in Admin under its
+// `category` slug and it fills in automatically (see Admin → Worlds).
+// ════════════════════════════════════════════════════════════════════════
+
+export const WORLDS = [
+  {
+    id: 'anime',
+    title: 'Anime & Manga',
+    kicker: 'For the otaku in every home',
+    line: 'Original anime-style art for rooms that run on late nights and big dreams.',
+    design: 'manga',
+    category: 'anime',
+    cats: ['anime'],
+    words: ['anime', 'manga', 'otaku'],
+    tone: { bg: '#f7f5f0', ink: '#111', accent: '#ff3d5a' },
+  },
+  {
+    id: 'gen-z',
+    title: 'Gen Z Quotes',
+    kicker: 'Main character energy',
+    line: 'Bold, witty lines for desks, dorms and first apartments — edit the words, make it yours.',
+    design: 'sticker',
+    category: 'genz-quotes',
+    cats: ['genz-quotes'],
+    words: [],
+    groups: ['genz'],
+    tone: { bg: '#f1f0ea', ink: '#111', accent: '#d9f26b' },
+  },
+  {
+    id: 'divine',
+    title: 'Divine',
+    kicker: 'Every faith, every home',
+    line: 'Devotional art for every faith — chosen with care for your pooja room, prayer corner or entrance.',
+    design: 'divine',
+    category: 'religious',
+    cats: ['religious'],
+    words: [],
+    groups: ['spiritual'],
+    tone: { bg: '#1d140c', ink: '#f6ead4', accent: '#e2b25c' },
+  },
+  {
+    id: 'festivals',
+    title: 'Festivals',
+    kicker: 'Celebrate on the wall',
+    line: 'Diwali, Holi, Raksha Bandhan, Christmas and more — festive frames and gifts, one calendar.',
+    design: 'timeline',
+    category: 'occasions',
+    cats: ['occasions'],
+    words: ['diwali', 'festive'],
+    groups: ['festivals'],
+    tone: { bg: '#2a1008', ink: '#fff1dc', accent: '#f5a742' },
+  },
+  {
+    id: 'scenery',
+    title: 'Scenery',
+    kicker: 'A window to somewhere beautiful',
+    line: 'Sunrises, mountains, oceans and blossoms — a view for every wall, at every hour.',
+    design: 'window',
+    category: 'nature',
+    cats: ['nature', 'photography'],
+    words: ['sunrise', 'mountain', 'ocean', 'blossom', 'misty', 'horizon'],
+    tone: { bg: '#dfe7e6', ink: '#14201f', accent: '#e9a25b' },
+  },
+  {
+    id: 'art',
+    title: 'Art',
+    kicker: 'The white-cube gallery',
+    line: 'Abstract and modern works, hung like a gallery and labelled like one.',
+    design: 'gallery',
+    category: 'art-abstract',
+    cats: ['art-abstract', 'modern-art', 'canvas'],
+    words: [],
+    tone: { bg: '#fafaf8', ink: '#111', accent: '#111' },
+  },
+  {
+    id: 'heritage',
+    title: 'Heritage — Mithila',
+    kicker: 'Premium · hand-painted',
+    line: 'Mithila (Madhubani) paintings by artists from Bihar — original works, signed, with a certificate of authenticity.',
+    design: 'heritage',
+    category: 'mithila',
+    cats: ['mithila', 'madhubani'],
+    words: ['mithila', 'madhubani'],
+    premium: true,
+    tone: { bg: '#0f0d0a', ink: '#f2e6cf', accent: '#c9a45c' },
+  },
+  {
+    id: 'vastu',
+    title: 'Vastu & Feng Shui',
+    kicker: 'The right art, the right wall',
+    line: 'Tap a direction to see art traditionally recommended for that wall.',
+    design: 'compass',
+    category: 'home-vastu',
+    cats: ['home-vastu'],
+    words: ['vastu', 'koi', 'peacock', 'lotus'],
+    tone: { bg: '#efe6d6', ink: '#2a2014', accent: '#a5462d' },
+  },
+  {
+    id: 'love',
+    title: 'Love Stories',
+    kicker: 'For the two of you',
+    line: 'Couple frames, moon-and-stars nights and love notes — hung on string lights.',
+    design: 'polaroid',
+    category: 'love-romance',
+    cats: ['love-romance'],
+    words: ['love', 'couple'],
+    groups: ['couple-frame', 'love', 'moon-style', 'anniversary'],
+    tone: { bg: '#2a1418', ink: '#fbe9ec', accent: '#f4b8c4' },
+  },
+  {
+    id: 'kids',
+    title: 'Little Ones',
+    kicker: 'Nursery & kids’ rooms',
+    line: 'First smiles, first steps and the softest colours for little walls.',
+    design: 'bubbles',
+    category: 'baby-kids',
+    cats: ['baby-kids'],
+    words: ['baby', 'birthday'],
+    groups: ['baby', 'birthday'],
+    tone: { bg: '#fdf3ea', ink: '#3b2b4f', accent: '#ff9f8a' },
+  },
+  {
+    id: 'pets',
+    title: 'Pets',
+    kicker: 'Best friends, framed',
+    line: 'For the dog who owns the sofa and the cat who owns everything else.',
+    design: 'paws',
+    category: 'animals-pets',
+    cats: ['animals-pets'],
+    words: ['paw', 'pet', 'furry', 'wildlife'],
+    groups: ['pets'],
+    tone: { bg: '#f4ead9', ink: '#3a2716', accent: '#c7792f' },
+  },
+  {
+    id: 'motivation',
+    title: 'Motivation',
+    kicker: 'Words to work by',
+    line: 'Big type for big days — quotes that keep the office moving.',
+    design: 'ticker',
+    category: 'quotes',
+    cats: ['quotes'],
+    words: ['inspire', 'dream', 'success', 'mantra'],
+    groups: ['quotes'],
+    tone: { bg: '#111', ink: '#f3efe7', accent: '#f3efe7' },
+  },
+  {
+    id: 'horses',
+    title: 'Running Horses',
+    kicker: 'Speed, power, success',
+    line: 'The Vastu favourite for success — seven horses, all galloping forward.',
+    design: 'speed',
+    category: 'running-horses',
+    cats: ['running-horses'],
+    words: ['horse', 'stallion', 'mustang', 'galloping'],
+    tone: { bg: '#1a1410', ink: '#f5ead8', accent: '#e0a65a' },
+  },
+  {
+    id: 'family',
+    title: 'Family',
+    kicker: 'Generations on one wall',
+    line: 'Family trees, then-and-now collages and portraits that grow with you.',
+    design: 'tree',
+    category: 'family',
+    cats: ['family'],
+    words: ['family'],
+    groups: ['family', 'parents', 'collage-frame', 'mosaic-frame'],
+    tone: { bg: '#f0ecdf', ink: '#2c2a1e', accent: '#6f7d4f' },
+  },
+  {
+    id: 'wedding',
+    title: 'Wedding',
+    kicker: 'Shubh vivah',
+    line: 'Your names, your date, your photos — wedding keepsakes as beautiful as the invite.',
+    design: 'invite',
+    category: 'wedding',
+    cats: ['wedding'],
+    words: ['wedding', 'vows'],
+    groups: ['wedding'],
+    tone: { bg: '#7a1022', ink: '#fbecd2', accent: '#e8c27a' },
+  },
+  {
+    id: 'photography',
+    title: 'Photography',
+    kicker: 'Shot on film',
+    line: 'Fine-art photography on a contact sheet — pick your favourite frame.',
+    design: 'film',
+    category: 'photography',
+    cats: ['photography'],
+    words: ['photography', 'portrait', 'street'],
+    tone: { bg: '#141414', ink: '#eee', accent: '#ffb000' },
+  },
+  {
+    id: 'desi',
+    title: 'Desi Quotes',
+    kicker: 'Chai-tapri wisdom',
+    line: 'Hinglish one-liners, hand-lettered on a chalkboard — for the kitchen, the dining wall or the office.',
+    design: 'chalk',
+    category: 'desi-quotes',
+    cats: ['desi-quotes'],
+    words: [],
+    groups: ['desi'],
+    tone: { bg: '#2e3a33', ink: '#f4f1e8', accent: '#e9d58a' },
+  },
+  {
+    id: 'minimal',
+    title: 'Minimal',
+    kicker: 'Less, but better',
+    line: 'Quiet textures and clean compositions on a strict Swiss grid.',
+    design: 'swiss',
+    category: 'canvas',
+    cats: ['canvas', 'modern-art'],
+    words: ['textured', 'geometric', 'velvet'],
+    tone: { bg: '#f2f2f0', ink: '#111', accent: '#e4322b' },
+  },
+  {
+    id: 'gifts',
+    title: 'Gifts by Budget',
+    kicker: 'Something lovely at every price',
+    line: 'What you get at ₹499, ₹999, ₹1,499 and ₹2,999 — every design comes in all four sizes.',
+    design: 'ladder',
+    category: 'occasions',
+    cats: ['occasions', 'love-romance', 'family', 'religious'],
+    words: ['anniversary', 'birthday'],
+    groups: ['couple-frame', 'birthday', 'family'],
+    tone: { bg: '#efe9df', ink: '#171916', accent: '#b99a68' },
+  },
+  {
+    id: 'travel',
+    title: 'Travel',
+    kicker: 'Pin your journeys',
+    line: 'Trip collages, destination frames and the views you came home talking about.',
+    design: 'map',
+    category: 'photography',
+    cats: ['nature'],
+    words: ['ocean', 'mountain', 'misty'],
+    groups: ['travel'],
+    tone: { bg: '#e7e2d3', ink: '#1f2a33', accent: '#d2553a' },
+  },
+];
+
+export const WORLD_MAP = Object.fromEntries(WORLDS.map((w) => [w.id, w]));
+
+// Divine: faiths and (for Hinduism) deities. Products match by category or name keywords.
+export const FAITHS = [
+  {
+    id: 'hindu',
+    label: 'Hindu',
+    symbol: 'ॐ',
+    cats: ['religious', 'home-vastu'],
+    deities: [
+      { id: 'ganesha', label: 'Ganesha', words: ['ganesha', 'ganesh', 'ganpati', 'vinayak'] },
+      { id: 'shiva', label: 'Shiva', words: ['shiva', 'shivaya', 'mahadev', 'shiv'] },
+      { id: 'krishna', label: 'Krishna', words: ['krishna', 'radha', 'kanha'] },
+      { id: 'lakshmi', label: 'Lakshmi', words: ['lakshmi', 'laxmi'] },
+      { id: 'durga', label: 'Durga', words: ['durga', 'devi', 'maa'] },
+      { id: 'hanuman', label: 'Hanuman', words: ['hanuman', 'bajrang'] },
+      { id: 'ram', label: 'Ram', words: ['ram ', 'rama', 'shri ram', 'sita'] },
+      { id: 'om', label: 'Om & mantras', words: ['om ', 'om namah', 'mantra'] },
+    ],
+  },
+  { id: 'sikh', label: 'Sikh', symbol: 'ੴ', cats: ['sikh'], words: ['guru nanak', 'golden temple', 'waheguru', 'ik onkar'] },
+  { id: 'buddhist', label: 'Buddhist', symbol: '☸', cats: ['buddhist'], words: ['buddha', 'bodhi'] },
+  { id: 'jain', label: 'Jain', symbol: 'जिन', cats: ['jain'], words: ['mahavir', 'jain'] },
+  { id: 'christian', label: 'Christian', symbol: '✝', cats: ['christian'], words: ['jesus', 'christ', 'mary', 'cross'] },
+  { id: 'islamic', label: 'Islamic', symbol: '☪', cats: ['islamic'], words: ['mecca', 'calligraphy', 'masjid'] },
+];
+
+// Vastu: traditional associations by wall direction (general guidance, not prescriptive).
+export const DIRECTIONS = [
+  { id: 'N', label: 'North', idea: 'Career & wealth', note: 'Flowing water, fish and calm blues are traditionally placed here.', words: ['ocean', 'koi', 'water', 'wave', 'breeze'], cats: [] },
+  { id: 'NE', label: 'North-East', idea: 'Prayer & clarity', note: 'The traditional place for deities and the pooja corner.', words: [], cats: ['religious'] },
+  { id: 'E', label: 'East', idea: 'Health & new beginnings', note: 'Rising sun and fresh greenery suit the east wall.', words: ['sunrise', 'sun', 'golden hour', 'blossom'], cats: [] },
+  { id: 'SE', label: 'South-East', idea: 'Energy & fire', note: 'Warm reds and oranges are traditionally favoured here.', words: ['crimson', 'sunrise', 'neon'], cats: [] },
+  { id: 'S', label: 'South', idea: 'Fame & recognition', note: 'Running horses facing inward are a classic south-wall choice.', words: ['horse', 'stallion'], cats: ['running-horses'] },
+  { id: 'SW', label: 'South-West', idea: 'Relationships & stability', note: 'Couple and family portraits are traditionally hung here.', words: [], cats: ['love-romance', 'family', 'wedding'] },
+  { id: 'W', label: 'West', idea: 'Gains & children', note: 'Joyful, playful art and children’s photos suit the west.', words: [], cats: ['baby-kids', 'occasions'] },
+  { id: 'NW', label: 'North-West', idea: 'Support & movement', note: 'Landscapes and open skies are often chosen for the north-west.', words: ['mountain', 'misty', 'horizon'], cats: ['nature'] },
+];
+
+const has = (p, words) => {
+  const n = ` ${p.name.toLowerCase()} `;
+  return words.some((w) => n.includes(w));
+};
+
+export function matchProducts(products, { cats = [], words = [] }) {
+  return (products || []).filter((p) => p.thumbnail && (cats.includes(p.category) || (words.length && has(p, words))));
+}
+
+export function worldProducts(w, products) {
+  return matchProducts(products, w);
+}
+
+export function worldTemplates(w, templates) {
+  return (w.groups || []).length ? (templates || []).filter((t) => w.groups.includes(t.group)) : [];
+}
