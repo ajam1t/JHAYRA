@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { money, waLink } from '../lib/site';
+import { money } from '../lib/site';
 
 const STATUSES = ['pending', 'confirmed', 'personalization', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -148,7 +148,7 @@ export default function Orders() {
                             <br />
                             {o.customer_mobile} {o.customer_email && `· ${o.customer_email}`}
                           </p>
-                          <a className="ad-btn" href={waLink(`Hi ${o.customer_name}, this is JHAYRA about your order ${o.order_number || ''}.`).replace('917070728989', '91' + String(o.customer_mobile || '').replace(/\D/g, '').slice(-10))} target="_blank" rel="noreferrer">
+                          <a className="ad-btn" href={`https://wa.me/91${String(o.customer_mobile || '').replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(`Hi ${o.customer_name}, this is JHAYRA about your order ${o.order_number || ''}.`)}`} target="_blank" rel="noreferrer">
                             WhatsApp customer
                           </a>
                           <h3 style={{ marginTop: 18 }}>Payment</h3>

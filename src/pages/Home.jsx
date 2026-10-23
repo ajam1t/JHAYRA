@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Frame from '../components/Frame';
 import Img from '../components/Img';
@@ -9,15 +9,14 @@ import Particles from '../components/Particles';
 import TemplateCanvas from '../components/TemplateCanvas';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard';
 import { Seo } from '../lib/seo';
-import { useCategories, useProducts } from '../lib/catalog';
+import { useCategories, useProducts, useSamplePhoto } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
 import { ROOMS } from '../lib/rooms';
 import { COLLECTION_MAP, collectionProducts } from '../lib/collections';
 import { ARTICLES } from '../lib/journal';
-import LivingStudio from '../components/LivingStudio';
+import LazyMount from '../components/LazyMount';
 import { CollectionBlock } from './Collections';
 import { JournalCard } from './Journal';
-import { useSamplePhoto } from './PhotoBuilder';
 import { useFestival } from '../state/festival';
 import { useToast } from '../state/store';
 import { daysUntil, orderBy } from '../lib/festivals';
@@ -169,6 +168,8 @@ function FestivalPicks({ festival, products, categories }) {
     </section>
   );
 }
+
+const LivingStudio = lazy(() => import('../components/LivingStudio'));
 
 /* ── Hero: the gallery room ────────────────────────────────────────────── */
 const ART_CATS = ['nature', 'personalized', 'modern-art', 'art-abstract', 'canvas', 'religious', 'home-vastu', 'running-horses', 'photography'];
@@ -388,9 +389,6 @@ function BestsellerRail({ products, categories, loading }) {
         <div className="prail" ref={rail}>
           {loading ? Array.from({ length: 5 }, (_, i) => <ProductCardSkeleton key={i} />) : items.map((p, i) => <ProductCard key={p.id} product={p} categories={categories} index={i} room />)}
         </div>
-        <p className="small muted" style={{ marginTop: 14 }}>
-          ★ {BRAND.ratingSource}.
-        </p>
       </div>
     </section>
   );
@@ -424,12 +422,14 @@ export default function Home() {
           slogan: 'Art that lives with you',
           foundingDate: String(BRAND.since),
           sameAs: [SITE.instagram],
-          contactPoint: { '@type': 'ContactPoint', telephone: '+91-7070728989', contactType: 'customer service', availableLanguage: ['English', 'Hindi'] },
+          contactPoint: { '@type': 'ContactPoint', telephone: '+91-8446440469', contactType: 'customer service', availableLanguage: ['English', 'Hindi'] },
         }}
       />
       {festival ? <FestivalHero festival={festival} /> : <GalleryHero products={products} />}
       {festival && <FestivalPicks festival={festival} products={products} categories={categories} />}
-      <Environments products={products} />
+      <LazyMount minHeight={900}>
+        <Environments products={products} />
+      </LazyMount>
       <section className="section studio-dark surface-night" id="studio">
         <div className="wrap">
           <div className="section-head">
@@ -443,7 +443,11 @@ export default function Home() {
               Upload a photo, choose a treatment, add a name or date. The preview is exactly what we print — in a black frame, at the price you see.
             </p>
           </div>
-          <LivingStudio compact samplePhoto={sample} />
+          <LazyMount minHeight={520} margin="300px">
+            <Suspense fallback={<div style={{ minHeight: 520 }} />}>
+              <LivingStudio compact samplePhoto={sample} />
+            </Suspense>
+          </LazyMount>
         </div>
       </section>
       <section className="section collections-home">
@@ -459,14 +463,18 @@ export default function Home() {
               All six collections <Icon name="arrow" size={16} />
             </Link>
           </div>
-          <div className="collections-stack">
-            {['nature-reimagined', 'abstract-forms', 'personal-memories'].map((id, i) => (
-              <CollectionBlock key={id} c={COLLECTION_MAP[id]} products={products || []} index={i} compact />
-            ))}
-          </div>
+          <LazyMount minHeight={1200}>
+            <div className="collections-stack">
+              {['nature-reimagined', 'abstract-forms', 'personal-memories'].map((id, i) => (
+                <CollectionBlock key={id} c={COLLECTION_MAP[id]} products={products || []} index={i} compact />
+              ))}
+            </div>
+          </LazyMount>
         </div>
       </section>
-      <BestsellerRail products={products} categories={categories} loading={loading} />
+      <LazyMount minHeight={620}>
+        <BestsellerRail products={products} categories={categories} loading={loading} />
+      </LazyMount>
       <section className="section journal-home surface-cream">
         <div className="wrap">
           <div className="section-head">
@@ -480,11 +488,13 @@ export default function Home() {
               All articles <Icon name="arrow" size={16} />
             </Link>
           </div>
-          <div className="journal-grid">
-            {ARTICLES.slice(0, 3).map((a, i) => (
-              <JournalCard key={a.slug} a={a} i={i} />
-            ))}
-          </div>
+          <LazyMount minHeight={460}>
+            <div className="journal-grid">
+              {ARTICLES.slice(0, 3).map((a, i) => (
+                <JournalCard key={a.slug} a={a} i={i} />
+              ))}
+            </div>
+          </LazyMount>
         </div>
       </section>
       <nav className="promises wrap" aria-label="Our promises">

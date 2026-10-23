@@ -58,7 +58,7 @@ Today the account icon opens **My orders**, which lists orders placed on that de
 
 ### 4. Verified reviews
 
-No reviews are invented on the site; product ratings are labelled as coming from the Amazon store (2017–2025).
+No reviews are invented on the site. Product ratings come from the `rating` and `review_count` fields that admins maintain.
 
 ```sql
 create table public.reviews (

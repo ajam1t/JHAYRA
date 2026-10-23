@@ -252,8 +252,8 @@ export function ProductForm() {
           {field('slug', 'Slug')}
           {field('price', 'From price (₹)', { type: 'number' })}
           {field('compare_price', 'Compare-at price (₹, optional)', { type: 'number' })}
-          {field('rating', 'Rating (from Amazon)', { type: 'number', step: '0.1', min: 0, max: 5 })}
-          {field('review_count', 'Review count (from Amazon)', { type: 'number' })}
+          {field('rating', 'Rating', { type: 'number', step: '0.1', min: 0, max: 5 })}
+          {field('review_count', 'Review count', { type: 'number' })}
           {field('display_order', 'Display order', { type: 'number' })}
           {field('tags', 'Tags (comma separated)')}
         </div>

@@ -168,9 +168,6 @@ export default function Shop() {
               </div>
             </div>
           )}
-          <p className="small muted" style={{ marginTop: 28 }}>
-            ★ {BRAND.ratingSource}.
-          </p>
         </div>
       </section>
     </>

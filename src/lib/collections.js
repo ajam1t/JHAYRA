@@ -65,6 +65,6 @@ export const COLLECTIONS = [
 ];
 export const COLLECTION_MAP = Object.fromEntries(COLLECTIONS.map((c) => [c.id, c]));
 
-export function collectionProducts(c, products = []) {
-  return products.filter((p) => c.cats.includes(p.category) || c.words.some((w) => p.name.toLowerCase().includes(w)));
+export function collectionProducts(c, products) {
+  return (products || []).filter((p) => c.cats.includes(p.category) || c.words.some((w) => p.name.toLowerCase().includes(w)));
 }

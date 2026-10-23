@@ -1614,3 +1614,41 @@ body {
     height: 7px;
   }
 }
+/* Contrast: dimmed labels stay at or above WCAG AA */
+.ls-t small,
+.ls-group legend span,
+.ls-size small,
+.ls-buy small,
+.cblock-copy p,
+.cblock-meta,
+.cblock-cap em,
+.collection-chip small {
+  opacity: 1;
+}
+.studio-dark .ls-t small,
+.studio-dark .ls-group legend span,
+.studio-dark .ls-size small,
+.studio-dark .ls-buy small,
+.studio-dark .ls-tag {
+  color: #b9b7af;
+}
+.ls-stage .ls-tag {
+  color: var(--muted);
+}
+.studio-dark .ls-size.on small {
+  color: var(--obsidian);
+}
+.tone-obsidian .cblock-copy p,
+.tone-obsidian .cblock-meta,
+.tone-obsidian .cblock-cap em {
+  color: #c9c6be;
+}
+.tone-obsidian .crumbs,
+.tone-obsidian .crumbs a {
+  color: #c9c6be;
+}
+/* Reserve a full screen while pages load so the footer never jumps (CLS) */
+#main {
+  min-height: 100vh;
+  min-height: 100svh;
+}

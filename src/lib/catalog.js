@@ -164,3 +164,10 @@ export function searchProducts(products, q) {
     .sort((a, b) => b.score - a.score)
     .map((x) => x.p);
 }
+
+// A real catalogue photo used as the Living Art Studio's sample before a customer uploads.
+export function useSamplePhoto() {
+  const { data: products } = useProducts();
+  const p = (products || []).find((x) => x.category === 'family' && x.thumbnail) || (products || []).find((x) => x.category === 'photography' && x.thumbnail);
+  return p?.thumbnail;
+}

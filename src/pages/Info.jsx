@@ -153,7 +153,7 @@ function About() {
               Memories deserve <em>better than a phone.</em>
             </h1>
             <p className="lead" style={{ marginTop: 20 }}>
-              JHAYRA began in {BRAND.since} with a simple belief: the photos we love most shouldn’t live only on a screen. For eight years we crafted frames for families across India on Amazon — {BRAND.homes} homes, {BRAND.gifts} gifts and {BRAND.corporates} corporate clients later, we now make them for you directly, from our workshop to your wall.
+              JHAYRA began in {BRAND.since} with a simple belief: the photos we love most shouldn’t live only on a screen. Since then we have crafted frames for families across India — {BRAND.homes} homes, {BRAND.gifts} gifts and {BRAND.corporates} corporate clients — each one made to order in our workshop and delivered to your wall.
             </p>
           </div>
           <div className="about-art">

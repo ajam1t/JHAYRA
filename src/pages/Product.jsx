@@ -12,7 +12,6 @@ import { useCart } from '../state/cart';
 import { useShop, useToast } from '../state/store';
 import { money, deliveryWindow, SITE, waLink } from '../lib/site';
 import { readPhoto, uploadArtwork, QUALITY_LABEL } from '../lib/upload';
-import { BRAND } from '../lib/brand';
 import { optimized } from '../lib/img';
 
 export function PincodeCheck() {
@@ -491,9 +490,6 @@ export default function Product() {
           </div>
         </section>
       )}
-      <p className="wrap small muted" style={{ paddingBottom: 40 }}>
-        ★ {BRAND.ratingSource}.
-      </p>
 
       <div className={`sticky-atc ${showSticky ? 'show' : ''}`} aria-hidden={!showSticky}>
         <div className="sticky-atc-thumb">

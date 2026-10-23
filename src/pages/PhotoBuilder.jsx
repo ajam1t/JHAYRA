@@ -1,15 +1,9 @@
 import { Link } from 'react-router-dom';
 import LivingStudio from '../components/LivingStudio';
 import { Seo } from '../lib/seo';
-import { useProducts } from '../lib/catalog';
+import { useSamplePhoto } from '../lib/catalog';
 import { money } from '../lib/site';
 import { SIZES } from '../lib/frames';
-
-export function useSamplePhoto() {
-  const { data: products } = useProducts();
-  const p = (products || []).find((x) => x.category === 'family' && x.thumbnail) || (products || []).find((x) => x.category === 'photography' && x.thumbnail);
-  return p?.thumbnail;
-}
 
 export default function PhotoBuilder() {
   const sample = useSamplePhoto();

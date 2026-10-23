@@ -6,7 +6,6 @@ import { Stars } from './ProductCard';
 import { loadFrameConfig, useAsync } from '../lib/catalog';
 import { useCart } from '../state/cart';
 import { money } from '../lib/site';
-import { BRAND } from '../lib/brand';
 
 /** Size + frame chooser in a dialog, using the product's real options and prices. */
 export default function QuickView({ product, onClose }) {
@@ -100,7 +99,6 @@ export default function QuickView({ product, onClose }) {
               </Link>
             )}
           </div>
-          {product.rating ? <p className="small muted" style={{ marginTop: 14 }}>★ {BRAND.ratingSource}.</p> : null}
         </div>
       </div>
     </div>
