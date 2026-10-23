@@ -156,8 +156,11 @@ try {
     );
     urls.push([path, '0.6']);
   }
-  const { WORLDS } = await import('../src/lib/worlds.js');
-  for (const w of WORLDS) {
+  // Only worlds with something to show (empty ones redirect to /worlds).
+  const { WORLDS, worldProducts, worldTemplates } = await import('../src/lib/worlds.js');
+  const tmplList = JSON.parse(readFileSync(join(root, 'src/templates.json'), 'utf8')).templates.filter((t) => t.status === 'active');
+  const forWorlds = products.map((p) => ({ ...p, category: p.category_slug, thumbnail: (p.product_images || [])[0]?.url || '' }));
+  for (const w of WORLDS.filter((w) => worldProducts(w, forWorlds).length + worldTemplates(w, tmplList).length > 0)) {
     const path = `/worlds/${w.id}`;
     write(path, page({ path, title: `${w.title} — Wall Art World | JHAYRA`, description: w.line, body: `<h1>${esc(w.title)}</h1><p>${esc(w.kicker)}</p><p>${esc(w.line)}</p>` }));
     urls.push([path, '0.6']);

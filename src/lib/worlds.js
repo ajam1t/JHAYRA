@@ -79,8 +79,8 @@ export const WORLDS = [
   {
     id: 'heritage',
     title: 'Heritage — Mithila',
-    kicker: 'Premium · hand-painted',
-    line: 'Mithila (Madhubani) paintings by artists from Bihar — original works, signed, with a certificate of authenticity.',
+    kicker: 'Premium · from the museum archive',
+    line: 'Mithila (Madhubani) paintings from Bihar, printed from museum archives — and hand-painted originals on commission.',
     design: 'heritage',
     category: 'mithila',
     cats: ['mithila', 'madhubani'],

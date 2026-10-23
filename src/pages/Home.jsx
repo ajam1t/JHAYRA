@@ -15,8 +15,7 @@ import { ROOMS } from '../lib/rooms';
 import { COLLECTION_MAP, collectionProducts } from '../lib/collections';
 import { ARTICLES } from '../lib/journal';
 import LazyMount from '../components/LazyMount';
-import { WorldTile, useWorldCounts } from '../components/WorldTile';
-import { WORLDS } from '../lib/worlds';
+import { WorldTile, useLiveWorlds } from '../components/WorldTile';
 import { thoughtOfTheDay, frameThoughtLink } from '../lib/thoughts';
 import { CollectionBlock } from './Collections';
 import { JournalCard } from './Journal';
@@ -28,28 +27,29 @@ import { BRAND } from '../lib/brand';
 import { MIN_PRICE } from '../lib/frames';
 
 /* ── Worlds strip ─────────────────────────────────────────────────────── */
-const HOME_WORLDS = ['anime', 'gen-z', 'divine', 'heritage', 'scenery', 'desi', 'love', 'vastu'];
+const HOME_WORLDS = ['anime', 'gen-z', 'divine', 'heritage', 'names', 'sports', 'scenery', 'desi', 'cities', 'love', 'vastu'];
 function WorldsStrip() {
-  const counts = useWorldCounts();
+  const { counts, live } = useLiveWorlds();
+  if (!live) return <div style={{ minHeight: 300 }} />;
+  const picks = [...HOME_WORLDS.map((id) => live.find((w) => w.id === id)).filter(Boolean), ...live.filter((w) => !HOME_WORLDS.includes(w.id))].slice(0, 8);
   return (
     <section className="section-sm">
       <div className="wrap">
         <div className="section-head">
           <div>
-            <span className="eyebrow">{WORLDS.length} worlds</span>
+            <span className="eyebrow">{live.length} worlds</span>
             <h2 className="h2">
               Find <em>your world.</em>
             </h2>
           </div>
           <Link to="/worlds" className="link">
-            Explore all {WORLDS.length} worlds <Icon name="arrow" size={16} />
+            Explore all {live.length} worlds <Icon name="arrow" size={16} />
           </Link>
         </div>
         <div className="worlds-strip">
-          {HOME_WORLDS.map((id) => {
-            const w = WORLDS.find((x) => x.id === id);
-            return <WorldTile key={id} w={w} count={counts[id]} compact />;
-          })}
+          {picks.map((w) => (
+            <WorldTile key={w.id} w={w} count={counts[w.id]} compact />
+          ))}
         </div>
       </div>
     </section>

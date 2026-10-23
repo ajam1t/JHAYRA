@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import Frame from '../components/Frame';
 import Img from '../components/Img';
 import Icon, { WhatsAppGlyph } from '../components/Icon';
 import TemplateCanvas, { SKYLINES } from '../components/TemplateCanvas';
-import { WorldTile, useWorldCounts } from '../components/WorldTile';
+import { WorldTile, useLiveWorlds } from '../components/WorldTile';
 import { Seo } from '../lib/seo';
 import { useProducts } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
@@ -146,7 +146,8 @@ function Sticker({ w, items }) {
 function Divine({ w, products, templates }) {
   const [faith, setFaith] = useState('hindu');
   const [deity, setDeity] = useState('');
-  const f = FAITHS.find((x) => x.id === faith);
+  const faiths = FAITHS.filter((x) => x.id === 'hindu' || matchProducts(products, { cats: x.cats, words: x.words }).length);
+  const f = faiths.find((x) => x.id === faith) || faiths[0];
   let list = faith === 'hindu' ? matchProducts(products, { cats: f.cats, words: [] }).filter((p) => p.category === 'religious' || /om|lotus|vastu/i.test(p.name)) : matchProducts(products, { cats: f.cats, words: f.words });
   const d = f.deities?.find((x) => x.id === deity);
   if (d) list = matchProducts(products, { words: d.words });
@@ -160,8 +161,9 @@ function Divine({ w, products, templates }) {
           <span className="eyebrow">{w.kicker}</span>
           <h1 className="display">{w.title}</h1>
           <p className="lead">{w.line}</p>
+          {faiths.length > 1 && (
           <div className="d-divine-faiths" role="tablist" aria-label="Faith">
-            {FAITHS.map((x) => (
+            {faiths.map((x) => (
               <button key={x.id} role="tab" aria-selected={x.id === faith} onClick={() => (setFaith(x.id), setDeity(''))}>
                 <span className="d-divine-sym" aria-hidden="true">
                   {x.symbol}
@@ -170,6 +172,7 @@ function Divine({ w, products, templates }) {
               </button>
             ))}
           </div>
+          )}
           <p className="d-divine-thought">
             <span>Thought of the day</span>“{q.text}” <small>— {q.source}</small>{' '}
             <Link to={frameThoughtLink(q)} className="link">
@@ -186,11 +189,11 @@ function Divine({ w, products, templates }) {
             </button>
             {f.deities.map((x) => {
               const n = matchProducts(products, { words: x.words }).length;
-              return (
-                <button key={x.id} className="chip" aria-pressed={deity === x.id} onClick={() => setDeity(x.id)} disabled={!n}>
-                  {x.label} <span className="chip-n">{n || 'soon'}</span>
+              return n ? (
+                <button key={x.id} className="chip" aria-pressed={deity === x.id} onClick={() => setDeity(x.id)}>
+                  {x.label} <span className="chip-n">{n}</span>
                 </button>
-              );
+              ) : null;
             })}
           </div>
         )}
@@ -374,16 +377,16 @@ function Heritage({ w, items }) {
           </div>
           <ul className="d-heritage-promise">
             <li>
-              <b>Original</b> hand-painted works, not prints
+              <b>Museum archive</b> 20th-century Mithila paintings from The Cleveland Museum of Art’s open-access collection
             </li>
             <li>
-              <b>Signed</b> by the artist, with their story
+              <b>Printed to order</b> on archival paper, in our black frames
             </li>
             <li>
-              <b>Certificate</b> of authenticity with every piece
+              <b>Every size</b> from A4 to 24 × 36 inches
             </li>
             <li>
-              <b>Commissions</b> in your size and colours
+              <b>Hand-painted originals</b> by Mithila artists on commission — ask us on WhatsApp
             </li>
           </ul>
         </div>
@@ -400,12 +403,17 @@ function Heritage({ w, items }) {
                 <span>from {money(it.price)}</span>
               </Link>
             ))}
+            <a className="d-heritage-commission" href={waLink('Hi JHAYRA! I would like to commission a hand-painted Mithila painting.')} target="_blank" rel="noopener noreferrer">
+              <span>Commission</span>
+              <b>A hand-painted original</b>
+              <small>By a Mithila artist, in your size and colours. Ask us on WhatsApp.</small>
+            </a>
           </div>
         ) : (
           <div className="d-heritage-soon">
             <Soon w={w} what="Mithila Heritage" />
             <a className="link" href={waLink('Hi JHAYRA! I would like to commission a Mithila painting.')} target="_blank" rel="noopener noreferrer">
-              Or commission a painting now <Icon name="arrow" size={15} />
+              Commission a hand-painted original <Icon name="arrow" size={15} />
             </a>
           </div>
         )}
@@ -1021,21 +1029,21 @@ const DESIGNS = { manga: Manga, sticker: Sticker, divine: Divine, timeline: Time
 
 /* ── Hub ──────────────────────────────────────────────────────────────── */
 function Hub() {
-  const counts = useWorldCounts();
+  const { counts, live } = useLiveWorlds();
   return (
     <>
-      <Seo title="Worlds — Anime, Divine, Gen Z Quotes, Scenery & More" description="JHAYRA worlds: anime, Gen Z and desi quotes, divine art for every faith, festivals, scenery, Mithila heritage, Vastu, sports, city love, kids’ name boards and more." path="/worlds" />
+      <Seo title="Worlds — Anime, Divine, Gen Z Quotes, Scenery & More" description="JHAYRA worlds: Gen Z and desi quotes, divine art, festivals, scenery, Vastu, sports, city love, kids’ name boards and more." path="/worlds" />
       <section className="wrap page-hero">
         <span className="eyebrow">Worlds</span>
         <h1 className="display" style={{ marginTop: 16, maxWidth: '12ch' }}>
-          {WORLDS.length} worlds. <em>One for you.</em>
+          {live ? `${live.length} worlds.` : 'Worlds.'} <em>One for you.</em>
         </h1>
         <p className="lead" style={{ marginTop: 16 }}>
-          From anime to Mithila heritage, chai-tapri quotes to the divine — every world has its own look. Wander in.
+          From chai-tapri quotes to the divine, cricket jerseys to your hometown skyline — every world has its own look. Wander in.
         </p>
       </section>
-      <section className="wrap whub" style={{ paddingBottom: 90 }}>
-        {WORLDS.map((w) => (
+      <section className="wrap whub" style={{ paddingBottom: 90, minHeight: 600 }}>
+        {(live || []).map((w) => (
           <WorldTile key={w.id} w={w} count={counts[w.id]} />
         ))}
       </section>
@@ -1046,13 +1054,16 @@ function Hub() {
 function WorldPage({ w }) {
   const { data: products } = useProducts();
   const { active } = useTemplates();
+  const { live } = useLiveWorlds();
   const prods = worldProducts(w, products);
   const tmpls = worldTemplates(w, active);
   const items = toItems(prods, tmpls);
   const Design = DESIGNS[w.design];
-  const i = WORLDS.indexOf(w);
-  const next = WORLDS[(i + 1) % WORLDS.length];
-  const prev = WORLDS[(i + WORLDS.length - 1) % WORLDS.length];
+  if (!live) return <div className="world" style={{ '--wb': w.tone.bg, '--wi': w.tone.ink, '--wa': w.tone.accent }} aria-busy="true" />;
+  if (!live.includes(w)) return <Navigate to="/worlds" replace />;
+  const i = live.indexOf(w);
+  const next = live[(i + 1) % live.length];
+  const prev = live[(i + live.length - 1) % live.length];
   return (
     <div className={`world w-${w.design}`} style={{ '--wb': w.tone.bg, '--wi': w.tone.ink, '--wa': w.tone.accent }}>
       <Seo title={`${w.title} — Wall Art World`} description={w.line} path={`/worlds/${w.id}`} jsonLd={{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: `${w.title} | JHAYRA`, description: w.line, url: `${SITE.url}/worlds/${w.id}` }} />

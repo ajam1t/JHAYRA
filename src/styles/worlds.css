@@ -2073,3 +2073,29 @@
     height: 300px;
   }
 }
+.d-heritage-commission {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  padding: 28px;
+  text-decoration: none;
+  border: 1px solid var(--wa);
+  background: radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--wa) 18%, transparent), transparent 70%);
+  min-height: 260px;
+}
+.d-heritage-commission span {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--wa);
+}
+.d-heritage-commission b {
+  font-family: var(--fd);
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.05;
+}
+.d-heritage-commission small {
+  font-size: 14px;
+  opacity: 0.85;
+}

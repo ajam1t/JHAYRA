@@ -1,6 +1,7 @@
 import { templatesSnapshot } from '../lib/templates';
 import PanZoom from './PanZoom';
 import Icon from './Icon';
+import { samplePhoto } from '../lib/samples';
 
 const HERO_KEYS = ['quote', 'title', 'word', 'deity', 'letter', 'name'];
 const MSG_KEYS = ['msg'];
@@ -239,7 +240,7 @@ export default function TemplateCanvas({ template: t, photos = {}, transforms = 
                     {!mini && <span>{s.label}</span>}
                   </button>
                 ) : (
-                  <div className="tc-empty tc-ph" aria-hidden="true" style={{ '--n': i }} />
+                  <img className="tc-sample" src={samplePhoto(t, s, i)} alt="" loading="lazy" decoding="async" />
                 )}
               </div>
             );
