@@ -544,6 +544,11 @@ body.has-bottom-nav {
   display: flex;
   flex-direction: column;
 }
+.pcard-media {
+  position: relative;
+  border-radius: var(--r);
+  overflow: hidden;
+}
 .pcard-stage {
   position: relative;
   aspect-ratio: 4 / 5;

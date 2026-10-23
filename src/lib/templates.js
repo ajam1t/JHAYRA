@@ -67,7 +67,6 @@ export function templatesSnapshot() {
 export const MOMENTS = [
   { id: 'wedding', label: 'Wedding', groups: ['wedding'], hint: 'Names, date & 5 photos' },
   { id: 'anniversary', label: 'Anniversary', groups: ['anniversary', 'love', 'couple-frame'], hint: 'For the two of you' },
-  { id: 'karva-chauth', label: 'Karva Chauth', groups: ['moon-style', 'couple-frame', 'love', 'anniversary'], hint: 'For the moonrise' },
   { id: 'birthday', label: 'Birthday', groups: ['birthday', 'milestones'], hint: 'Make the day last' },
   { id: 'family', label: 'Family', groups: ['family', 'parents', 'collage-frame', 'mosaic-frame'], hint: 'Everyone in one frame' },
   { id: 'baby', label: 'Baby & Kids', groups: ['baby'], hint: 'First smiles, first steps' },

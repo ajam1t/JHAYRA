@@ -16,6 +16,7 @@ export const FESTIVALS = [
   {
     id: 'karva-chauth',
     name: 'Karva Chauth',
+    enabled: false,
     date: '2026-10-29',
     from: '2026-10-12',
     to: '2026-10-29',
@@ -27,7 +28,7 @@ export const FESTIVALS = [
     lead: 'Personalised couple & moon frames, handcrafted for the night she waits for the moon. Your names, your date, your photo.',
     coupon: 'KARVA10',
     offer: '10% off couple & moon frames',
-    cta: { label: 'Create her Karva Chauth frame', to: '/customize?moment=karva-chauth' },
+    cta: { label: 'Create her Karva Chauth frame', to: '/customize?moment=moon' },
     cta2: { label: 'Shop couple frames', to: '/shop?category=love-romance' },
     categories: ['love-romance', 'wedding', 'religious'],
     templateGroups: ['moon-style', 'couple-frame', 'love', 'anniversary', 'wedding'],

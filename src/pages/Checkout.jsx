@@ -414,7 +414,7 @@ export default function Checkout() {
                     <label htmlFor="g-note">
                       Your message <span className="muted" style={{ float: 'right' }}>{gift.note.length}/200</span>
                     </label>
-                    <textarea id="g-note" className="textarea" maxLength={200} rows={3} value={gift.note} onChange={(e) => setGift((g) => ({ ...g, note: e.target.value }))} placeholder="Happy Karva Chauth, my moon. Every year with you is my favourite photo." />
+                    <textarea id="g-note" className="textarea" maxLength={200} rows={3} value={gift.note} onChange={(e) => setGift((g) => ({ ...g, note: e.target.value }))} placeholder="Happy anniversary! Every year with you is my favourite photo." />
                   </div>
                   <label className="check span2">
                     <input type="checkbox" checked={gift.hidePrice} onChange={(e) => setGift((g) => ({ ...g, hidePrice: e.target.checked }))} /> Don’t put prices in the box

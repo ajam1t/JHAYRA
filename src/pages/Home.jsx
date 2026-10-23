@@ -5,7 +5,6 @@ import Img from '../components/Img';
 import Icon from '../components/Icon';
 import Reveal from '../components/Reveal';
 import Particles from '../components/Particles';
-import RoomScene, { WALLS } from '../components/RoomScene';
 import TemplateCanvas from '../components/TemplateCanvas';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard';
 import { Seo } from '../lib/seo';
@@ -282,79 +281,6 @@ function PhotoHero({ products, compact = false }) {
   );
 }
 
-/* ── The gallery walk: scroll-driven hallway ──────────────────────────── */
-function GalleryWalk({ products }) {
-  const section = useRef(null);
-  const track = useRef(null);
-  const items = (products || []).filter((p) => p.thumbnail).slice(0, 10);
-
-  useEffect(() => {
-    const sec = section.current;
-    const tr = track.current;
-    if (!sec || !tr || !items.length) return;
-    let raf = 0;
-    const frames = [...tr.querySelectorAll('.walk-item')];
-    const update = () => {
-      raf = 0;
-      const r = sec.getBoundingClientRect();
-      const total = sec.offsetHeight - window.innerHeight;
-      const p = Math.max(0, Math.min(1, -r.top / Math.max(1, total)));
-      const max = tr.scrollWidth - window.innerWidth;
-      tr.style.transform = `translate3d(${-p * max}px,0,0)`;
-      const cx = window.innerWidth / 2;
-      frames.forEach((f) => {
-        const b = f.getBoundingClientRect();
-        const d = Math.min(1, Math.abs(b.left + b.width / 2 - cx) / (window.innerWidth * 0.55));
-        f.style.setProperty('--lit', (1 - d).toFixed(3));
-      });
-    };
-    const on = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener('scroll', on, { passive: true });
-    window.addEventListener('resize', on);
-    return () => {
-      window.removeEventListener('scroll', on);
-      window.removeEventListener('resize', on);
-      cancelAnimationFrame(raf);
-    };
-  }, [items.length]);
-
-  if (!items.length) return null;
-  return (
-    <section ref={section} className="walk" style={{ height: `${100 + items.length * 32}vh` }} aria-label="Gallery of bestsellers">
-      <div className="walk-sticky">
-        <div className="walk-head wrap">
-          <span className="eyebrow">The JHAYRA gallery</span>
-          <h2 className="h2">
-            Take a walk <em>through our bestsellers.</em>
-          </h2>
-        </div>
-        <div className="walk-track" ref={track}>
-          {items.map((p, i) => (
-            <Link to={`/product/${p.id}`} key={p.id} className="walk-item" style={{ '--h': `${[62, 54, 58, 50, 60][i % 5]}vh` }}>
-              <div className="walk-cone" aria-hidden="true" />
-              <div className="walk-frame">
-                <Frame src={p.thumbnail} alt={p.name} ratio={{ w: 12, h: 18 }} colour={['#1C1C1C', '#B8932A', '#6B4423'][i % 3]} sizes="30vw" glare />
-              </div>
-              <div className="walk-label">
-                <b>{p.name}</b>
-                <span>from {money(p.price)}</span>
-              </div>
-            </Link>
-          ))}
-          <Link to="/shop" className="walk-item walk-end">
-            <span className="h3">
-              See all {products.length} designs <Icon name="arrow" />
-            </span>
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* ── Shop by moment ───────────────────────────────────────────────────── */
 function Moments() {
   const { active } = useTemplates();
@@ -373,7 +299,7 @@ function Moments() {
           </Link>
         </div>
         <div className="moments">
-          {MOMENTS.filter((m) => m.id !== 'karva-chauth').map((m, i) => {
+          {MOMENTS.slice(0, 4).map((m, i) => {
             const t = active.find((x) => m.groups.includes(x.group));
             return (
               <Reveal key={m.id} delay={i * 0.05}>
@@ -437,150 +363,6 @@ function Collections({ collections }) {
   );
 }
 
-/* ── Room teaser ──────────────────────────────────────────────────────── */
-function RoomTeaser({ products }) {
-  const [wall, setWall] = useState(WALLS[1]);
-  const [size, setSize] = useState(2);
-  const p = (products || []).find((x) => x.thumbnail && x.is_bestseller) || products?.[0];
-  const sizes = [
-    ['A4', 9.5, 13],
-    ['A3+', 12, 18],
-    ['18 × 24', 18, 24],
-    ['24 × 36', 24, 36],
-  ];
-  if (!p) return null;
-  const s = sizes[size];
-  return (
-    <section className="section">
-      <div className="wrap room-teaser">
-        <div className="room-teaser-copy">
-          <span className="eyebrow">See it before you buy</span>
-          <h2 className="h2">
-            Your wall, <em>true to size.</em>
-          </h2>
-          <p className="lead">
-            Every frame can be previewed on a real-scale wall — with a sofa for reference, in your wall colour. On your phone, point the camera at your own wall and see it hanging there, live.
-          </p>
-          <div className="field" style={{ marginTop: 24 }}>
-            <label>Wall colour</label>
-            <div className="swatches">
-              {WALLS.map((w) => (
-                <button key={w.id} className={`swatch ${wall.id === w.id ? 'on' : ''}`} style={{ background: w.c }} aria-label={w.label} aria-pressed={wall.id === w.id} onClick={() => setWall(w)} />
-              ))}
-            </div>
-          </div>
-          <div className="field" style={{ marginTop: 18 }}>
-            <label>Size</label>
-            <div className="chips">
-              {sizes.map((x, i) => (
-                <button key={x[0]} className="chip" aria-pressed={size === i} onClick={() => setSize(i)}>
-                  {x[0]}
-                </button>
-              ))}
-            </div>
-          </div>
-          <Link to={`/product/${p.id}?view=room`} className="btn btn-lg" style={{ marginTop: 28 }}>
-            <Icon name="sofa" size={18} /> Try it in your room
-          </Link>
-        </div>
-        <RoomScene wall={wall} frames={[{ key: 'a', src: p.thumbnail, wIn: s[1], hIn: s[2], colour: '#1C1C1C', x: 0.5 }]} />
-      </div>
-    </section>
-  );
-}
-
-/* ── How it's made ────────────────────────────────────────────────────── */
-function Process() {
-  const steps = [
-    ['image', 'You choose', 'Pick a design or upload your photo. Add names, dates, a message — preview it live.'],
-    ['brush', 'We handcraft', 'Printed on premium stock, framed by hand in our workshop, and quality-checked before packing.'],
-    ['box', 'Packed like glass', 'Corner guards, foam and a rigid box. If anything arrives damaged, we replace it free.'],
-    ['truck', 'Delivered free', 'Dispatched in 1–2 days, at your door in 5–7 days. Anywhere in India.'],
-  ];
-  return (
-    <section className="section surface-night process">
-      <div className="spotlight" aria-hidden="true" />
-      <div className="wrap">
-        <div className="section-head">
-          <div>
-            <span className="eyebrow">How it's made</span>
-            <h2 className="h2">
-              From your phone <em>to your wall.</em>
-            </h2>
-          </div>
-          <p className="lead" style={{ maxWidth: 420 }}>
-            Since {BRAND.since}, {BRAND.homes} homes across India have trusted us with their memories — first on Amazon, now straight from our workshop to you.
-          </p>
-        </div>
-        <ol className="steps">
-          {steps.map(([ic, t, d], i) => (
-            <Reveal as="li" key={t} delay={i * 0.08}>
-              <span className="step-n">0{i + 1}</span>
-              <Icon name={ic} size={28} />
-              <b>{t}</b>
-              <p>{d}</p>
-            </Reveal>
-          ))}
-        </ol>
-        <div className="stats">
-          {[
-            [String(BRAND.since), 'Crafting since'],
-            [BRAND.homes, 'Happy homes'],
-            [BRAND.gifts, 'Gifts delivered'],
-            [BRAND.corporates, 'Corporate clients'],
-          ].map(([n, l]) => (
-            <div key={l}>
-              <b>{n}</b>
-              <span>{l}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Faq() {
-  const qs = [
-    ['How long does delivery take?', 'Every frame is made to order. We take 1–2 business days to craft and check it, then 5–7 business days to deliver anywhere in India. Delivery is always free.'],
-    ['What if it arrives damaged?', 'Send us photos or a short video within 48 hours on WhatsApp and we will send a replacement at no cost — no arguments.'],
-    ['Will my photo look good printed?', 'Our editor checks your photo’s resolution as soon as you upload it, and tells you which sizes will look sharp. Phone photos from the last few years print beautifully up to 18 × 24.'],
-    ['Can I see the design before you print?', 'Yes — what you see in the live preview is what we print. For personalised orders, we can also share a final proof on WhatsApp before production if you ask.'],
-    ['How do I pay?', 'UPI, cards, netbanking and wallets through Razorpay. You can also place your order on WhatsApp if you prefer to talk to us first.'],
-  ];
-  return (
-    <section className="section">
-      <div className="wrap faq-grid">
-        <div>
-          <span className="eyebrow">Questions</span>
-          <h2 className="h2" style={{ marginTop: 12 }}>
-            Good to <em>know.</em>
-          </h2>
-          <p className="lead" style={{ marginTop: 16 }}>
-            Still unsure? We reply on WhatsApp within minutes during working hours.
-          </p>
-          <a className="btn btn-wa" style={{ marginTop: 24 }} href={waLink('Hi JHAYRA! I have a question about ')} target="_blank" rel="noopener noreferrer">
-            Ask on WhatsApp
-          </a>
-        </div>
-        <div className="acc">
-          {qs.map(([q, a]) => (
-            <details key={q}>
-              <summary>
-                {q}
-                <span className="ic">
-                  <Icon name="plus" size={16} />
-                </span>
-              </summary>
-              <div className="acc-body">{a}</div>
-            </details>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function FinalCta() {
   const ref = useRef(null);
   useEffect(() => {
@@ -597,11 +379,11 @@ function FinalCta() {
   return (
     <section ref={ref} className="final-cta surface-night">
       <div className="wrap center">
-        <span className="eyebrow center">Ready when you are</span>
-        <h2 className="display" style={{ marginTop: 18 }}>
+        <span className="eyebrow center">Since {BRAND.since} · {BRAND.homes} homes · {BRAND.gifts} gifts</span>
+        <h2 className="h1" style={{ marginTop: 18 }}>
           Make a wall <em>worth stopping at.</em>
         </h2>
-        <div className="row" style={{ justifyContent: 'center', marginTop: 34, flexWrap: 'wrap' }}>
+        <div className="row" style={{ justifyContent: 'center', marginTop: 28, flexWrap: 'wrap' }}>
           <Link to="/customize" className="btn btn-gold btn-lg">
             Start personalising
           </Link>
@@ -658,7 +440,6 @@ export default function Home() {
         ))}
       </div>
       {festival && <FestivalPicks festival={festival} products={products} categories={categories} />}
-      <GalleryWalk products={featured.length >= 5 ? featured : products} />
       <section className="section">
         <div className="wrap">
           <div className="section-head">
@@ -672,7 +453,7 @@ export default function Home() {
               Shop all <Icon name="arrow" size={16} />
             </Link>
           </div>
-          <div className="grid-products">
+          <div className="grid-products home-best">
             {loading
               ? Array.from({ length: 8 }, (_, i) => <ProductCardSkeleton key={i} />)
               : featured.map((p, i) => <ProductCard key={p.id} product={p} categories={categories} index={i} />)}
@@ -682,12 +463,8 @@ export default function Home() {
           </p>
         </div>
       </section>
-      {festival && <PhotoHero products={products} compact />}
       <Moments />
       <Collections collections={collections} />
-      <RoomTeaser products={products} />
-      <Process />
-      <Faq />
       <FinalCta />
     </>
   );

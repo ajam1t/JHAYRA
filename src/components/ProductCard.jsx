@@ -42,7 +42,13 @@ export default function ProductCard({ product, categories, priority = false, ind
       image: product.thumbnail,
       price: a4.price,
       category: product.category,
-      option: { id: 'a4_black_ps-moulding', size: 'A4', dimensions: a4.dimensions, colour: 'Black', material: 'PS Moulding' },
+      option: {
+        id: 'a4_black_ps-moulding',
+        size: 'A4',
+        dimensions: a4.dimensions,
+        colour: 'Black',
+        material: 'PS Moulding',
+      },
       orientation: 'Vertical',
       customization: { material: 'PS Moulding', artworkVariant: null },
     });
@@ -50,26 +56,28 @@ export default function ProductCard({ product, categories, priority = false, ind
 
   return (
     <article className="pcard" style={{ '--i': index }}>
-      <Link to={`/product/${product.id}`} className="pcard-stage" aria-label={product.name}>
-        <Frame src={product.thumbnail} alt={product.name} sizes="(max-width: 760px) 40vw, (max-width: 1120px) 22vw, 16vw" priority={priority} glare={false} thickness={5.5} />
-        {alt && (
-          <div className="pcard-alt" aria-hidden="true">
-            <Img src={alt} sizes="(max-width: 760px) 50vw, 25vw" />
+      <div className="pcard-media">
+        <Link to={`/product/${product.id}`} className="pcard-stage" aria-label={product.name}>
+          <Frame src={product.thumbnail} alt={product.name} sizes="(max-width: 760px) 40vw, (max-width: 1120px) 22vw, 16vw" priority={priority} glare={false} thickness={5.5} />
+          {alt && (
+            <div className="pcard-alt" aria-hidden="true">
+              <Img src={alt} sizes="(max-width: 760px) 50vw, 25vw" />
+            </div>
+          )}
+          <div className="pcard-badges">
+            {product.is_bestseller && <span className="pill pill-gold">Bestseller</span>}
+            {product.is_new_arrival && <span className="pill pill-dark">New</span>}
+            {product.customer_photo_eligible && <span className="pill">Add your photo</span>}
           </div>
-        )}
-        <div className="pcard-badges">
-          {product.is_bestseller && <span className="pill pill-gold">Bestseller</span>}
-          {product.is_new_arrival && <span className="pill pill-dark">New</span>}
-          {product.customer_photo_eligible && <span className="pill">Add your photo</span>}
-        </div>
-      </Link>
-      <button type="button" className={`pcard-wish ${on ? 'on' : ''}`} aria-pressed={on} aria-label={on ? 'Remove from wishlist' : 'Save to wishlist'} onClick={() => toggleWish(product.id)}>
-        <Icon name="heart" size={19} />
-      </button>
-      <div className="pcard-quick">
-        <button className="btn btn-light btn-sm btn-block" onClick={quickAdd}>
-          <Icon name="plus" size={16} /> Quick add · A4 Black
+        </Link>
+        <button type="button" className={`pcard-wish ${on ? 'on' : ''}`} aria-pressed={on} aria-label={on ? 'Remove from wishlist' : 'Save to wishlist'} onClick={() => toggleWish(product.id)}>
+          <Icon name="heart" size={19} />
         </button>
+        <div className="pcard-quick">
+          <button className="btn btn-light btn-sm btn-block" onClick={quickAdd}>
+            <Icon name="plus" size={16} /> Quick add · A4 Black
+          </button>
+        </div>
       </div>
       <Link to={`/product/${product.id}`} className="pcard-body">
         <span className="pcard-cat">{categoryLabel(product.category, categories)}</span>
