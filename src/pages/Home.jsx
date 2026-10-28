@@ -475,6 +475,7 @@ function Signature({ products }) {
       <div className="wrap">
         <div className="sig-intro">
           <Reveal className="sig-copy">
+            <span className="deco" aria-hidden="true" />
             <span className="eyebrow">The Jhayra Signature Experience</span>
             <h2 className="h2" id="sig-title" tabIndex={-1}>
               Enter a World of <em>Extraordinary Art.</em>
@@ -494,7 +495,7 @@ function Signature({ products }) {
               Explore the Experience <Icon name="arrow" size={18} />
             </a>
           </Reveal>
-          <Reveal className="sig-art" delay={0.08}>
+          <Reveal className="sig-art deco-frame" delay={0.08}>
             {feature && (
               <Link to={`/product/${feature.id}`} className="sig-feature" aria-label={`${feature.name}, from ${money(feature.price)}`}>
                 <Frame src={feature.thumbnail} alt={feature.name} ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare mat sizes="(max-width: 900px) 70vw, 30vw" />
@@ -761,6 +762,10 @@ function WhyJhayra({ products, categories }) {
           </ul>
         </div>
         <div className="sf-why-art" aria-hidden="true">
+          <span className="bh bh-circle" />
+          <span className="bh bh-half" />
+          <span className="bh bh-square" />
+          <span className="bh bh-bar" />
           {pics.map((p, i) => (
             <div key={p.id} className={`sf-why-f f${i}`}>
               <Frame src={p.thumbnail} alt="" ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare sizes="(max-width: 900px) 40vw, 18vw" />
@@ -830,8 +835,50 @@ function Story({ products }) {
   );
 }
 
+/* Isometric exploded view of a real JHAYRA frame (layers from the FAQ). */
+const ISO = 'matrix(0.866 0.5 -0.866 0.5 0 0)';
+function IsoFrame({ src }) {
+  const w = 96;
+  const h = 128;
+  const layers = [
+    ['sheet', 'Front sheet'],
+    ['frame', 'PS moulding'],
+    ['print', 'HD print'],
+    ['back', 'Backing + hook'],
+  ];
+  return (
+    <svg className="iso" viewBox="-130 -40 300 300" role="img" aria-label="Exploded view of a JHAYRA frame: front sheet, PS moulding frame, high-definition print, backing with hook">
+      <defs>
+        <clipPath id="iso-clip">
+          <rect x="8" y="8" width={w - 16} height={h - 16} />
+        </clipPath>
+      </defs>
+      {layers.map(([id, label], i) => (
+        <g key={id} className={`iso-l iso-${id}`} style={{ '--k': i }}>
+          <g transform={ISO}>
+            {id === 'frame' && (
+              <path d={`M0 0H${w}V${h}H0Z M8 8V${h - 8}H${w - 8}V8Z`} fillRule="evenodd" />
+            )}
+            {id === 'print' && (src ? <image href={src} x="8" y="8" width={w - 16} height={h - 16} preserveAspectRatio="xMidYMid slice" clipPath="url(#iso-clip)" /> : <rect x="8" y="8" width={w - 16} height={h - 16} />)}
+            {id === 'sheet' && <rect x="0" y="0" width={w} height={h} />}
+            {id === 'back' && (
+              <>
+                <rect x="0" y="0" width={w} height={h} />
+                <circle cx={w / 2} cy="14" r="4" />
+              </>
+            )}
+          </g>
+          <text x="96" y="58">
+            {label}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 /* ── 10 · How it works & delivery ──────────────────────────────────────── */
-function HowItWorks() {
+function HowItWorks({ products }) {
   const steps = [
     ['search', 'Discover a design', 'Browse wall art — or start with your own photo.'],
     ['brush', 'Make it yours', 'Choose the size, frame and any personalisation.'],
@@ -851,6 +898,27 @@ function HowItWorks() {
             </Reveal>
           ))}
         </ol>
+        <Reveal className="sf-inside">
+          <IsoFrame src={(products || []).find((p) => p.thumbnail && p.is_bestseller)?.thumbnail} />
+          <div>
+            <span className="eyebrow">Inside every frame</span>
+            <h3 className="h3">Four layers, made to last.</h3>
+            <ul>
+              <li>
+                <b>Protective front sheet</b> keeps the print safe from dust and fingerprints.
+              </li>
+              <li>
+                <b>PS moulding frame</b> in black, gold or brown.
+              </li>
+              <li>
+                <b>High-definition print</b> of your chosen design or photo.
+              </li>
+              <li>
+                <b>Backing with hook</b> — ready to hang the day it arrives.
+              </li>
+            </ul>
+          </div>
+        </Reveal>
         <Reveal className="sf-timeline" aria-label="Delivery timeline">
           <div>
             <b>Day 0</b>
@@ -932,6 +1000,7 @@ function FinalCta() {
       </span>
       <div className="wrap center">
         <Reveal>
+          <span className="deco deco-light" aria-hidden="true" />
           <h2 className="display sf-final-title">
             Make your walls <em>mean something.</em>
           </h2>
@@ -1014,7 +1083,7 @@ export default function Home() {
         <Founder />
       </LazyMount>
       <LazyMount minHeight={620}>
-        <HowItWorks />
+        <HowItWorks products={products} />
       </LazyMount>
       <Faq />
       <FinalCta />

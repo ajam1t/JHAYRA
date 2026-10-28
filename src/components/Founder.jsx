@@ -60,6 +60,7 @@ export default function Founder({ variant = 'home' }) {
   const Heading = variant === 'about' ? 'h2' : 'h3';
   return (
     <section className={`fd fd-${variant} mesh-dark`} aria-labelledby="founder-name">
+      <span className="halftone" aria-hidden="true" />
       <span className="dust" aria-hidden="true">
         {Array.from({ length: 6 }, (_, i) => (
           <i key={i} style={{ '--i': i }} />

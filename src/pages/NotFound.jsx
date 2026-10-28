@@ -7,6 +7,14 @@ export default function NotFound() {
     <>
       <Seo title="Page Not Found" path="/404" noindex />
       <section className="wrap section center nf">
+        <pre className="nf-ascii" aria-hidden="true">{`+----------------------------+
+|  .----------------------.  |
+|  |                      |  |
+|  |    nothing hangs     |  |
+|  |       here yet       |  |
+|  |                      |  |
+|  '----------------------'  |
++----------------------------+`}</pre>
         <div className="nf-frame">
           <Frame colour="#1C1C1C" ratio={{ w: 12, h: 14 }} tilt>
             <div className="nf-empty">404</div>

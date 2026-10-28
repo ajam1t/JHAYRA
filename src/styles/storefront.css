@@ -1660,3 +1660,282 @@
 .sf-hero .sf-in {
   animation-name: sf-rise-soft;
 }
+
+/* ═════════════════ More styles from the 20 (premium-safe uses) ══════════ */
+
+/* 19 · Art deco: a gold sunburst fan, used as an ornament */
+.deco {
+  display: block;
+  width: 64px;
+  height: 32px;
+  margin-bottom: 14px;
+  background:
+    repeating-conic-gradient(from -90deg at 50% 100%, rgba(185, 154, 104, 0.95) 0 1.5deg, transparent 1.5deg 15deg) bottom / 100% 100% no-repeat;
+  -webkit-mask: radial-gradient(circle at 50% 100%, transparent 0 9px, #000 10px 31px, transparent 32px);
+  mask: radial-gradient(circle at 50% 100%, transparent 0 9px, #000 10px 31px, transparent 32px);
+  position: relative;
+}
+.center .deco,
+.sf-final .deco {
+  margin-left: auto;
+  margin-right: auto;
+}
+.deco-light {
+  filter: brightness(1.35);
+}
+/* Stepped art-deco corners around the Signature artwork */
+.deco-frame::before,
+.deco-frame::after {
+  content: '';
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(185, 154, 104, 0.8);
+  box-shadow: 6px 6px 0 -1px #f7f3ea, 6px 6px 0 0 rgba(185, 154, 104, 0.6);
+  z-index: 2;
+  pointer-events: none;
+}
+.deco-frame::before {
+  top: -18px;
+  left: -18px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.deco-frame::after {
+  bottom: -18px;
+  right: -18px;
+  border-left: 0;
+  border-top: 0;
+  box-shadow: -6px -6px 0 -1px #f7f3ea, -6px -6px 0 0 rgba(185, 154, 104, 0.6);
+}
+
+/* 4 · Glow (warm, steady — no flashing): the Signature seal */
+.sig-seal {
+  animation: seal-glow 5s ease-in-out infinite;
+}
+@keyframes seal-glow {
+  50% {
+    box-shadow: 0 10px 24px rgba(111, 90, 55, 0.35), inset 0 0 0 4px rgba(255, 246, 220, 0.5), 0 0 32px 6px rgba(229, 196, 130, 0.45);
+  }
+}
+
+/* 16 · Bauhaus: quiet geometry behind the Why JHAYRA artwork */
+.bh {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+.bh-circle {
+  width: 44%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #e5d7bd;
+  top: 2%;
+  right: 4%;
+}
+.bh-half {
+  width: 38%;
+  aspect-ratio: 2 / 1;
+  border-radius: 999px 999px 0 0;
+  background: var(--mist);
+  bottom: 8%;
+  left: 0;
+}
+.bh-square {
+  width: 18%;
+  aspect-ratio: 1;
+  background: var(--stone);
+  bottom: 4%;
+  right: 12%;
+  transform: rotate(8deg);
+}
+.bh-bar {
+  width: 3px;
+  height: 46%;
+  background: var(--obsidian);
+  left: 22%;
+  top: 0;
+}
+.sf-why-f {
+  z-index: 1;
+}
+.sf-why-art .reveal,
+.sf-why-art.reveal .bh {
+  transition: transform 1s var(--ease);
+}
+
+/* 15 · Halftone: a fading dot screen in the founder section */
+.halftone {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(229, 215, 189, 0.22) 1.2px, transparent 1.6px);
+  background-size: 9px 9px;
+  -webkit-mask: radial-gradient(70% 80% at 100% 0%, #000, transparent 70%);
+  mask: radial-gradient(70% 80% at 100% 0%, #000, transparent 70%);
+}
+
+/* 8 · Isometric: exploded view of a frame, layers part on reveal */
+.sf-inside {
+  display: grid;
+  gap: 24px;
+  align-items: center;
+  margin-top: 36px;
+  padding: clamp(20px, 3vw, 36px);
+  border: 1px solid var(--stone);
+  background: #f7f3ea;
+}
+@media (min-width: 800px) {
+  .sf-inside {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+.sf-inside .h3 {
+  margin: 10px 0 14px;
+}
+.sf-inside ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+.iso {
+  width: 100%;
+  max-width: 380px;
+  height: auto;
+  justify-self: center;
+  overflow: visible;
+  font-family: var(--fb);
+}
+.iso-l {
+  transform: translateY(calc(var(--k) * 14px + 24px));
+  transition: transform 1s var(--ease);
+  transition-delay: calc(0.2s + var(--k) * 0.08s);
+}
+.sf-inside.in .iso-l {
+  transform: translateY(calc(var(--k) * 44px));
+}
+.iso-l text {
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--muted);
+  opacity: 0;
+  transition: opacity 0.6s var(--ease) 0.9s;
+}
+.sf-inside.in .iso-l text {
+  opacity: 1;
+}
+.iso-sheet rect {
+  fill: rgba(216, 225, 222, 0.45);
+  stroke: rgba(61, 85, 96, 0.5);
+}
+.iso-frame path {
+  fill: #1c1c1c;
+}
+.iso-print rect {
+  fill: #d4d0c8;
+}
+.iso-back rect {
+  fill: #c9b490;
+  stroke: #a8916a;
+}
+.iso-back circle {
+  fill: none;
+  stroke: #6f5a37;
+  stroke-width: 1.5;
+}
+
+/* 9 · Clay 3D: soft, pressable Gift Finder answers and chips */
+.gf2-opt,
+.sf-gift-who .chip {
+  border-radius: 16px;
+  border-color: transparent;
+  background: linear-gradient(145deg, #fbf8f2, #efe9de);
+  box-shadow: 6px 6px 14px rgba(150, 132, 100, 0.18), -5px -5px 12px rgba(255, 255, 255, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.gf2-opt:active,
+.sf-gift-who .chip:active {
+  box-shadow: inset 4px 4px 10px rgba(150, 132, 100, 0.22), inset -4px -4px 10px rgba(255, 255, 255, 0.9);
+  transform: translateY(1px);
+}
+.gf2-opt.on {
+  background: linear-gradient(145deg, #2a2b27, #171916);
+  color: var(--porcelain);
+  box-shadow: 6px 6px 14px rgba(23, 25, 22, 0.28), -4px -4px 10px rgba(255, 255, 255, 0.7);
+}
+.gf2-opt.on small {
+  color: #d8d5cc;
+}
+
+/* ── Themed corners only ─────────────────────────────────────────────── */
+/* 17 · Pixel art heart (Gen Z world) */
+.pixel-heart {
+  display: inline-block;
+  width: 2px;
+  height: 2px;
+  margin: 0 12px 6px 2px;
+  vertical-align: middle;
+  color: #ff3d7f;
+  box-shadow:
+    2px 0, 4px 0, 8px 0, 10px 0,
+    0 2px, 2px 2px, 4px 2px, 6px 2px, 8px 2px, 10px 2px, 12px 2px,
+    0 4px, 2px 4px, 4px 4px, 6px 4px, 8px 4px, 10px 4px, 12px 4px,
+    2px 6px, 4px 6px, 6px 6px, 8px 6px, 10px 6px,
+    4px 8px, 6px 8px, 8px 8px,
+    6px 10px;
+}
+/* 14 · Retro VHS (Photography world): scanlines + RGB-split title */
+.vhs {
+  position: relative;
+}
+.vhs::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px);
+}
+.vhs h1 {
+  text-shadow: -2px 0 rgba(255, 60, 60, 0.55), 2px 0 rgba(60, 200, 255, 0.5);
+}
+.vhs .d-film-meta::before {
+  content: '▶ PLAY  ';
+  color: #f3efe7;
+}
+/* 4 · Neon glow (Motivation world): steady glow, never flickering */
+.neon h1 {
+  color: #fff8ec;
+  text-shadow: 0 0 6px rgba(255, 236, 200, 0.75), 0 0 22px rgba(255, 200, 120, 0.45), 0 0 48px rgba(255, 170, 80, 0.25);
+}
+/* 10 · ASCII art (404) */
+.nf-ascii {
+  display: inline-block;
+  margin: 0 auto 28px;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: clamp(9px, 2.4vw, 13px);
+  line-height: 1.25;
+  color: #6f5a37;
+  text-align: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sig-seal {
+    animation: none;
+  }
+  .iso-l,
+  .iso-l text {
+    transition: none;
+  }
+}
+/* Art-deco fan, stronger: wider rays plus an outer arc */
+.deco {
+  width: 88px;
+  height: 44px;
+  background:
+    radial-gradient(circle at 50% 100%, transparent 0 41px, rgba(185, 154, 104, 0.95) 41.5px 43px, transparent 43.5px),
+    repeating-conic-gradient(from -90deg at 50% 100%, rgba(185, 154, 104, 0.95) 0 3deg, transparent 3deg 15deg);
+  -webkit-mask: radial-gradient(circle at 50% 100%, transparent 0 12px, #000 13px 44px, transparent 44px);
+  mask: radial-gradient(circle at 50% 100%, transparent 0 12px, #000 13px 44px, transparent 44px);
+}

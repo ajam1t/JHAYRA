@@ -110,7 +110,9 @@ function Sticker({ w, items }) {
     <>
       <header className="d-sticker-hero">
         <div className="wrap">
-          <span className="d-sticker-pill">new drop</span>
+          <span className="d-sticker-pill">
+            <span className="pixel-heart" aria-hidden="true" /> new drop
+          </span>
           <h1>{w.kicker.toLowerCase()}.</h1>
           <p>{w.line}</p>
         </div>
@@ -558,7 +560,7 @@ function Ticker({ w, items }) {
   const words = ['DREAM', 'BUILD', 'SHIP', 'REPEAT', 'FOCUS', 'GROW'];
   return (
     <>
-      <header className="d-ticker-hero">
+      <header className="d-ticker-hero neon">
         <div className="d-ticker-band" aria-hidden="true">
           <div>
             {[...words, ...words, ...words].map((x, i) => (
@@ -671,7 +673,7 @@ function Invite({ w, items }) {
 function Film({ w, items }) {
   return (
     <>
-      <header className="d-film-hero">
+      <header className="d-film-hero vhs">
         <div className="wrap">
           <span className="d-film-meta">ISO 400 · {items.length} frames</span>
           <h1>{w.title}</h1>
