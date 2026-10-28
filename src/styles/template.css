@@ -238,7 +238,7 @@ button.tc-empty:hover {
   border-radius: 50%;
 }
 .tc-cal-grid span.hl {
-  background: var(--acc);
+  background: color-mix(in srgb, var(--acc) 72%, #000);
   color: #fff;
   font-weight: 700;
 }

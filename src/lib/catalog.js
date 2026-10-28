@@ -65,7 +65,7 @@ export function loadCollections() {
   });
 }
 
-function loadFrameTables() {
+export function loadFrameTables() {
   return cached('frame-tables', async () => {
     const [s, c, m] = await Promise.all([
       supabase.from('frame_sizes').select('*').eq('active', true).order('display_order'),
@@ -83,6 +83,25 @@ function fallbackConfig() {
     materials: [{ slug: 'ps-moulding', name: 'PS Moulding', isDefault: true }],
   };
 }
+
+// Sizes and frame finishes offered per product, in one query for whole grids.
+// Map of product dbId → { sizes, colours }. Products without option rows use
+// the standard fallback (all four sizes, black/gold/brown).
+export function loadOptionSummary() {
+  return cached('opt-summary', async () => {
+    const { data, error } = await supabase.from('product_options').select('product_id,option_type');
+    if (error) throw error;
+    const out = {};
+    for (const o of data || []) {
+      const x = (out[o.product_id] ||= { sizes: 0, colours: 0 });
+      if (o.option_type === 'size') x.sizes++;
+      else if (o.option_type === 'colour') x.colours++;
+    }
+    return out;
+  });
+}
+export const useOptionSummary = () => useAsync(loadOptionSummary, []);
+export const useFrameTables = () => useAsync(loadFrameTables, []);
 
 // Mirrors the options logic of the original site so prices match the payment function.
 export function loadFrameConfig(productDbId) {

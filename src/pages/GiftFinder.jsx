@@ -1,160 +1,226 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import Icon from '../components/Icon';
 import Frame from '../components/Frame';
 import TemplateCanvas from '../components/TemplateCanvas';
 import ProductCard from '../components/ProductCard';
 import { Seo } from '../lib/seo';
-import { useCategories, useProducts } from '../lib/catalog';
+import { useCategories, useFrameTables, useProducts } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
-import { useFestival } from '../state/festival';
-import { money } from '../lib/site';
+import { money, waLink } from '../lib/site';
 import { SIZES } from '../lib/frames';
+import { WHO, WHEN, STYLES, TYPES, budgets, recommend } from '../lib/giftfinder';
 
-const WHO = [
-  { id: 'partner', label: 'My partner', emoji: '💞', groups: ['couple-frame', 'love', 'moon-style', 'anniversary', 'wedding'], cats: ['love-romance', 'wedding'] },
-  { id: 'parents', label: 'Mom or Dad', emoji: '🙏', groups: ['parents', 'family', 'collage-frame'], cats: ['family', 'religious', 'quotes'] },
-  { id: 'family', label: 'The whole family', emoji: '🏡', groups: ['family', 'collage-frame', 'mosaic-frame', 'calendar'], cats: ['family', 'home-vastu', 'religious'] },
-  { id: 'baby', label: 'A little one', emoji: '🍼', groups: ['baby', 'milestones', 'birthday'], cats: ['baby-kids'] },
-  { id: 'friend', label: 'A friend', emoji: '🥂', groups: ['friendship', 'travel', 'birthday', 'quotes'], cats: ['quotes', 'modern-art', 'nature'] },
-  { id: 'work', label: 'Boss or colleague', emoji: '💼', groups: ['quotes', 'milestones'], cats: ['running-horses', 'modern-art', 'quotes'] },
-  { id: 'home', label: 'My own home', emoji: '✨', groups: ['single-photo', 'collage-frame'], cats: ['modern-art', 'nature', 'religious', 'art-abstract', 'home-vastu'] },
-];
-const WHEN = [
-  { id: 'birthday', label: 'Birthday', groups: ['birthday', 'milestones'] },
-  { id: 'anniversary', label: 'Anniversary', groups: ['anniversary', 'couple-frame', 'love'] },
-  { id: 'wedding', label: 'Wedding', groups: ['wedding'] },
-  { id: 'festival', label: 'A festival', groups: ['festivals', 'spiritual'] },
-  { id: 'housewarming', label: 'Housewarming', groups: ['family', 'spiritual', 'quotes'] },
-  { id: 'just', label: 'Just because', groups: [] },
-];
-const STYLE = [
-  { id: 'photo', label: 'With their photos', hint: 'Personalised & emotional' },
-  { id: 'art', label: 'Beautiful art', hint: 'Spiritual, modern, nature' },
-  { id: 'both', label: 'Show me both', hint: 'I’m not sure yet' },
-];
-const BUDGET = [
-  { id: 'b1', label: `Under ${money(1000)}`, max: 999 },
-  { id: 'b2', label: `Under ${money(1500)}`, max: 1499 },
-  { id: 'b3', label: 'Make it grand', max: 99999 },
-];
+const KEYS = ['who', 'when', 'budget', 'style', 'type'];
+const ANY = 'any';
 
 export default function GiftFinder() {
-  const festival = useFestival();
+  const [params, setParams] = useSearchParams();
   const { data: products } = useProducts();
   const { data: categories } = useCategories();
+  const { data: tables } = useFrameTables();
   const { active } = useTemplates();
-  const [step, setStep] = useState(0);
-  const [a, setA] = useState({});
+  const heading = useRef(null);
+
+  // Real size prices from the database; the bundled table is the fallback.
+  const sizes = useMemo(() => (tables?.sizes?.length ? tables.sizes.map((s) => ({ slug: s.slug, name: s.name, price: +s.base_price, dimensions: s.dimensions })) : SIZES), [tables]);
+  const budgetOpts = useMemo(() => budgets(sizes), [sizes]);
+  // Only styles the catalogue can actually fill (personalised also counts templates).
+  const styleOpts = useMemo(
+    () =>
+      STYLES.map((s) => ({ ...s, n: (products || []).filter((p) => p.thumbnail && s.test(p)).length + (s.templates ? active.length : s.groups ? active.filter((t) => s.groups.includes(t.group)).length : 0) })).filter((s) => s.n > 0),
+    [products, active],
+  );
+
+  const a = Object.fromEntries(KEYS.map((k) => [k, params.get(k) || '']));
   const steps = [
-    ['Who is it for?', WHO, 'who'],
-    ['What’s the occasion?', festival ? [{ id: 'fest', label: festival.name, groups: festival.templateGroups, hot: true }, ...WHEN] : WHEN, 'when'],
-    ['What kind of gift?', STYLE, 'style'],
-    ['Your budget?', BUDGET, 'budget'],
+    { key: 'who', q: 'Who are you shopping for?', opts: WHO.map((o) => ({ id: o.id, label: o.label })) },
+    { key: 'when', q: 'What is the occasion?', opts: WHEN.map((o) => ({ id: o.id, label: o.label })) },
+    { key: 'budget', q: 'What is your budget?', hint: 'Prices are per framed piece; every design comes in these sizes.', opts: budgetOpts.map((b) => ({ id: b.id, label: `Up to ${money(b.max)}`, hint: b.sizes.map((s) => s.name).join(' · ') })), skip: 'Any budget' },
+    { key: 'style', q: 'What style do they like?', opts: styleOpts.map((s) => ({ id: s.id, label: s.label, hint: `${s.n} to choose from` })), skip: 'Not sure — skip' },
+    { key: 'type', q: 'What type of artwork would they prefer?', opts: TYPES, skip: null },
   ];
+  // The current step: explicit ?step=, else the first unanswered question.
+  const first = steps.findIndex((s) => !a[s.key]);
+  const stepParam = params.get('step');
+  const step = stepParam != null ? Math.max(0, Math.min(steps.length, +stepParam)) : first === -1 ? steps.length : first;
   const done = step >= steps.length;
 
+  const go = (next, patch = {}) => {
+    const p = new URLSearchParams(params);
+    for (const [k, v] of Object.entries(patch)) v ? p.set(k, v) : p.delete(k);
+    p.set('step', String(next));
+    setParams(p);
+  };
+  const answer = (key, id) => go(step + 1, { [key]: id });
+  const restart = () => setParams(new URLSearchParams());
+
+  // Move focus to the new question so keyboard and screen-reader users follow.
+  useEffect(() => {
+    heading.current?.focus({ preventScroll: true });
+  }, [step]);
+
   const results = useMemo(() => {
-    if (!done) return null;
-    const who = WHO.find((x) => x.id === a.who) || WHO[6];
-    const when = steps[1][1].find((x) => x.id === a.when) || WHEN[5];
-    const groups = [...new Set([...(when.groups || []), ...who.groups])];
-    const budget = BUDGET.find((b) => b.id === a.budget) || BUDGET[2];
-    const size = [...SIZES].reverse().find((s) => s.price <= budget.max) || SIZES[0];
-    const t = a.style === 'art' ? [] : active.filter((x) => groups.includes(x.group)).sort((x, y) => groups.indexOf(x.group) - groups.indexOf(y.group)).slice(0, 6);
-    const pr = a.style === 'photo' ? [] : (products || []).filter((p) => who.cats.includes(p.category)).sort((x, y) => (y.is_bestseller ? 1 : 0) - (x.is_bestseller ? 1 : 0)).slice(0, 8);
-    return { templates: t, products: pr, size, who };
-  }, [done, a, active, products]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!done || !products) return null;
+    const clean = Object.fromEntries(KEYS.map((k) => [k, a[k] === ANY ? '' : a[k]]));
+    return recommend({ products, templates: active, sizes, a: clean });
+  }, [done, products, active, sizes, params]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const largest = results?.fits?.[results.fits.length - 1];
+  const sizeQuery = results?.budget && largest ? `?size=${largest.slug}` : '';
+  const empty = results && !results.products.length && !results.templates.length;
+  const label = (key) => {
+    const s = steps.find((x) => x.key === key);
+    const v = a[key];
+    if (!v || v === ANY) return null;
+    return s?.opts.find((o) => o.id === v)?.label;
+  };
 
   return (
     <>
-      <Seo title="Gift Finder — The Perfect Personalised Gift in 30 Seconds" description="Answer four quick questions and we’ll find the perfect personalised frame or wall art for anyone — partner, parents, friends, colleagues." path="/gift-finder" />
-      <section className="gf">
+      <Seo title="Gift Finder — Find Art They’ll Love" description="Five quick questions — who it’s for, the occasion, your budget, their style and the kind of art — and we’ll match real JHAYRA artwork and personalised frames." path="/gift-finder" />
+      <section className="gf2 mesh">
         <div className="wrap wrap-narrow">
+          <div className="gf2-progress" role="progressbar" aria-label="Gift Finder progress" aria-valuemin={0} aria-valuemax={steps.length} aria-valuenow={Math.min(step, steps.length)} aria-valuetext={done ? 'Results' : `Question ${step + 1} of ${steps.length}`}>
+            {steps.map((s, i) => (
+              <span key={s.key} className={i < step ? 'done' : i === step ? 'now' : ''} />
+            ))}
+          </div>
           {!done ? (
-            <>
-              <div className="gf-progress" aria-hidden="true">
-                <span style={{ width: `${(step / steps.length) * 100}%` }} />
-              </div>
+            <div className="gf2-step" key={step}>
               <span className="eyebrow">
-                Gift finder · {step + 1} of {steps.length}
+                Gift Finder · {step + 1} of {steps.length}
               </span>
-              <h1 className="h1 gf-q" key={step}>
-                {steps[step][0]}
+              <h1 className="h1 gf2-q" tabIndex={-1} ref={heading}>
+                {steps[step].q}
               </h1>
-              <div className="gf-opts" key={'o' + step}>
-                {steps[step][1].map((o, i) => (
-                  <button
-                    key={o.id}
-                    className={`gf-opt ${a[steps[step][2]] === o.id ? 'on' : ''} ${o.hot ? 'hot' : ''}`}
-                    style={{ '--i': i }}
-                    onClick={() => {
-                      setA((x) => ({ ...x, [steps[step][2]]: o.id }));
-                      setTimeout(() => setStep((s) => s + 1), 180);
-                    }}
-                  >
-                    {o.emoji && <span className="gf-emoji">{o.emoji}</span>}
+              {steps[step].hint && <p className="muted gf2-hint">{steps[step].hint}</p>}
+              <div className="gf2-opts" role="group" aria-label={steps[step].q}>
+                {steps[step].opts.map((o, i) => (
+                  <button key={o.id} type="button" className={`gf2-opt ${a[steps[step].key] === o.id ? 'on' : ''}`} aria-pressed={a[steps[step].key] === o.id} style={{ '--i': i }} onClick={() => answer(steps[step].key, o.id)}>
                     <b>{o.label}</b>
                     {o.hint && <small>{o.hint}</small>}
-                    {o.hot && <small>Coming up soon</small>}
                   </button>
                 ))}
               </div>
-              {step > 0 && (
-                <button className="link" style={{ marginTop: 26 }} onClick={() => setStep((s) => s - 1)}>
-                  <Icon name="arrowL" size={16} /> Back
-                </button>
-              )}
-            </>
+              <div className="gf2-nav">
+                {step > 0 ? (
+                  <button type="button" className="link" onClick={() => go(step - 1)}>
+                    <Icon name="arrowL" size={16} /> Back
+                  </button>
+                ) : (
+                  <span />
+                )}
+                <span className="row" style={{ gap: 18 }}>
+                  {steps[step].skip !== null && (
+                    <button type="button" className="link" onClick={() => answer(steps[step].key, ANY)}>
+                      {steps[step].skip || 'Skip'}
+                    </button>
+                  )}
+                  {step > 0 && (
+                    <button type="button" className="link" onClick={restart}>
+                      <Icon name="refresh" size={15} /> Start over
+                    </button>
+                  )}
+                </span>
+              </div>
+            </div>
           ) : (
-            <div className="gf-result">
+            <div className="gf2-step gf2-summary" key="done">
               <span className="eyebrow">Your matches</span>
-              <h1 className="h1" style={{ margin: '12px 0 10px' }}>
-                Gifts for <em>{results.who.label.toLowerCase()}.</em>
+              <h1 className="h1 gf2-q" tabIndex={-1} ref={heading}>
+                {label('who') ? (
+                  <>
+                    Gifts for <em>{label('who').toLowerCase()}.</em>
+                  </>
+                ) : (
+                  <>
+                    Art they’ll <em>love.</em>
+                  </>
+                )}
               </h1>
-              <p className="lead">
-                We suggest the <b>{results.size.name}</b> size ({results.size.dimensions}) at {money(results.size.price)} for your budget.
-              </p>
-              <button className="link" style={{ marginTop: 16 }} onClick={() => (setStep(0), setA({}))}>
+              <div className="chips gf2-answers" aria-label="Your answers">
+                {steps.map((s, i) => (
+                  <button key={s.key} type="button" className="chip" onClick={() => go(i)}>
+                    {label(s.key) || `${s.key === 'who' ? 'Anyone' : s.key === 'when' ? 'Any occasion' : s.key === 'budget' ? 'Any budget' : s.key === 'style' ? 'Any style' : 'Both types'}`} <Icon name="edit" size={13} />
+                  </button>
+                ))}
+              </div>
+              {results?.budget && (
+                <p className="muted">
+                  Within {money(results.budget.max)}: {results.fits.map((s) => `${s.name} (${money(s.price)})`).join(', ')}.
+                </p>
+              )}
+              <button type="button" className="link" style={{ marginTop: 14 }} onClick={restart}>
                 <Icon name="refresh" size={16} /> Start over
               </button>
             </div>
           )}
         </div>
       </section>
-      {results && (
-        <section className="wrap" style={{ paddingBottom: 80 }}>
-          {results.templates.length > 0 && (
-            <>
-              <h2 className="h3" style={{ margin: '10px 0 20px' }}>
-                Personalised with your photos
-              </h2>
-              <div className="tgrid">
-                {results.templates.map((t, i) => (
-                  <Link key={t.id} to={`/customize/${t.id}`} className="tcard">
-                    <div className="tcard-stage">
-                      <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false}>
-                        <TemplateCanvas template={t} mini />
-                      </Frame>
+
+      {done && !results && (
+        <div className="wrap center muted" style={{ padding: '40px 0 90px' }} aria-live="polite">
+          Finding matches…
+        </div>
+      )}
+
+      {empty && (
+        <section className="wrap wrap-narrow center gf2-empty">
+          <h2 className="h3">Nothing matches every answer yet.</h2>
+          <p className="muted">Try loosening one choice — or tell us who it’s for and we’ll suggest something personally.</p>
+          <div className="row" style={{ justifyContent: 'center', flexWrap: 'wrap', marginTop: 18 }}>
+            {a.style && a.style !== ANY && (
+              <button type="button" className="btn btn-sm" onClick={() => go(steps.length, { style: ANY })}>
+                Any style
+              </button>
+            )}
+            {a.budget && a.budget !== ANY && (
+              <button type="button" className="btn btn-sm btn-ghost" onClick={() => go(steps.length, { budget: ANY })}>
+                Any budget
+              </button>
+            )}
+            <a className="btn btn-sm btn-ghost" href={waLink('Hi JHAYRA! Can you help me choose a gift?')} target="_blank" rel="noopener noreferrer">
+              Ask us on WhatsApp
+            </a>
+          </div>
+        </section>
+      )}
+
+      {results && !empty && (
+        <section className="wrap gf2-results" aria-live="polite">
+          {[a.type === 'personal' ? 'templates' : 'products', a.type === 'personal' ? 'products' : 'templates'].map((kind) =>
+            kind === 'templates' && results.templates.length ? (
+              <div key={kind} className="gf2-block">
+                <h2 className="h3">Personalised with their photos</h2>
+                <div className="tgrid sf-stagger">
+                  {results.templates.map(({ t, why }, i) => (
+                    <Link key={t.id} to={`/customize/${t.id}`} className="tcard" style={{ '--i': i }}>
+                      <div className="tcard-stage">
+                        <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false}>
+                          <TemplateCanvas template={t} mini />
+                        </Frame>
+                      </div>
+                      <b>{t.title}</b>
+                      <small>Personalise · from {money(sizes[0]?.price || 499)}</small>
+                      {why.length > 0 && <span className="gf2-why">{why.slice(0, 2).join(' · ')}</span>}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : kind === 'products' && results.products.length ? (
+              <div key={kind} className="gf2-block">
+                <h2 className="h3">Ready-made art they’ll love</h2>
+                <div className="grid-products sf-stagger">
+                  {results.products.map(({ p, why }, i) => (
+                    <div key={p.id} className="gf2-pwrap" style={{ '--i': i }}>
+                      <ProductCard product={p} categories={categories} index={i} query={sizeQuery} />
+                      {why.length > 0 && <span className="gf2-why">{why.slice(0, 2).join(' · ')}</span>}
                     </div>
-                    <b>{t.title}</b>
-                    <small>{t.subtitle}</small>
-                  </Link>
-                ))}
+                  ))}
+                </div>
               </div>
-            </>
-          )}
-          {results.products.length > 0 && (
-            <>
-              <h2 className="h3" style={{ margin: '48px 0 20px' }}>
-                Ready-made art they’ll love
-              </h2>
-              <div className="grid-products">
-                {results.products.map((p, i) => (
-                  <ProductCard key={p.id} product={p} categories={categories} index={i} />
-                ))}
-              </div>
-            </>
+            ) : null,
           )}
         </section>
       )}

@@ -9,6 +9,7 @@ import './styles/home.css';
 import './styles/pages.css';
 import './styles/v2050.css';
 import './styles/worlds.css';
+import './styles/storefront.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

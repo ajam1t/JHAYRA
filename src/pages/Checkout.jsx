@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Icon, { WhatsAppGlyph } from '../components/Icon';
 import Frame from '../components/Frame';
 import Particles from '../components/Particles';
@@ -130,7 +130,9 @@ export default function Checkout() {
   });
   const [pinState, setPinState] = useState('');
   const [errors, setErrors] = useState({});
-  const [gift, setGift] = useState({ on: false, to: '', from: '', note: '', hidePrice: true });
+  const [params] = useSearchParams();
+  // ?gift=1 (from the Signature Experience) opens the free gift card section.
+  const [gift, setGift] = useState({ on: params.get('gift') === '1', to: '', from: '', note: '', hidePrice: true });
   const [status, setStatus] = useState('idle');
   const [failure, setFailure] = useState('');
   const [order, setOrder] = useState(null);

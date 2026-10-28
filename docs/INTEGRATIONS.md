@@ -97,3 +97,34 @@ To fill the empty worlds, add products under these category slugs. Admin → Wor
 Template links can pre-fill text: `/customize/<template-id>?text.<field>=<value>`, for example `/customize/tmpl-name-aarav?text.name=Myra`. The Worlds builders and the homepage "Thought of the day" (`src/lib/thoughts.js`) use this.
 
 Note: bundled templates live in `src/templates.json`. If an admin saves templates from Admin → Templates, the saved copy in storage replaces the bundled list. Any templates added to the code after that save will not appear until they are added in the admin too.
+
+## Gift Finder (/gift-finder)
+
+Deterministic scoring in `src/lib/giftfinder.js`; no AI or paid services. Answers live in the URL (`?who=&when=&budget=&style=&type=&step=`), so results can be shared and Back/Forward work.
+
+- **Budget** options come from the live `frame_sizes` prices. A budget shows every size at or below that price, and product links preselect the largest size that fits.
+- **Templates** are matched on their `recipient` and `occasion` fields.
+- **Products** only have a category, so recipient, occasion and style map to categories and to words in the name.
+
+Recommendations would get sharper with product **tags** in Admin → Products, e.g.:
+
+- recipient: `for-partner`, `for-parents`, `for-friends`
+- occasion: `anniversary`, `housewarming`, `diwali`
+- style: `minimalist`, `floral`, `traditional`
+
+`giftfinder.js` can read `product.tags` once they're filled in.
+
+## Signature Experience (homepage #signature)
+
+| Card | Status |
+|---|---|
+| Curated artwork | Live: bestseller data, real prices and links. |
+| Packaging | Describes only what the policies state: quality-checked, packed securely, printed gift card inside the box with the price hidden. No gift-wrap option exists. Add packaging photos when available. |
+| Personal gift messages | Live: the free gift card at checkout (to, from, message, hide price). `/checkout?gift=1` opens it. |
+| Priority delivery | Not bookable online: no option, fee or date logic exists in checkout or the payment function. The card sends a WhatsApp enquiry. Needs a delivery-tier table, pincode serviceability and a fee passed to `create-razorpay-order`. |
+| Founder delivery | WhatsApp request only, clearly marked "not confirmed until we accept". No location list or booking system exists. |
+| Art concierge | WhatsApp (+91 84464 40469). |
+
+## Reviews
+
+The database has no reviews table, so the homepage shows the brand story and studio photography instead of testimonials. Per-product `rating` and `review_count` come from the products table. A verified-reviews table (order-linked, moderated) is needed before showing named reviews or customer room photos.

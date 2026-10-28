@@ -5,6 +5,8 @@ import Reveal from '../components/Reveal';
 import { Seo } from '../lib/seo';
 import { SITE, waLink } from '../lib/site';
 import { BRAND } from '../lib/brand';
+import { FAQ } from '../lib/faq';
+import Founder from '../components/Founder';
 
 const UPDATED = 'October 2026';
 
@@ -26,18 +28,7 @@ function Faq({ items }) {
   );
 }
 
-const FAQ = [
-  ['How long does delivery take?', 'Every piece is made to order: 1–2 business days to craft and quality-check, then 5–7 business days in transit. Delivery is free to every pincode we serve.'],
-  ['What if my order arrives damaged or incorrect?', 'Message us on WhatsApp within 48 hours of delivery with your order number and photos or a short video. Once verified, we send a replacement at no cost.'],
-  ['How do I track my order?', 'We send tracking on WhatsApp and SMS once your parcel ships. Your recent orders are also listed on the “My orders” page on the device you ordered from.'],
-  ['Will my photo print well?', 'Our editors check every photo’s resolution the moment you upload it and tell you which sizes will look sharp. Most phone photos print beautifully up to 18 × 24 inches.'],
-  ['Can I see a proof before printing?', 'The live preview is exactly what we print. For personalised orders you can also ask for a final proof on WhatsApp before production starts.'],
-  ['Do you offer custom sizes?', 'Our standard sizes are A4, A3+, 18 × 24 and 24 × 36 inches. For anything else, message us on WhatsApp and we’ll quote you.'],
-  ['What is the frame made of?', 'Premium PS moulding in black, gold or brown, with a high-definition print and a protective front sheet. Ready to hang, hook included.'],
-  ['Is my payment secure?', 'Payments are processed by Razorpay — UPI, cards, netbanking and wallets. We never see or store your card details.'],
-  ['Do you ship internationally?', 'Not yet — we deliver across India. For gifts abroad, WhatsApp us and we’ll see what we can do.'],
-  ['Can I order in bulk?', 'Yes — see our corporate gifting page for volume pricing, or WhatsApp us with your quantity.'],
-];
+
 
 function Legal({ title, sub, sections }) {
   return (
@@ -176,6 +167,7 @@ function About() {
           ))}
         </div>
       </section>
+      <Founder variant="about" />
       <section className="section surface-cream">
         <div className="wrap">
           <div className="section-head">

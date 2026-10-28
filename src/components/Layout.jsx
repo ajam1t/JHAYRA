@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Icon, { WhatsAppGlyph } from './Icon';
 import Frame from './Frame';
@@ -11,13 +11,21 @@ import { loadProducts, searchProducts } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
 import { useFestival } from '../state/festival';
 
+// Desktop header. Visualise stays one tap away from product pages, Create
+// and the menu rather than taking a permanent slot here.
 const NAV = [
-  ['/shop', 'Shop Art'],
-  ['/customize', 'Personalised Art'],
-  ['/visualise', 'Visualise in My Room'],
-  ['/collections', 'Collections'],
-  ['/worlds', 'Worlds'],
-  ['/journal', 'Inspiration'],
+  ['/', 'Home', true],
+  ['/shop', 'Shop'],
+  ['/customize', 'Create'],
+  ['/gift-finder', 'Gift Finder'],
+];
+
+// Hamburger menu, grouped. Every route here exists in App.jsx.
+const MENU = [
+  ['Shop', [['/shop', 'All Wall Art'], ['/shop?room=living', 'Living Room'], ['/shop?room=bedroom', 'Bedroom'], ['/shop?room=office', 'Office'], ['/shop?room=dining', 'Dining Room'], ['/customize', 'Personalised Frames']]],
+  ['Create', [['/customize', 'Create Your Own Art'], ['/customize/photo', 'Upload Your Photo'], ['/visualise', 'Visualise on Your Wall'], ['/wall-planner', 'Plan a Gallery Wall']]],
+  ['Discover', [['/gift-finder', 'Gift Finder'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/shop?sort=new', 'New Arrivals'], ['/collections', 'Collections'], ['/worlds', 'Worlds'], ['/journal', 'Inspiration Journal']]],
+  ['About', [['/about', 'Our Story'], ['/contact', 'Contact'], ['/support', 'Help & FAQs'], ['/orders', 'My Orders'], ['/wishlist', 'Wishlist'], ['/corporate', 'Corporate Gifting']]],
 ];
 
 function Logo() {
@@ -52,7 +60,7 @@ function Announce() {
   );
 }
 
-function Header({ onMenu }) {
+function Header({ onMenu, menuOpen }) {
   const { count, setDrawerOpen } = useCart();
   const { wish, setSearchOpen } = useShop();
   const [scrolled, setScrolled] = useState(false);
@@ -75,13 +83,15 @@ function Header({ onMenu }) {
   return (
     <header className={`header ${scrolled ? 'scrolled' : ''} ${hidden ? 'hide' : ''}`}>
       <div className="wrap">
-        <button className="icon-btn header-menu" onClick={onMenu} aria-label="Open menu">
-          <Icon name="menu" />
-        </button>
-        <Logo />
+        <div className="header-start">
+          <button className="icon-btn header-menu" onClick={onMenu} aria-label="Open menu" aria-haspopup="dialog" aria-expanded={menuOpen} aria-controls="site-menu">
+            <Icon name="menu" />
+          </button>
+          <Logo />
+        </div>
         <nav className="nav" aria-label="Main">
-          {NAV.map(([to, label]) => (
-            <NavLink key={to} to={to}>
+          {NAV.map(([to, label, end]) => (
+            <NavLink key={to} to={to} end={end}>
               {label}
             </NavLink>
           ))}
@@ -90,20 +100,13 @@ function Header({ onMenu }) {
           <button className="icon-btn" onClick={() => setSearchOpen(true)} aria-label="Search (Ctrl K)">
             <Icon name="search" />
           </button>
-          <Link to="/orders" className="icon-btn hide-sm" aria-label="My account and orders">
-            <Icon name="user" />
-          </Link>
           <Link to="/wishlist" className="icon-btn hide-sm" aria-label={`Wishlist, ${wish.length} items`}>
             <Icon name="heart" />
             {wish.length > 0 && <span className="badge">{wish.length}</span>}
           </Link>
           <button className="icon-btn" onClick={() => setDrawerOpen(true)} aria-label={`Cart, ${count} items`}>
             <Icon name="bag" />
-            {count > 0 && (
-              <span className="badge" key={count}>
-                {count}
-              </span>
-            )}
+            <CountBadge count={count} />
           </button>
         </div>
       </div>
@@ -111,11 +114,68 @@ function Header({ onMenu }) {
   );
 }
 
-function MenuSheet({ onClose }) {
+// Invitation to the Signature Experience section on the homepage. The link
+// carries #signature; the homepage scrolls to it (see Home.jsx), so browser
+// back/forward and opening in a new tab behave like any link.
+function SignatureStrip() {
+  return (
+    <Link to="/#signature" className="sig-strip">
+      <span>
+        <span aria-hidden="true">✨ </span>The Jhayra Signature Experience <span className="sig-arrow" aria-hidden="true">→</span>
+      </span>
+    </Link>
+  );
+}
+
+// Rolls the new number in when the cart count changes (static when reduced motion).
+function CountBadge({ count }) {
+  if (!count) return null;
+  return (
+    <span className="badge badge-roll" aria-hidden="true">
+      <span key={count}>{count}</span>
+    </span>
+  );
+}
+
+function MenuSheet({ onClose, returnFocus }) {
+  const panel = useRef(null);
+  // Focus the panel, trap Tab inside it, close on Escape, restore focus on close.
+  useEffect(() => {
+    const el = panel.current;
+    const opener = document.activeElement;
+    el?.querySelector('a, button')?.focus();
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab' || !el) return;
+      const f = [...el.querySelectorAll('a[href], button:not([disabled])')];
+      if (!f.length) return;
+      const first = f[0];
+      const last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+      (returnFocus?.current || opener)?.focus?.();
+    };
+  }, [onClose, returnFocus]);
   return (
     <>
       <div className="scrim" onClick={onClose} />
-      <aside className="sheet sheet-left" role="dialog" aria-modal="true" aria-label="Menu">
+      <aside className="sheet sheet-left menu-sheet" id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" ref={panel}>
         <div className="sheet-head">
           <Logo />
           <button className="icon-btn" onClick={onClose} aria-label="Close menu">
@@ -123,26 +183,23 @@ function MenuSheet({ onClose }) {
           </button>
         </div>
         <div className="sheet-body">
-          <nav className="menu-links">
-            <Link to="/">Home</Link>
-            {NAV.map(([to, label]) => (
-              <Link key={to} to={to}>
-                {label} <Icon name="arrow" size={18} />
-              </Link>
-            ))}
-          </nav>
-          <div className="menu-sub">
-            <Link to="/customize/photo">Living Art Studio</Link>
-            <Link to="/wall-planner">Gallery wall planner</Link>
-            <Link to="/gift-finder">Gift finder</Link>
-            <Link to="/corporate">Corporate gifting</Link>
-            <Link to="/wishlist">Wishlist</Link>
-            <Link to="/orders">My orders</Link>
-            <Link to="/support">Help & FAQ</Link>
-            <Link to="/contact">Contact</Link>
-            <Link to="/about">Our story</Link>
-            <Link to="/replacement-policy">Replacement promise</Link>
-          </div>
+          <Link to="/" className="menu-home" onClick={onClose}>
+            Home <Icon name="arrow" size={18} />
+          </Link>
+          {MENU.map(([title, links]) => (
+            <nav key={title} className="menu-group" aria-label={title}>
+              <h2>{title}</h2>
+              <ul>
+                {links.map(([to, label]) => (
+                  <li key={to + label}>
+                    <Link to={to} onClick={onClose}>
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
         </div>
         <div className="sheet-foot">
           <a className="btn btn-wa btn-block" href={waLink('Hi JHAYRA! I need help choosing a frame.')} target="_blank" rel="noopener noreferrer">
@@ -154,30 +211,29 @@ function MenuSheet({ onClose }) {
   );
 }
 
+const BOTTOM = [
+  ['/', 'Home', 'home', true],
+  ['/shop', 'Shop', 'grid'],
+  ['/customize', 'Create', 'sparkle'],
+  ['/gift-finder', 'Gift Finder', 'gift'],
+];
 function BottomNav() {
-  const { count, setDrawerOpen } = useCart();
+  const { count, setDrawerOpen, drawerOpen } = useCart();
+  const { pathname } = useLocation();
+  // Checkout and the design editors have their own fixed action bars.
+  if (pathname.startsWith('/checkout') || /^\/customize\/.+/.test(pathname)) return null;
   return (
     <nav className="bottom-nav" aria-label="Quick">
-      <NavLink to="/" end>
-        <Icon name="home" size={21} />
-        Home
-      </NavLink>
-      <NavLink to="/shop">
-        <Icon name="grid" size={21} />
-        Shop
-      </NavLink>
-      <NavLink to="/customize" className="create">
-        <Icon name="sparkle" size={21} />
-        Create
-      </NavLink>
-      <NavLink to="/visualise">
-        <Icon name="wall" size={21} />
-        Visualise
-      </NavLink>
-      <button onClick={() => setDrawerOpen(true)}>
+      {BOTTOM.map(([to, label, icon, end]) => (
+        <NavLink key={to} to={to} end={end}>
+          <Icon name={icon} size={21} />
+          <span>{label}</span>
+        </NavLink>
+      ))}
+      <button type="button" className={drawerOpen || pathname === '/cart' ? 'active' : ''} onClick={() => setDrawerOpen(true)} aria-label={`Cart, ${count} items`}>
         <Icon name="bag" size={21} />
-        Cart
-        {count > 0 && <span className="badge">{count}</span>}
+        <span>Cart</span>
+        <CountBadge count={count} />
       </button>
     </nav>
   );
@@ -418,10 +474,10 @@ function SearchPalette() {
 
 function Footer() {
   const cols = [
-    ['Shop', [['/shop', 'All art'], ['/collections', 'Collections'], ['/shop?room=living', 'Living room'], ['/shop?room=bedroom', 'Bedroom'], ['/shop?room=office', 'Office'], ['/collections/art-for-gifting', 'Gifts']]],
-    ['Personalised art', [['/customize/photo', 'Living Art Studio'], ['/customize', 'Personalised designs'], ['/customize/scratch', 'Design from scratch'], ['/wall-planner', 'Gallery wall planner'], ['/visualise', 'Visualise in my room']]],
-    ['Help', [['/support', 'FAQ & support'], ['/orders', 'Track my order'], ['/shipping-policy', 'Shipping'], ['/replacement-policy', 'Replacements'], ['/refund', 'Returns & refunds'], ['/contact', 'Contact us']]],
-    ['Jhayra', [['/about', 'Our story'], ['/worlds', 'Explore all worlds'], ['/journal', 'Inspiration journal'], ['/corporate', 'Corporate gifting'], ['/gift-finder', 'Gift finder']]],
+    ['Shop', [['/shop', 'All wall art'], ['/shop?room=living', 'Living room'], ['/shop?room=bedroom', 'Bedroom'], ['/shop?room=office', 'Office'], ['/shop?room=dining', 'Dining room'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/collections', 'Collections']]],
+    ['Create', [['/customize', 'Create your own'], ['/customize/photo', 'Upload your photo'], ['/visualise', 'Visualise on your wall'], ['/wall-planner', 'Gallery wall planner'], ['/gift-finder', 'Gift finder'], ['/corporate', 'Corporate gifting']]],
+    ['Help', [['/support', 'Help & FAQs'], ['/orders', 'Track my order'], ['/shipping-policy', 'Shipping policy'], ['/refund', 'Returns & refunds'], ['/replacement-policy', 'Replacement promise'], ['/contact', 'Contact us']]],
+    ['Jhayra', [['/about', 'About Jhayra'], ['/worlds', 'Worlds'], ['/journal', 'Inspiration journal'], ['/privacy', 'Privacy policy'], ['/terms', 'Terms & conditions']]],
   ];
   return (
     <footer className="footer">
@@ -499,19 +555,23 @@ function WhatsAppFab() {
 
 export default function Layout() {
   const [menu, setMenu] = useState(false);
+  const closeMenu = useCallback(() => setMenu(false), []);
   const { pathname } = useLocation();
   const { setDrawerOpen } = useCart();
 
+  const { hash } = useLocation();
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // A #fragment (e.g. /#signature) is scrolled to by the page itself.
+    if (!hash) window.scrollTo(0, 0);
     setMenu(false);
     setDrawerOpen(false);
-  }, [pathname, setDrawerOpen]);
+  }, [pathname, setDrawerOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const bottomNav = !(pathname.startsWith('/checkout') || /^\/customize\/.+/.test(pathname));
   useEffect(() => {
-    document.body.classList.add('has-bottom-nav');
+    document.body.classList.toggle('has-bottom-nav', bottomNav);
     return () => document.body.classList.remove('has-bottom-nav');
-  }, []);
+  }, [bottomNav]);
 
   return (
     <>
@@ -519,14 +579,15 @@ export default function Layout() {
         Skip to content
       </a>
       <Announce />
-      <Header onMenu={() => setMenu(true)} />
+      <Header onMenu={() => setMenu(true)} menuOpen={menu} />
+      {!pathname.startsWith('/checkout') && <SignatureStrip />}
       <main id="main" key={pathname} className="page-enter">
         <Outlet />
       </main>
       <Footer />
       <BottomNav />
       <WhatsAppFab />
-      {menu && <MenuSheet onClose={() => setMenu(false)} />}
+      {menu && <MenuSheet onClose={closeMenu} />}
       <CartDrawer />
       <SearchPalette />
     </>

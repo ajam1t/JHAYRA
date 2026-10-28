@@ -28,7 +28,9 @@ export function categoryLabel(slug, categories) {
   return (slug || '').replace(/-/g, ' ');
 }
 
-export default function ProductCard({ product, categories, priority = false, index = 0, room = false }) {
+// `options` (optional): { sizes, colours } counts from loadOptionSummary.
+export default function ProductCard({ product, categories, priority = false, index = 0, room = false, options, query = '' }) {
+  const href = `/product/${product.id}${query}`;
   const { wish, toggleWish } = useShop();
   const [quick, setQuick] = useState(false);
   const on = wish.includes(product.id);
@@ -38,7 +40,7 @@ export default function ProductCard({ product, categories, priority = false, ind
   return (
     <article className={`pcard ${room ? 'pcard-room' : ''}`} style={{ '--i': index }}>
       <div className="pcard-media">
-        <Link to={`/product/${product.id}`} className="pcard-stage" aria-label={product.name}>
+        <Link to={href} className="pcard-stage" aria-label={product.name}>
           <Frame src={product.thumbnail} alt={product.name} sizes="(max-width: 760px) 40vw, (max-width: 1120px) 22vw, 16vw" priority={priority} glare={false} thickness={3.6} />
           {alt && (
             <div className="pcard-alt" aria-hidden="true">
@@ -59,7 +61,7 @@ export default function ProductCard({ product, categories, priority = false, ind
           <span>Quick view</span>
         </button>
       </div>
-      <Link to={`/product/${product.id}`} className="pcard-body">
+      <Link to={href} className="pcard-body">
         <span className="pcard-cat">{categoryLabel(product.category, categories)}</span>
         <h3 className="pcard-name">{product.name}</h3>
         <Stars rating={product.rating} count={product.review_count} small />
@@ -67,6 +69,12 @@ export default function ProductCard({ product, categories, priority = false, ind
           from <b>{money(product.price || a4.price)}</b>
           {product.compare_price ? <s className="muted"> {money(product.compare_price)}</s> : null}
         </span>
+        {options?.sizes > 0 && (
+          <span className="pcard-opts">
+            {options.sizes} {options.sizes === 1 ? 'size' : 'sizes'}
+            {options.colours > 0 && ` · ${options.colours} ${options.colours === 1 ? 'frame finish' : 'frame finishes'}`}
+          </span>
+        )}
       </Link>
       {quick && <QuickView product={product} onClose={() => setQuick(false)} />}
     </article>
