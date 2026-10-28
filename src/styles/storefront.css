@@ -1939,3 +1939,130 @@
   -webkit-mask: radial-gradient(circle at 50% 100%, transparent 0 12px, #000 13px 44px, transparent 44px);
   mask: radial-gradient(circle at 50% 100%, transparent 0 12px, #000 13px 44px, transparent 44px);
 }
+
+/* ═════════════ Gift Finder wheel (segments around the monogram) ════════ */
+.gw {
+  display: grid;
+  place-items: center;
+  margin: 18px auto 0;
+}
+.gw-svg {
+  width: min(100%, 460px);
+  height: auto;
+  overflow: visible;
+  font-family: var(--fb);
+  -webkit-tap-highlight-color: transparent;
+}
+.gw-seg {
+  cursor: pointer;
+  outline: none;
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: gw-in 0.5s var(--ease) both;
+  animation-delay: calc(var(--i) * 40ms);
+}
+@keyframes gw-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86) rotate(-8deg);
+  }
+}
+.gw-wedge {
+  fill: #fbf8f2;
+  stroke: #d9c7a3;
+  stroke-width: 1.2;
+  transition: fill 0.25s, transform 0.3s var(--ease);
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+.gw-ic path {
+  fill: none;
+  stroke: #6f5a37;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.gw-label {
+  font-size: 14px;
+  font-weight: 600;
+  fill: var(--ink);
+  letter-spacing: 0.01em;
+}
+.gw-hint {
+  font-size: 10.5px;
+  fill: var(--muted);
+}
+@media (hover: hover) {
+  .gw-seg:hover .gw-wedge {
+    fill: #f3e9d6;
+  }
+}
+.gw-seg:focus-visible .gw-wedge {
+  fill: #f3e9d6;
+  stroke: var(--obsidian);
+  stroke-width: 2;
+}
+.gw-seg.on .gw-wedge {
+  fill: var(--obsidian);
+  stroke: var(--obsidian);
+}
+.gw-seg.on .gw-label {
+  fill: var(--porcelain);
+}
+.gw-seg.on .gw-hint {
+  fill: #d8d5cc;
+}
+.gw-seg.on .gw-ic path {
+  stroke: #e5d7bd;
+}
+.gw-seg:active .gw-wedge {
+  transform: scale(0.985);
+}
+.gw-arc {
+  fill: none;
+  stroke: var(--champagne);
+  stroke-width: 5;
+  stroke-linecap: round;
+  animation: gw-arc 0.4s var(--ease) both;
+}
+@keyframes gw-arc {
+  from {
+    opacity: 0;
+  }
+}
+.gw-hub-ring {
+  fill: #f3ede2;
+  stroke: #e2d4b8;
+}
+.gw-hub-in {
+  fill: #fbf8f2;
+  stroke: #ece2cf;
+}
+.gw-hub-title {
+  font-family: var(--fd);
+  font-size: 18px;
+  fill: var(--ink);
+}
+.gw-hub-sub {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  fill: #6f5a37;
+  font-weight: 600;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gw-seg,
+  .gw-arc {
+    animation: none;
+  }
+}
+/* Keep Back / Skip / Start over clear of the WhatsApp button on phones */
+@media (max-width: 600px) {
+  .gf2-nav {
+    padding-right: 76px;
+    gap: 6px 16px;
+  }
+  .gf2-nav .link {
+    font-size: 15px;
+  }
+}

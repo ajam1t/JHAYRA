@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Icon from '../components/Icon';
+import GiftWheel from '../components/GiftWheel';
 import Frame from '../components/Frame';
 import TemplateCanvas from '../components/TemplateCanvas';
 import ProductCard from '../components/ProductCard';
@@ -34,10 +35,10 @@ export default function GiftFinder() {
 
   const a = Object.fromEntries(KEYS.map((k) => [k, params.get(k) || '']));
   const steps = [
-    { key: 'who', q: 'Who are you shopping for?', opts: WHO.map((o) => ({ id: o.id, label: o.label })) },
-    { key: 'when', q: 'What is the occasion?', opts: WHEN.map((o) => ({ id: o.id, label: o.label })) },
-    { key: 'budget', q: 'What is your budget?', hint: 'Prices are per framed piece; every design comes in these sizes.', opts: budgetOpts.map((b) => ({ id: b.id, label: `Up to ${money(b.max)}`, hint: b.sizes.map((s) => s.name).join(' · ') })), skip: 'Any budget' },
-    { key: 'style', q: 'What style do they like?', opts: styleOpts.map((s) => ({ id: s.id, label: s.label, hint: `${s.n} to choose from` })), skip: 'Not sure — skip' },
+    { key: 'who', q: 'Who are you shopping for?', opts: WHO.map((o) => ({ id: o.id, label: o.label, icon: o.icon })) },
+    { key: 'when', q: 'What is the occasion?', opts: WHEN.map((o) => ({ id: o.id, label: o.label, icon: o.icon })) },
+    { key: 'budget', q: 'What is your budget?', hint: 'Prices are per framed piece; every design comes in these sizes.', opts: budgetOpts.map((b) => ({ id: b.id, label: `Up to ${money(b.max)}`, icon: 'rupee', hint: b.sizes.length > 2 ? `${b.sizes[0].name} to ${b.sizes[b.sizes.length - 1].name}` : b.sizes.map((s) => s.name).join(' · ') })), skip: 'Any budget' },
+    { key: 'style', q: 'What style do they like?', opts: styleOpts.map((s) => ({ id: s.id, label: s.label, icon: s.icon, hint: `${s.n} designs` })), skip: 'Not sure — skip' },
     { key: 'type', q: 'What type of artwork would they prefer?', opts: TYPES, skip: null },
   ];
   // The current step: explicit ?step=, else the first unanswered question.
@@ -95,14 +96,7 @@ export default function GiftFinder() {
                 {steps[step].q}
               </h1>
               {steps[step].hint && <p className="muted gf2-hint">{steps[step].hint}</p>}
-              <div className="gf2-opts" role="group" aria-label={steps[step].q}>
-                {steps[step].opts.map((o, i) => (
-                  <button key={o.id} type="button" className={`gf2-opt ${a[steps[step].key] === o.id ? 'on' : ''}`} aria-pressed={a[steps[step].key] === o.id} style={{ '--i': i }} onClick={() => answer(steps[step].key, o.id)}>
-                    <b>{o.label}</b>
-                    {o.hint && <small>{o.hint}</small>}
-                  </button>
-                ))}
-              </div>
+              <GiftWheel key={step} label={steps[step].q} options={steps[step].opts} value={a[steps[step].key]} onChoose={(id) => answer(steps[step].key, id)} step={step + 1} total={steps.length} />
               <div className="gf2-nav">
                 {step > 0 ? (
                   <button type="button" className="link" onClick={() => go(step - 1)}>

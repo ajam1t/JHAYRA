@@ -6,42 +6,42 @@
 // carry `recipient` and `occasion` lists, which are matched directly.
 
 export const WHO = [
-  { id: 'partner', label: 'Partner', cats: ['love-romance', 'wedding', 'nature', 'photography'], recipients: ['couple', 'wife', 'husband', 'boyfriend', 'girlfriend'] },
-  { id: 'parents', label: 'Parents', cats: ['family', 'religious', 'home-vastu', 'quotes'], recipients: ['parents', 'father', 'mother', 'grandparents'] },
-  { id: 'friends', label: 'Friends', cats: ['quotes', 'modern-art', 'art-abstract', 'photography'], recipients: ['friend', 'colleague', 'boss'] },
-  { id: 'family', label: 'Family', cats: ['family', 'baby-kids', 'animals-pets', 'religious'], recipients: ['family', 'kids', 'sibling', 'sister', 'brother', 'baby', 'grandparents'] },
-  { id: 'housewarming', label: 'Housewarming', cats: ['home-vastu', 'religious', 'nature', 'canvas', 'modern-art', 'running-horses'], recipients: ['family', 'couple', 'self'] },
-  { id: 'myself', label: 'Myself', cats: ['modern-art', 'art-abstract', 'nature', 'canvas', 'photography'], recipients: ['self'] },
-  { id: 'other', label: 'Someone else', cats: [], recipients: [] },
+  { id: 'partner', label: 'Partner', icon: 'heart', cats: ['love-romance', 'wedding', 'nature', 'photography'], recipients: ['couple', 'wife', 'husband', 'boyfriend', 'girlfriend'] },
+  { id: 'parents', label: 'Parents', icon: 'user', cats: ['family', 'religious', 'home-vastu', 'quotes'], recipients: ['parents', 'father', 'mother', 'grandparents'] },
+  { id: 'friends', label: 'Friends', icon: 'star', cats: ['quotes', 'modern-art', 'art-abstract', 'photography'], recipients: ['friend', 'colleague', 'boss'] },
+  { id: 'family', label: 'Family', icon: 'users', cats: ['family', 'baby-kids', 'animals-pets', 'religious'], recipients: ['family', 'kids', 'sibling', 'sister', 'brother', 'baby', 'grandparents'] },
+  { id: 'housewarming', label: 'Housewarming', icon: 'home', cats: ['home-vastu', 'religious', 'nature', 'canvas', 'modern-art', 'running-horses'], recipients: ['family', 'couple', 'self'] },
+  { id: 'myself', label: 'Myself', icon: 'sparkle', cats: ['modern-art', 'art-abstract', 'nature', 'canvas', 'photography'], recipients: ['self'] },
+  { id: 'other', label: 'Someone else', icon: 'question', cats: [], recipients: [] },
 ];
 
 export const WHEN = [
-  { id: 'birthday', label: 'Birthday', cats: ['occasions', 'baby-kids', 'quotes', 'family'], occasions: ['birthday', 'milestones'] },
-  { id: 'anniversary', label: 'Anniversary', cats: ['love-romance', 'wedding'], occasions: ['anniversary', 'engagement'] },
-  { id: 'wedding', label: 'Wedding', cats: ['wedding', 'love-romance', 'religious'], occasions: ['wedding', 'engagement'] },
-  { id: 'housewarming', label: 'Housewarming', cats: ['home-vastu', 'religious', 'nature', 'canvas', 'running-horses'], occasions: ['housewarming'] },
-  { id: 'festival', label: 'Festival', cats: ['religious', 'occasions', 'home-vastu'], occasions: ['festivals', 'diwali', 'christmas', 'raksha-bandhan'] },
-  { id: 'valentines', label: 'Valentine’s Day', cats: ['love-romance'], occasions: ['valentines'] },
-  { id: 'just', label: 'Just Because', cats: [], occasions: [] },
-  { id: 'other', label: 'Something else', cats: [], occasions: [] },
+  { id: 'birthday', label: 'Birthday', icon: 'cake', cats: ['occasions', 'baby-kids', 'quotes', 'family'], occasions: ['birthday', 'milestones'] },
+  { id: 'anniversary', label: 'Anniversary', icon: 'calendar', cats: ['love-romance', 'wedding'], occasions: ['anniversary', 'engagement'] },
+  { id: 'wedding', label: 'Wedding', icon: 'rings', cats: ['wedding', 'love-romance', 'religious'], occasions: ['wedding', 'engagement'] },
+  { id: 'housewarming', label: 'Housewarming', icon: 'home', cats: ['home-vastu', 'religious', 'nature', 'canvas', 'running-horses'], occasions: ['housewarming'] },
+  { id: 'festival', label: 'Festival', icon: 'diya', cats: ['religious', 'occasions', 'home-vastu'], occasions: ['festivals', 'diwali', 'christmas', 'raksha-bandhan'] },
+  { id: 'valentines', label: 'Valentine’s Day', icon: 'heart', cats: ['love-romance'], occasions: ['valentines'] },
+  { id: 'just', label: 'Just Because', icon: 'gift', cats: [], occasions: [] },
+  { id: 'other', label: 'Something else', icon: 'question', cats: [], occasions: [] },
 ];
 
 const FLORAL = /\b(floral|flower|bloom|blossom|lotus|rose|petal|sunflower)/i;
 
 // Styles shown only when the catalogue has something for them.
 export const STYLES = [
-  { id: 'minimalist', label: 'Minimalist', test: (p) => ['modern-art', 'canvas'].includes(p.category) },
-  { id: 'abstract', label: 'Abstract', test: (p) => p.category === 'art-abstract' },
-  { id: 'floral', label: 'Floral', test: (p) => FLORAL.test(p.name) },
-  { id: 'nature', label: 'Nature', test: (p) => ['nature', 'photography'].includes(p.category) },
-  { id: 'personalised', label: 'Personalised Photo Art', test: (p) => !!p.customer_photo_eligible, templates: true },
-  { id: 'traditional', label: 'Traditional & Cultural', test: (p) => ['religious', 'home-vastu', 'mithila', 'running-horses', 'buddhist', 'jain', 'christian'].includes(p.category), groups: ['spiritual', 'festivals', 'desi'] },
+  { id: 'minimalist', label: 'Minimalist', icon: 'square', test: (p) => ['modern-art', 'canvas'].includes(p.category) },
+  { id: 'abstract', label: 'Abstract', icon: 'palette', test: (p) => p.category === 'art-abstract' },
+  { id: 'floral', label: 'Floral', icon: 'flower', test: (p) => FLORAL.test(p.name) },
+  { id: 'nature', label: 'Nature', icon: 'leaf', test: (p) => ['nature', 'photography'].includes(p.category) },
+  { id: 'personalised', label: 'Personalised Photo Art', icon: 'camera', test: (p) => !!p.customer_photo_eligible, templates: true },
+  { id: 'traditional', label: 'Traditional & Cultural', icon: 'temple', test: (p) => ['religious', 'home-vastu', 'mithila', 'running-horses', 'buddhist', 'jain', 'christian'].includes(p.category), groups: ['spiritual', 'festivals', 'desi'] },
 ];
 
 export const TYPES = [
-  { id: 'ready', label: 'Ready-made artwork', hint: 'Designs to hang as they are' },
-  { id: 'personal', label: 'Personalised artwork', hint: 'With their photos, names or dates' },
-  { id: 'unsure', label: 'Not sure', hint: 'Show me both' },
+  { id: 'ready', label: 'Ready-made artwork', icon: 'image', hint: 'Designs to hang as they are' },
+  { id: 'personal', label: 'Personalised artwork', icon: 'camera', hint: 'With their photos, names or dates' },
+  { id: 'unsure', label: 'Not sure', icon: 'question', hint: 'Show me both' },
 ];
 
 // Budget options from the real frame-size prices (ascending): "up to ₹X"
