@@ -182,7 +182,7 @@ function About() {
             {[
               ['brush', 'Craftsmanship', 'Every piece is printed, framed and finished by hand, and checked before it leaves us.'],
               ['heart', 'Personal', 'No two orders are alike. We read every name and date as carefully as if it were ours.'],
-              ['shield', 'Honest promises', 'Free delivery, free replacement if damaged, and straight answers on WhatsApp.'],
+              ['shield', 'Honest promises', 'Free delivery across India and straight answers on WhatsApp.'],
               ['home', 'Made in India', 'Designed and produced in India, supporting local artisans and suppliers.'],
             ].map(([ic, t, d], i) => (
               <Reveal key={t} delay={i * 0.06} className="value">
@@ -317,7 +317,7 @@ function Support() {
             </span>
             <span>
               <b>Damaged or wrong?</b>
-              <small>Free replacement, here’s how</small>
+              <small>Damaged or incorrect order? Here’s what to do</small>
             </span>
             <Icon name="arrow" />
           </Link>
@@ -446,7 +446,7 @@ function Corporate() {
 const PAGES = {
   about: { title: 'About JHAYRA — Our Story Since 2017', desc: `From a small workshop to ${BRAND.homes} homes: the story of JHAYRA, handcrafted photo frames and wall art made in India since ${BRAND.since}.`, el: About },
   contact: { title: 'Contact JHAYRA', desc: 'WhatsApp, email or Instagram — talk to a real person at JHAYRA.', el: Contact },
-  support: { title: 'Help & FAQ', desc: 'Delivery times, replacements, photo quality, payments — answers to common questions.', el: Support },
+  support: { title: 'Help & FAQ', desc: 'Delivery times, orders, photo quality, payments — answers to common questions.', el: Support },
   corporate: { title: 'Corporate Gifting — Personalised Wall Art in Bulk', desc: `Branded, personalised frames for employees and clients. Volume pricing from ₹799/unit. Trusted by ${BRAND.corporates} companies.`, el: Corporate },
 };
 

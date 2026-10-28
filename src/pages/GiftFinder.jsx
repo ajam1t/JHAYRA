@@ -89,9 +89,6 @@ export default function GiftFinder() {
           </div>
           {!done ? (
             <div className="gf2-step" key={step}>
-              <span className="eyebrow">
-                Gift Finder · {step + 1} of {steps.length}
-              </span>
               <h1 className="h1 gf2-q" tabIndex={-1} ref={heading}>
                 {steps[step].q}
               </h1>

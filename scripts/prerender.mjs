@@ -67,7 +67,7 @@ const STATIC = [
   ['/journal', 'Inspiration Journal — Wall Art Ideas & Guides | JHAYRA', 'Gallery wall planning, how high to hang art, styling by room, personalised gift ideas and framed art care.'],
   ['/about', 'About JHAYRA — Our Story Since 2017', 'From a small workshop to 10,000+ homes: handcrafted photo frames and wall art made in India since 2017.'],
   ['/contact', 'Contact JHAYRA', 'WhatsApp +91 84464 40469, email hello@jhayra.in or Instagram @thejhayra — talk to a real person.'],
-  ['/support', 'Help & FAQ | JHAYRA', 'Delivery times, replacements, photo quality and payments — answers to common questions.'],
+  ['/support', 'Help & FAQ | JHAYRA', 'Delivery times, orders, photo quality and payments — answers to common questions.'],
   ['/corporate', 'Corporate Gifting — Personalised Wall Art in Bulk | JHAYRA', 'Branded, personalised frames for employees and clients. Volume pricing from ₹799/unit.'],
   ['/privacy', 'Privacy Policy | JHAYRA', 'How JHAYRA collects, uses and protects your personal information and photos.'],
   ['/terms', 'Terms of Service | JHAYRA', 'Terms for using the JHAYRA website and placing orders.'],
@@ -107,7 +107,7 @@ for (const p of products) {
   const main = (imgs.find((i) => i.is_primary) || imgs[0])?.url;
   const image = main ? `https://wsrv.nl/?url=${encodeURIComponent(main)}&w=1200&h=630&fit=contain&cbg=efe5d4&output=jpg&q=82` : OG;
   const path = `/product/${p.legacy_id}`;
-  const description = `${p.description || p.name} Handcrafted in India, from ₹${Math.round(p.price || 499)}. Free delivery & free replacement if damaged.`;
+  const description = `${p.description || p.name} Handcrafted in India, from ₹${Math.round(p.price || 499)}. Free delivery across India.`;
   write(
     path,
     page({

@@ -111,7 +111,7 @@ export const ARTICLES = [
       ['list', ['Dust with a dry, soft microfibre cloth.', 'Never spray cleaner directly onto the frame or front sheet — spray the cloth lightly instead.', 'Wipe the moulding gently; avoid harsh chemicals.']],
       ['h', 'Hanging safely'],
       ['p', 'Use the hook provided and a wall plug suited to your wall. For 18 × 24 and 24 × 36 frames, two hooks keep the frame level and spread the weight.'],
-      ['tip', 'If your frame ever arrives damaged, send us a photo on WhatsApp within 48 hours of delivery and we’ll replace it free.'],
+      ['tip', 'If your frame ever arrives damaged, send us a photo on WhatsApp within 48 hours of delivery — our replacement policy explains the next steps.'],
       ['links', [['Our replacement promise', '/replacement-policy'], ['Help & FAQ', '/support']]],
     ],
   },

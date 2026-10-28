@@ -504,9 +504,6 @@ export default function Checkout() {
             </a>
             <ul className="ck-trust">
               <li>
-                <Icon name="refresh" size={16} /> Free replacement if it arrives damaged
-              </li>
-              <li>
                 <Icon name="sparkle" size={16} /> Trusted by {BRAND.homes} homes since {BRAND.since}
               </li>
             </ul>

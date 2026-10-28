@@ -219,7 +219,7 @@ export default function Product() {
     <>
       <Seo
         title={`${product.name} — ${catName} Frame`}
-        description={`${product.description || product.name} Handcrafted in India, from ${money(product.price)}. Free delivery & free replacement if damaged.`}
+        description={`${product.description || product.name} Handcrafted in India, from ${money(product.price)}. Free delivery across India.`}
         path={`/product/${product.id}`}
         image={product.thumbnail ? optimized(product.thumbnail, 1200, 80).replace('output=webp', 'output=jpg') : undefined}
         jsonLd={{
@@ -408,9 +408,6 @@ export default function Product() {
 
           <ul className="pdp-promise">
             <li>
-              <Icon name="refresh" size={18} /> <span><b>Free replacement</b> if it arrives damaged</span>
-            </li>
-            <li>
               <Icon name="brush" size={18} /> <span><b>Handcrafted to order</b> — dispatched in 1–2 days</span>
             </li>
             <li>
@@ -438,7 +435,7 @@ export default function Product() {
                 </span>
               </summary>
               <div className="acc-body">
-                Free delivery anywhere in India in 5–7 business days after dispatch. If your frame arrives damaged, send us a photo on WhatsApp within 48 hours and we'll replace it free. <Link to="/replacement-policy" className="link">Our promise</Link>
+                Free delivery anywhere in India in 5–7 business days after dispatch. Damaged or incorrect order? Message us on WhatsApp within 48 hours — see our <Link to="/replacement-policy" className="link">replacement policy</Link>.
               </div>
             </details>
             <details>

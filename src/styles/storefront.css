@@ -2066,3 +2066,423 @@
     font-size: 15px;
   }
 }
+
+/* ═══════════ Branding bar: fixed in place, logo + tagline only ═════════ */
+.header,
+.header.hide {
+  transform: none;
+}
+.header .logo small {
+  display: block;
+}
+@media (max-width: 899px) {
+  .header .logo small {
+    font-size: 11px;
+    margin-top: 3px;
+  }
+  .header-text-actions {
+    display: none !important;
+  }
+}
+.header-text-actions {
+  display: flex;
+  gap: 4px;
+  justify-self: end;
+}
+.header-text-actions button {
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-2);
+  border-radius: var(--r-sm);
+}
+.header-text-actions button:hover {
+  background: rgba(23, 25, 22, 0.05);
+  color: var(--ink);
+}
+.menu-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  margin: 10px 0 4px;
+  padding: 0 14px;
+  border: 1px solid var(--stone);
+  border-radius: var(--r);
+  background: #fff;
+  color: var(--muted);
+  font-size: 14.5px;
+  text-align: left;
+}
+
+/* ═══ Signature strip: warm parchment and gold, matching the branding bar ═ */
+.sig-strip {
+  background:
+    linear-gradient(90deg, transparent, rgba(201, 165, 92, 0.22) 50%, transparent),
+    #ece2cf;
+  color: #6b4f1d;
+  border-top: 1px solid rgba(185, 154, 104, 0.55);
+  border-bottom: 1px solid rgba(185, 154, 104, 0.55);
+}
+.sig-strip:hover {
+  background-color: #e6d9c0;
+  color: #4f3a14;
+}
+.sig-arrow {
+  color: #8c6a2e;
+}
+
+/* ═══════════ JHAYRA 3D frame: the signature object in the hero ═════════ */
+.sf-hero-act {
+  display: block;
+}
+.sf-hero-3d {
+  display: none;
+}
+@media (max-width: 999px) {
+  .sf-hero-act {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(112px, 34%);
+    gap: 8px;
+    align-items: center;
+  }
+  .sf-hero-act .gh-ctas {
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 26px;
+  }
+  .sf-hero-act .gh-ctas .btn {
+    justify-content: center;
+  }
+  .sf-hero-3d {
+    display: block;
+  }
+}
+.m3d {
+  --w: 104px;
+  --h: 138px;
+  --d: 16px;
+  position: relative;
+  height: calc(var(--h) + 70px);
+  display: grid;
+  place-items: center;
+  perspective: 700px;
+  touch-action: pan-y;
+  user-select: none;
+}
+.m3d-stage {
+  --rx: 0deg;
+  --ry: 0deg;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.9s var(--ease-spring);
+  cursor: grab;
+}
+.m3d-stage.drag {
+  transition: none;
+  cursor: grabbing;
+}
+.m3d-stage.drag .m3d-sway {
+  animation-play-state: paused;
+}
+.m3d-sway {
+  transform-style: preserve-3d;
+  animation: m3d-sway 7s ease-in-out infinite;
+}
+@keyframes m3d-sway {
+  0%,
+  100% {
+    transform: translateY(0) rotateY(-24deg) rotateX(6deg);
+  }
+  50% {
+    transform: translateY(-8px) rotateY(20deg) rotateX(-4deg);
+  }
+}
+.m3d-box {
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  transform-style: preserve-3d;
+}
+.m3d-face {
+  position: absolute;
+  backface-visibility: hidden;
+}
+/* Front: gold moulding around an ivory mat with the J monogram */
+.m3d-front {
+  inset: 0;
+  transform: translateZ(calc(var(--d) / 2));
+  padding: 7px;
+  background: linear-gradient(135deg, #8c6a2e 0%, #f1dda8 22%, #b08a45 45%, #e9cf8f 70%, #8c6a2e 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 246, 220, 0.6);
+  overflow: hidden;
+}
+.m3d-mat {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  background: radial-gradient(80% 60% at 50% 35%, #fffaf0, #efe6d6);
+  box-shadow: inset 0 2px 6px rgba(90, 70, 30, 0.35);
+}
+.m3d-mat img {
+  width: 70%;
+  height: auto;
+  filter: drop-shadow(0 4px 6px rgba(111, 90, 55, 0.35));
+  pointer-events: none;
+}
+.m3d-word {
+  font-family: var(--fb);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  color: #6b4f1d;
+}
+.m3d-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 250, 235, 0.55) 45%, transparent 60%);
+  transform: translateX(-120%);
+  animation: m3d-sheen 7s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes m3d-sheen {
+  45%,
+  100% {
+    transform: translateX(-120%);
+  }
+  65% {
+    transform: translateX(120%);
+  }
+}
+/* Back: espresso with the wordmark stamped in gold */
+.m3d-back {
+  inset: 0;
+  transform: rotateY(180deg) translateZ(calc(var(--d) / 2));
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 6px;
+  background: #241d17;
+  border: 6px solid #b08a45;
+  color: #e5d0a0;
+}
+.m3d-back span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+}
+.m3d-back small {
+  font-family: var(--fd);
+  font-style: italic;
+  font-size: 10px;
+  color: #c9b48a;
+  padding: 0 8px;
+}
+/* Edges: the frame's thickness, in brushed gold */
+.m3d-left,
+.m3d-right {
+  width: var(--d);
+  height: var(--h);
+  left: calc(50% - var(--d) / 2);
+  background: linear-gradient(180deg, #7a5c26, #c9a55c 40%, #8c6a2e);
+}
+.m3d-left {
+  transform: rotateY(-90deg) translateZ(calc(var(--w) / 2));
+}
+.m3d-right {
+  transform: rotateY(90deg) translateZ(calc(var(--w) / 2));
+}
+.m3d-top,
+.m3d-bottom {
+  width: var(--w);
+  height: var(--d);
+  top: calc(50% - var(--d) / 2);
+  background: linear-gradient(90deg, #7a5c26, #e1c582 50%, #7a5c26);
+}
+.m3d-top {
+  transform: rotateX(90deg) translateZ(calc(var(--h) / 2));
+}
+.m3d-bottom {
+  transform: rotateX(-90deg) translateZ(calc(var(--h) / 2));
+}
+.m3d-shadow {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  width: 70%;
+  height: 14px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(60, 45, 20, 0.32), transparent);
+  animation: m3d-shadow 7s ease-in-out infinite;
+}
+@keyframes m3d-shadow {
+  50% {
+    transform: translateX(-50%) scale(0.86);
+    opacity: 0.7;
+  }
+}
+.m3d-ring {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 92%;
+  height: 30px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  border: 1px solid rgba(185, 154, 104, 0.45);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .m3d-sway {
+    animation: none;
+    transform: rotateY(-18deg) rotateX(4deg);
+  }
+  .m3d-sheen,
+  .m3d-shadow {
+    animation: none;
+  }
+}
+@media (min-width: 1000px) {
+  .m3d.sf-hero-3d {
+    display: none;
+  }
+}
+
+/* ── Wordmark: larger and firmer, gold-foil on hover ─────────────────── */
+.header .logo b {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: #1c1612;
+}
+.header .logo small {
+  font-size: 12.5px;
+  color: #6e6255;
+}
+@media (max-width: 899px) {
+  .header .logo b {
+    font-size: 21px;
+    letter-spacing: 0.26em;
+  }
+  .header .logo-mark {
+    height: 40px;
+  }
+}
+@media (hover: hover) {
+  .header .logo:hover b {
+    background: linear-gradient(100deg, #1c1612 30%, #b08a45 45%, #f1dda8 50%, #b08a45 55%, #1c1612 70%) 0 0 / 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: wm-foil 1.2s var(--ease) forwards;
+  }
+}
+@keyframes wm-foil {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+/* ── Gift Finder in the bottom bar: gold, gently alive ───────────────── */
+.bottom-nav .bn-gift {
+  color: #7e5f26;
+}
+.bn-gift-ic {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 30px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f6ead0, #e7d3a6);
+  box-shadow: 0 0 0 1px rgba(176, 138, 69, 0.45), 0 4px 10px rgba(176, 138, 69, 0.25);
+  margin-top: -2px;
+}
+.bn-gift-ic svg {
+  animation: bn-gift 5s ease-in-out infinite;
+  transform-origin: 50% 80%;
+}
+@keyframes bn-gift {
+  0%,
+  78%,
+  100% {
+    transform: none;
+  }
+  82% {
+    transform: rotate(-12deg) scale(1.08);
+  }
+  86% {
+    transform: rotate(10deg) scale(1.08);
+  }
+  90% {
+    transform: rotate(-6deg);
+  }
+  94% {
+    transform: rotate(3deg);
+  }
+}
+.bn-spark {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #c9a55c;
+  opacity: 0;
+  animation: bn-spark 5s ease-out infinite;
+}
+.bn-spark.s1 {
+  top: -2px;
+  left: 6px;
+}
+.bn-spark.s2 {
+  top: -5px;
+  right: 8px;
+  animation-delay: 0.12s;
+}
+.bn-spark.s3 {
+  top: 4px;
+  right: -2px;
+  animation-delay: 0.22s;
+}
+@keyframes bn-spark {
+  0%,
+  80% {
+    opacity: 0;
+    transform: translateY(0) scale(0.4);
+  }
+  86% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.4);
+  }
+}
+.bottom-nav .bn-gift.active {
+  color: #1c1612;
+}
+.bottom-nav .bn-gift.active .bn-gift-ic {
+  background: linear-gradient(135deg, #8c6a2e, #c9a55c 50%, #b08a45);
+  color: #fffaf0;
+}
+.bottom-nav .bn-gift.active::before {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bn-gift-ic svg,
+  .bn-spark {
+    animation: none;
+  }
+  .header .logo:hover b {
+    animation: none;
+    background-position: 50% 0;
+  }
+}

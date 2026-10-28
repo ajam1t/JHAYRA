@@ -39,8 +39,8 @@ export const STYLES = [
 ];
 
 export const TYPES = [
-  { id: 'ready', label: 'Ready-made artwork', icon: 'image', hint: 'Designs to hang as they are' },
-  { id: 'personal', label: 'Personalised artwork', icon: 'camera', hint: 'With their photos, names or dates' },
+  { id: 'ready', label: 'Ready-made artwork', icon: 'image', hint: 'Ready to hang' },
+  { id: 'personal', label: 'Personalised artwork', icon: 'camera', hint: 'Photos, names, dates' },
   { id: 'unsure', label: 'Not sure', icon: 'question', hint: 'Show me both' },
 ];
 

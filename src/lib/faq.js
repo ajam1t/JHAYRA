@@ -2,7 +2,7 @@
 // refund, replacement and payment pages). Used by Help & FAQ and the homepage.
 export const FAQ = [
   ['How long does delivery take?', 'Every piece is made to order: 1–2 business days to craft and quality-check, then 5–7 business days in transit. Delivery is free to every pincode we serve.'],
-  ['What if my order arrives damaged or incorrect?', 'Message us on WhatsApp within 48 hours of delivery with your order number and photos or a short video. Once verified, we send a replacement at no cost.'],
+  ['What if my order arrives damaged or incorrect?', 'Message us on WhatsApp within 48 hours of delivery with your order number and photos or a short video. Our Replacement Policy explains exactly what happens next.'],
   ['How do I track my order?', 'We send tracking on WhatsApp and SMS once your parcel ships. Your recent orders are also listed on the “My orders” page on the device you ordered from.'],
   ['Will my photo print well?', 'Our editors check every photo’s resolution the moment you upload it and tell you which sizes will look sharp. Most phone photos print beautifully up to 18 × 24 inches.'],
   ['Can I see a proof before printing?', 'The live preview is exactly what we print. For personalised orders you can also ask for a final proof on WhatsApp before production starts.'],
@@ -20,7 +20,6 @@ export const HOME_FAQ = [
   ['Can I personalise a design with my own photo?', 'Yes. Upload a photo, then crop and position it, add names, dates or a message where the design allows, and choose the size and frame. The live preview is exactly what we print.'],
   ['How does Visualise work?', 'Take a photo of your wall with your phone or upload one — or use one of our rooms — then choose an artwork, size and frame and place it to scale. It’s a photo preview to help you decide, not live AR.'],
   ['What are the production and delivery timelines?', 'Every piece is made to order: 1–2 business days to craft and quality-check, then 5–7 business days in transit. Delivery is free to every pincode we serve in India.'],
-  ['What happens if my order arrives damaged?', 'Message us on WhatsApp within 48 hours of delivery with your order number and photos or a short video. Once verified, we send a replacement at no cost.'],
-  ['What is the return or refund policy?', 'Every piece is made for one customer, so we can’t accept returns or refunds for a change of mind. If your order arrives damaged, defective or doesn’t match the personalisation you confirmed, we replace it free.'],
+  ['What is the return or refund policy?', 'Every piece is made for one customer, so we can’t accept returns or refunds for a change of mind. For damaged or incorrect orders, see our Refund and Replacement policies.'],
   ['Which payment methods are accepted?', 'Payments are processed securely by Razorpay — UPI, cards, netbanking and wallets. We never see or store your card details.'],
 ];

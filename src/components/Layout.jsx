@@ -43,7 +43,7 @@ function Logo() {
 function Announce() {
   const festival = useFestival();
   const msgs = [
-    ...(festival?.banner ? [festival.banner] : festival?.offer && festival?.coupon ? [`${festival.name}: ${festival.offer} — code ${festival.coupon}`] : []),'Free delivery across India — on every order', `Trusted by ${BRAND.homes} homes since ${BRAND.since}`, 'Handcrafted to order in India', 'Free replacement if it arrives damaged'];
+    ...(festival?.banner ? [festival.banner] : festival?.offer && festival?.coupon ? [`${festival.name}: ${festival.offer} — code ${festival.coupon}`] : []),'Free delivery across India — on every order', `Trusted by ${BRAND.homes} homes since ${BRAND.since}`, 'Handcrafted to order in India'];
   return (
     <div className="announce" aria-label="Store announcements">
       <div className="announce-track">
@@ -60,28 +60,23 @@ function Announce() {
   );
 }
 
+// The branding bar stays fixed while you scroll: menu, logo and tagline only.
+// Search and cart live in the bottom bar and menu on phones; desktop keeps
+// them as quiet text links beside the main navigation.
 function Header({ onMenu, menuOpen }) {
   const { count, setDrawerOpen } = useCart();
-  const { wish, setSearchOpen } = useShop();
+  const { setSearchOpen } = useShop();
   const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
-  const last = useRef(0);
 
   useEffect(() => {
-    const on = () => {
-      const y = window.scrollY;
-      setScrolled(y > 8);
-      setHidden(y > 400 && y > last.current + 4);
-      if (y < last.current - 4 || y < 400) setHidden(false);
-      last.current = y;
-    };
+    const on = () => setScrolled(window.scrollY > 8);
     on();
     window.addEventListener('scroll', on, { passive: true });
     return () => window.removeEventListener('scroll', on);
   }, []);
 
   return (
-    <header className={`header ${scrolled ? 'scrolled' : ''} ${hidden ? 'hide' : ''}`}>
+    <header className={`header ${scrolled ? 'scrolled' : ''}`}>
       <div className="wrap">
         <div className="header-start">
           <button className="icon-btn header-menu" onClick={onMenu} aria-label="Open menu" aria-haspopup="dialog" aria-expanded={menuOpen} aria-controls="site-menu">
@@ -96,17 +91,12 @@ function Header({ onMenu, menuOpen }) {
             </NavLink>
           ))}
         </nav>
-        <div className="header-actions">
-          <button className="icon-btn" onClick={() => setSearchOpen(true)} aria-label="Search (Ctrl K)">
-            <Icon name="search" />
+        <div className="header-actions header-text-actions">
+          <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search (Ctrl K)">
+            Search
           </button>
-          <Link to="/wishlist" className="icon-btn hide-sm" aria-label={`Wishlist, ${wish.length} items`}>
-            <Icon name="heart" />
-            {wish.length > 0 && <span className="badge">{wish.length}</span>}
-          </Link>
-          <button className="icon-btn" onClick={() => setDrawerOpen(true)} aria-label={`Cart, ${count} items`}>
-            <Icon name="bag" />
-            <CountBadge count={count} />
+          <button type="button" onClick={() => setDrawerOpen(true)} aria-label={`Cart, ${count} items`}>
+            Cart{count > 0 ? ` (${count})` : ''}
           </button>
         </div>
       </div>
@@ -138,6 +128,7 @@ function CountBadge({ count }) {
 }
 
 function MenuSheet({ onClose, returnFocus }) {
+  const { setSearchOpen } = useShop();
   const panel = useRef(null);
   // Focus the panel, trap Tab inside it, close on Escape, restore focus on close.
   useEffect(() => {
@@ -183,6 +174,9 @@ function MenuSheet({ onClose, returnFocus }) {
           </button>
         </div>
         <div className="sheet-body">
+          <button type="button" className="menu-search" onClick={() => (onClose(), setSearchOpen(true))}>
+            <Icon name="search" size={18} /> Search art, designs and gifts
+          </button>
           <Link to="/" className="menu-home" onClick={onClose}>
             Home <Icon name="arrow" size={18} />
           </Link>
@@ -224,12 +218,24 @@ function BottomNav() {
   if (pathname.startsWith('/checkout') || /^\/customize\/.+/.test(pathname)) return null;
   return (
     <nav className="bottom-nav" aria-label="Quick">
-      {BOTTOM.map(([to, label, icon, end]) => (
-        <NavLink key={to} to={to} end={end}>
-          <Icon name={icon} size={21} />
-          <span>{label}</span>
-        </NavLink>
-      ))}
+      {BOTTOM.map(([to, label, icon, end]) =>
+        to === '/gift-finder' ? (
+          <NavLink key={to} to={to} className="bn-gift">
+            <span className="bn-gift-ic" aria-hidden="true">
+              <Icon name={icon} size={21} />
+              <i className="bn-spark s1" />
+              <i className="bn-spark s2" />
+              <i className="bn-spark s3" />
+            </span>
+            <span>{label}</span>
+          </NavLink>
+        ) : (
+          <NavLink key={to} to={to} end={end}>
+            <Icon name={icon} size={21} />
+            <span>{label}</span>
+          </NavLink>
+        ),
+      )}
       <button type="button" className={drawerOpen || pathname === '/cart' ? 'active' : ''} onClick={() => setDrawerOpen(true)} aria-label={`Cart, ${count} items`}>
         <Icon name="bag" size={21} />
         <span>Cart</span>

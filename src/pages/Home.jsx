@@ -10,6 +10,7 @@ import TemplateCanvas from '../components/TemplateCanvas';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard';
 import LazyMount from '../components/LazyMount';
 import Founder from '../components/Founder';
+import Monogram3D from '../components/Monogram3D';
 import { Seo } from '../lib/seo';
 import { useCategories, useOptionSummary, useProducts, useSamplePhoto } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
@@ -256,22 +257,24 @@ function Hero({ products }) {
         <p className="lead sf-in" style={{ '--d': '.25s' }}>
           Discover thoughtfully designed wall art and personalised frames that make your spaces feel unmistakably yours.
         </p>
-        <div className="row gh-ctas sf-in" style={{ '--d': '.32s' }}>
-          <Link to="/shop" className="btn btn-gold btn-lg sheen">
-            Shop Wall Art <Icon name="arrow" size={18} />
-          </Link>
-          <Link to="/customize" className="btn btn-ghost btn-lg">
-            Create Your Own
-          </Link>
+        <div className="sf-hero-act">
+          <div>
+          <div className="row gh-ctas sf-in" style={{ '--d': '.32s' }}>
+            <Link to="/shop" className="btn btn-gold btn-lg sheen">
+              Shop Wall Art <Icon name="arrow" size={18} />
+            </Link>
+            <Link to="/customize" className="btn btn-ghost btn-lg">
+              Create Your Own
+            </Link>
+          </div>
+          <ul className="sf-hero-facts sf-in" style={{ '--d': '.4s' }}>
+            <li>
+              <Icon name="truck" size={16} /> Free delivery across India
+            </li>
+          </ul>
+          </div>
+          <Monogram3D className="sf-hero-3d sf-in" />
         </div>
-        <ul className="sf-hero-facts sf-in" style={{ '--d': '.4s' }}>
-          <li>
-            <Icon name="truck" size={16} /> Free delivery across India
-          </li>
-          <li>
-            <Icon name="refresh" size={16} /> Free replacement if damaged
-          </li>
-        </ul>
       </div>
       <div className="gh-room">
         <div className="gh-room-inner" ref={room}>
@@ -741,7 +744,7 @@ function WhyJhayra({ products, categories }) {
     ['wall', 'Sizes and frame finishes', 'A4 to 24 × 36 inches, framed in black, gold or brown.'],
     ['shield', 'Quality materials', 'Premium PS moulding, a high-definition print and a protective front sheet. Ready to hang.'],
     ['truck', 'Free delivery across India', 'Made to order in 1–2 business days, delivered in 5–7.'],
-    ['refresh', 'Clear, honest support', 'Free replacement if it arrives damaged. Real people on WhatsApp.'],
+    ['refresh', 'Clear, honest support', 'Real people on WhatsApp to help with sizes, frames, gifts and orders.'],
   ];
   return (
     <section className="section sf-why">
