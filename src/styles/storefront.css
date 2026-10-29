@@ -2939,7 +2939,12 @@
 }
 .hs-duo-grid {
   display: grid;
-  gap: 16px;
+  gap: clamp(26px, 4vw, 20px);
+}
+.hs-duo-grid > div {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
 }
 @media (min-width: 1000px) {
   .hs-duo-grid {
@@ -4359,15 +4364,13 @@
 @media (max-width: 759px) {
   .cs {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-    grid-template-areas: 'kick kick' 'title title' 'lead lead' 'stage steps' 'cta cta';
+    grid-template-areas: 'lead lead' 'stage steps' 'cta cta';
     gap: 0 12px;
     padding: 18px 16px;
   }
   .cs-copy {
     display: contents;
   }
-  .cs-copy .hs-kick { grid-area: kick; }
-  .cs-copy .hs-title { grid-area: title; margin: 4px 0 6px; font-size: 26px; }
   .cs-copy > p { grid-area: lead; margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; }
   .cs-steps { grid-area: steps; align-self: center; margin: 0; gap: 2px; }
   .cs-copy > .btn { grid-area: cta; margin-top: 14px; width: 100%; }
@@ -4808,17 +4811,11 @@
   .rv {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: 'title title' 'ring stars' 'ring sub' 'fan fan';
+    grid-template-areas: 'ring stars' 'ring sub' 'fan fan';
     column-gap: 16px;
     align-items: center;
     padding: 20px 16px 14px;
     text-align: left;
-  }
-  .rv .hs-title {
-    grid-area: title;
-    margin-bottom: 14px;
-    text-align: center;
-    font-size: 26px;
   }
   .rv-score {
     grid-area: ring;
@@ -4870,4 +4867,8 @@
   .rv-note {
     display: none;
   }
+}
+.hs-duo-grid .hs-head {
+  min-height: 44px;
+  align-items: center;
 }

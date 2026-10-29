@@ -615,8 +615,6 @@ function CustomStudio() {
   return (
     <div className="cs" ref={box} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
       <div className="cs-copy">
-        <span className="hs-kick">Make it personal</span>
-        <h2 className="hs-title">Custom Art for Your Story</h2>
         <p>Turn your photos, special places and meaningful moments into framed wall art. The preview is exactly what we print.</p>
         <ol className="cs-steps">
           {CS_STEPS.map(([ic, t, d], i) => (
@@ -680,41 +678,53 @@ function CustomAndReviews({ products }) {
   return (
     <section className="hs hs-duo">
       <div className="wrap hs-duo-grid">
-        <CustomStudio />
-        <div className="hs-reviews rv">
-          <h2 className="hs-title">What Our Customers Say</h2>
-          {total > 0 ? (
-            <>
-              <div className="rv-score">
-                <svg className="rv-ring" viewBox="0 0 120 120" aria-hidden="true">
-                  <circle cx="60" cy="60" r="52" className="rv-track" />
-                  <circle cx="60" cy="60" r="52" className="rv-fill" style={{ '--v': avg / 5 }} />
-                </svg>
-                <span className="rv-num">
-                  <b>{avg.toFixed(1)}</b>
-                  <small>out of 5</small>
-                </span>
-              </div>
-              <div className="rv-stars" aria-label={`Average ${avg.toFixed(1)} out of 5`}>
-                <span style={{ '--pct': `${(avg / 5) * 100}%` }}>★★★★★</span>
-              </div>
-              <p className="rv-sub">
-                from <b>{total.toLocaleString('en-IN')}</b> product ratings · trusted by <b>{BRAND.homes}</b> homes since {BRAND.since}
-              </p>
-              <div className="rv-fan">
-                {top.map((p, k) => (
-                  <Link key={p.id} to={`/product/${p.id}`} className="rv-card" style={{ '--k': k - 1 }}>
-                    <Frame src={p.thumbnail} alt={p.name} ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false} sizes="(max-width: 760px) 30vw, 130px" />
-                    <span className="rv-badge">★ {Number(p.rating).toFixed(1)}</span>
-                    <span className="rv-name">{p.name}</span>
-                  </Link>
-                ))}
-              </div>
-              <small className="rv-note">Top-rated designs</small>
-            </>
-          ) : (
-            <p className="muted">Ratings appear here as customers review their frames.</p>
-          )}
+        <div>
+          <div className="hs-head">
+            <h2 className="hs-title">Custom Art for Your Story</h2>
+            <Link to="/customize" className="hs-all">
+              Create yours <Icon name="arrow" size={14} />
+            </Link>
+          </div>
+          <CustomStudio />
+        </div>
+        <div>
+          <div className="hs-head">
+            <h2 className="hs-title">What Our Customers Say</h2>
+          </div>
+          <div className="hs-reviews rv">
+            {total > 0 ? (
+              <>
+                <div className="rv-score">
+                  <svg className="rv-ring" viewBox="0 0 120 120" aria-hidden="true">
+                    <circle cx="60" cy="60" r="52" className="rv-track" />
+                    <circle cx="60" cy="60" r="52" className="rv-fill" style={{ '--v': avg / 5 }} />
+                  </svg>
+                  <span className="rv-num">
+                    <b>{avg.toFixed(1)}</b>
+                    <small>out of 5</small>
+                  </span>
+                </div>
+                <div className="rv-stars" aria-label={`Average ${avg.toFixed(1)} out of 5`}>
+                  <span style={{ '--pct': `${(avg / 5) * 100}%` }}>★★★★★</span>
+                </div>
+                <p className="rv-sub">
+                  from <b>{total.toLocaleString('en-IN')}</b> product ratings · trusted by <b>{BRAND.homes}</b> homes since {BRAND.since}
+                </p>
+                <div className="rv-fan">
+                  {top.map((p, k) => (
+                    <Link key={p.id} to={`/product/${p.id}`} className="rv-card" style={{ '--k': k - 1 }}>
+                      <Frame src={p.thumbnail} alt={p.name} ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false} sizes="(max-width: 760px) 30vw, 130px" />
+                      <span className="rv-badge">★ {Number(p.rating).toFixed(1)}</span>
+                      <span className="rv-name">{p.name}</span>
+                    </Link>
+                  ))}
+                </div>
+                <small className="rv-note">Top-rated designs</small>
+              </>
+            ) : (
+              <p className="muted">Ratings appear here as customers review their frames.</p>
+            )}
+          </div>
         </div>
       </div>
     </section>
