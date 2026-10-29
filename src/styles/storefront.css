@@ -3854,3 +3854,18 @@
 .sf-hero .sf-hero-title {
   margin-top: 0;
 }
+/* Hero room: real living-room photograph, frames hung above the sofa */
+.sf-hero .room.room-hero {
+  aspect-ratio: 1024 / 922;
+  height: auto;
+  min-height: 0;
+  background-color: #efe4cf;
+}
+.sf-hero .gh-room {
+  min-height: 0;
+  align-self: center;
+  background: #f1e6d2;
+}
+.sf-hero .room-hero .room-frame .frame {
+  filter: drop-shadow(0 10px 14px rgba(70, 50, 20, 0.28));
+}

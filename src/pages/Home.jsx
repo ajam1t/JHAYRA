@@ -231,14 +231,20 @@ function Hero({ products }) {
   // True relative scale: zoom out when larger sizes are chosen so all three still fit.
   const totalW = list.reduce((a, s) => a + sizeOf(s.size).w, 0) + GAP_IN * Math.max(0, list.length - 1);
   const maxH = Math.max(18, ...list.map((s) => sizeOf(s.size).h));
-  const zoom = Math.min(1.9, 118 / Math.max(totalW, 1), 52 / maxH);
+  // Photo room (public/rooms/hero-living.webp, 1024×922): the sofa spans 84%
+  // of the width and its back sits 61% down; frames hang just above it.
+  const SOFA_W = 0.84;
+  const ASPECT = 1024 / 922;
+  const zoom = Math.min(1.7, 90 / Math.max(totalW, 1), 38 / maxH);
+  const inH = (SOFA_W / 84) * zoom * ASPECT; // one inch as a share of the scene height
+  const hangY = 0.56 - (maxH * inH) / 2;
   let x = -totalW / 2;
   const frames = list.map((s) => {
     const sz = sizeOf(s.size);
     const dx = x + sz.w / 2;
     x += sz.w + GAP_IN;
     const p = prodOf(s);
-    return { key: s.key, src: s.photo?.url || p?.thumbnail, wIn: sz.w, hIn: sz.h, dxIn: dx, colour: COLOURS[s.colour].hex, hotspot: `Change ${s.photo ? 'your photo' : p?.name || 'artwork'}` };
+    return { key: s.key, src: s.photo?.url || p?.thumbnail, wIn: sz.w, hIn: sz.h, dxIn: dx, y: Math.max(0.08, hangY + ((maxH - sz.h) * inH) / 2), colour: COLOURS[s.colour].hex, hotspot: `Change ${s.photo ? 'your photo' : p?.name || 'artwork'}` };
   });
   const cur = list.find((s) => s.key === sel);
   const curP = cur && prodOf(cur);
@@ -319,7 +325,7 @@ function Hero({ products }) {
       </div>
       <div className="gh-room">
         <div className="gh-room-inner" ref={room}>
-          <RoomScene wall={WALL.porcelain} furniture="sofa" frames={frames} groupHeightIn={maxH} zoom={zoom} furnitureWidth={0.6} decor tone="gallery" selected={sel} onFrameClick={(k) => setSel((s) => (s === k ? null : k))} className="room-hero" />
+          <RoomScene photo="/rooms/hero-living.webp" furniture="sofa" frames={frames} zoom={zoom} furnitureWidth={SOFA_W} tone="gallery" selected={sel} onFrameClick={(k) => setSel((s) => (s === k ? null : k))} className="room-hero" />
         </div>
         <div className="gh-hud">
           <span className="gh-hint glass">{cur ? 'Style this frame' : 'Tap any artwork on the wall'}</span>
