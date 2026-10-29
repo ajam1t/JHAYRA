@@ -3947,3 +3947,42 @@
 .hc-swatches button[aria-checked='true'] {
   box-shadow: 0 0 0 1.5px #1c1612;
 }
+/* Heading above the interactive room, matching the other section titles */
+.sf-hero .gh-room {
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+.hx-head {
+  margin: 0;
+  padding-top: clamp(22px, 3vw, 30px);
+  padding-bottom: 14px;
+}
+@media (min-width: 1000px) {
+  .hx-head {
+    padding-left: 0;
+    max-width: none;
+  }
+}
+.sf-hero .gh-room .gh-hud {
+  top: auto;
+}
+.hx-stage {
+  position: relative;
+}
+.sf-hero .gh-room .gh-hud {
+  top: 14px;
+}
+@media (min-width: 1000px) {
+  .hx-head.wrap {
+    padding-left: 28px;
+  }
+}
+@media (min-width: 1000px) {
+  .hx-head {
+    background: transparent;
+  }
+  .sf-hero .gh-room {
+    align-self: start;
+  }
+}

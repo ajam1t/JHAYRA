@@ -324,11 +324,16 @@ function Hero({ products }) {
         </ul>
       </div>
       <div className="gh-room">
-        <div className="gh-room-inner" ref={room}>
-          <RoomScene photo="/rooms/hero-living.webp" furniture="sofa" frames={frames} zoom={zoom} furnitureWidth={SOFA_W} tone="gallery" selected={sel} onFrameClick={(k) => setSel((s) => (s === k ? null : k))} className="room-hero" />
+        <div className="hs-head hx-head wrap">
+          <h2 className="hs-title">Interactive Wall Art Studio</h2>
         </div>
-        <div className="gh-hud">
-          <span className="gh-hint glass">{cur ? 'Style this frame' : 'Tap any artwork on the wall'}</span>
+        <div className="hx-stage">
+          <div className="gh-room-inner" ref={room}>
+            <RoomScene photo="/rooms/hero-living.webp" furniture="sofa" frames={frames} zoom={zoom} furnitureWidth={SOFA_W} tone="gallery" selected={sel} onFrameClick={(k) => setSel((s) => (s === k ? null : k))} className="room-hero" />
+          </div>
+          <div className="gh-hud">
+            <span className="gh-hint glass">{cur ? 'Style this frame' : 'Tap any artwork on the wall'}</span>
+          </div>
         </div>
         {cur && (
           <div className="hx-panel glass" role="dialog" aria-label="Style this frame">
