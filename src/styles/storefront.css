@@ -4787,7 +4787,7 @@
   padding-top: 13px;
   padding-bottom: 12px;
 }
-/* Madhubani-style double-line border with a dotted band, top and bottom */
+/* Madhubani-style double-line border, top and bottom */
 .mith-border,
 .mith-strip::after {
   content: '';
@@ -4797,7 +4797,6 @@
   height: 6px;
   pointer-events: none;
   background:
-    radial-gradient(circle, #e8a828 0 1.3px, transparent 1.6px) 0 50% / 8px 6px repeat-x,
     linear-gradient(#d4472c, #d4472c) 0 0 / 100% 1px no-repeat,
     linear-gradient(#d4472c, #d4472c) 0 100% / 100% 1px no-repeat;
 }
