@@ -5320,3 +5320,37 @@
 @media (prefers-reduced-motion: reduce) {
   .hx-facts::before, .hx-facts li, .hxf-ic::after, .hx-facts svg { animation: none !important; }
 }
+/* Delivery badge: the van keeps gently driving — soft bounce, speed lines behind */
+.hxf-truck .hxf-ic {
+  overflow: hidden;
+}
+.hxf-truck .hxf-ic svg {
+  animation: hxf-drive 1.2s var(--ease) 0.7s both, hxf-bump 0.5s ease-in-out 1.9s infinite;
+}
+.hxf-truck .hxf-ic::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 15px;
+  width: 9px;
+  height: 9px;
+  background:
+    linear-gradient(#b08a45, #b08a45) 0 0 / 6px 1.5px no-repeat,
+    linear-gradient(#b08a45, #b08a45) 2px 4px / 7px 1.5px no-repeat,
+    linear-gradient(#b08a45, #b08a45) 0 8px / 5px 1.5px no-repeat;
+  border-radius: 1px;
+  opacity: 0;
+  animation: hxf-wind 0.9s linear 1.9s infinite;
+}
+@keyframes hxf-bump {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-0.8px); }
+}
+@keyframes hxf-wind {
+  0% { opacity: 0; transform: translateX(4px); }
+  30% { opacity: 0.8; }
+  100% { opacity: 0; transform: translateX(-5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hxf-truck .hxf-ic::before { animation: none; }
+}
