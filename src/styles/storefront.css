@@ -5029,3 +5029,23 @@
 .sf-faq.section {
   padding-top: clamp(20px, 3vw, 40px);
 }
+
+/* ── Homepage rhythm: one consistent gap above every section heading ── */
+:root {
+  --hs-gap: clamp(30px, 4.5vw, 52px);
+}
+.hs,
+.sf-best.section {
+  padding-top: var(--hs-gap);
+}
+.hs-duo,
+.sf-best.section {
+  padding-bottom: 0;
+}
+.hs-duo-grid {
+  gap: var(--hs-gap) 20px;
+}
+.sf-best .hs-head,
+.sf-best .section-head {
+  margin-bottom: 16px;
+}
