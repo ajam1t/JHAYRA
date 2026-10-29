@@ -526,32 +526,6 @@ function FeaturedCollections({ products }) {
   );
 }
 
-/* ── Brand benefits (each one stated in our policies) ───────────────────── */
-const BENEFITS = [
-  ['shield', 'Premium materials', 'PS moulding, HD print, front sheet'],
-  ['brush', 'Handcrafted to order', 'Made in India, one at a time'],
-  ['box', 'Packed securely', 'Quality-checked before dispatch'],
-  ['truck', 'Free delivery', 'Across India, 5–7 business days'],
-  ['lock', 'Secure payments', 'UPI, cards, netbanking'],
-];
-function Benefits() {
-  return (
-    <section className="hs-benefits" aria-label="Why shop with JHAYRA">
-      <ul className="wrap">
-        {BENEFITS.map(([ic, a, b]) => (
-          <li key={a}>
-            <Icon name={ic} size={26} stroke={1.4} />
-            <span>
-              <b>{a}</b>
-              <small>{b}</small>
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 /* ── Custom art + customer ratings ──────────────────────────────────────── */
 function CustomAndReviews({ products }) {
   const rated = (products || []).filter((p) => p.thumbnail && p.rating && p.review_count);
@@ -771,7 +745,6 @@ export default function Home() {
       <LazyMount minHeight={360}>
         <FeaturedCollections products={products} />
       </LazyMount>
-      <Benefits />
       <LazyMount minHeight={520}>
         <CustomAndReviews products={products} />
       </LazyMount>
