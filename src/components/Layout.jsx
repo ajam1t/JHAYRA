@@ -18,12 +18,14 @@ const NAV = [
   ['/shop', 'Shop'],
   ['/customize', 'Create'],
   ['/gift-finder', 'Gift Finder'],
+  ['/celebrations', 'Celebrations'],
 ];
 
 // Hamburger menu, grouped. Every route here exists in App.jsx.
 const MENU = [
   ['Shop', [['/shop', 'All Wall Art'], ['/shop?room=living', 'Living Room'], ['/shop?room=bedroom', 'Bedroom'], ['/shop?room=office', 'Office'], ['/shop?room=dining', 'Dining Room'], ['/customize', 'Personalised Frames']]],
   ['Create', [['/customize', 'Create Your Own Art'], ['/customize/photo', 'Upload Your Photo'], ['/visualise', 'Visualise on Your Wall'], ['/wall-planner', 'Plan a Gallery Wall']]],
+  ['Celebrations', [['/celebrations', 'All Celebrations'], ['/worlds/festivals', 'Festivals'], ['/worlds/wedding', 'Weddings'], ['/customize?moment=anniversary', 'Anniversaries'], ['/customize?moment=birthday', 'Birthdays'], ['/collections/art-for-gifting', 'Gifting']]],
   ['Discover', [['/gift-finder', 'Gift Finder'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/shop?sort=new', 'New Arrivals'], ['/collections', 'Collections'], ['/worlds', 'Worlds'], ['/journal', 'Inspiration Journal']]],
   ['About', [['/about', 'Our Story'], ['/contact', 'Contact'], ['/support', 'Help & FAQs'], ['/orders', 'My Orders'], ['/wishlist', 'Wishlist'], ['/corporate', 'Corporate Gifting']]],
 ];
@@ -237,26 +239,25 @@ function BottomNav() {
   if (pathname.startsWith('/checkout') || /^\/customize\/.+/.test(pathname)) return null;
   return (
     <nav className="bottom-nav" aria-label="Quick">
-      {BOTTOM.map(([to, label, icon, end]) =>
-        to === '/gift-finder' ? (
-          <NavLink key={to} to={to} className="bn-gift">
-            <span className="bn-gift-ic" aria-hidden="true">
-              <Icon name={icon} size={21} />
-              <i className="bn-spark s1" />
-              <i className="bn-spark s2" />
-              <i className="bn-spark s3" />
-            </span>
-            <span>{label}</span>
-          </NavLink>
-        ) : (
-          <NavLink key={to} to={to} end={end}>
+      {BOTTOM.map(([to, label, icon, end]) => (
+        <NavLink key={to} to={to} end={end} className={to === '/gift-finder' ? 'bn-gift' : undefined}>
+          <span className="bn-ic" aria-hidden="true">
             <Icon name={icon} size={21} />
-            <span>{label}</span>
-          </NavLink>
-        ),
-      )}
+            {to === '/gift-finder' && (
+              <>
+                <i className="bn-spark s1" />
+                <i className="bn-spark s2" />
+                <i className="bn-spark s3" />
+              </>
+            )}
+          </span>
+          <span>{label}</span>
+        </NavLink>
+      ))}
       <button type="button" className={drawerOpen || pathname === '/cart' ? 'active' : ''} onClick={() => setDrawerOpen(true)} aria-label={`Cart, ${count} items`}>
-        <Icon name="bag" size={21} />
+        <span className="bn-ic" aria-hidden="true">
+          <Icon name="bag" size={21} />
+        </span>
         <span>Cart</span>
         <CountBadge count={count} />
       </button>

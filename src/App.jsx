@@ -22,6 +22,7 @@ const WallPlanner = lazy(() => import('./pages/WallPlanner'));
 const Visualise = lazy(() => import('./pages/Visualise'));
 const Journal = lazy(() => import('./pages/Journal'));
 const Worlds = lazy(() => import('./pages/Worlds'));
+const Celebrations = lazy(() => import('./pages/Celebrations'));
 const Info = lazy(() => import('./pages/Info'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Admin = lazy(() => import('./admin/Admin'));
@@ -52,6 +53,7 @@ export default function App() {
                     <Route path="visualise" element={<Visualise />} />
                     <Route path="journal" element={<Journal />} />
                     <Route path="journal/:slug" element={<Journal />} />
+                    <Route path="celebrations" element={<Celebrations />} />
                     <Route path="worlds" element={<Worlds />} />
                     <Route path="worlds/:id" element={<Worlds />} />
                     <Route path="product/:id" element={<Product />} />

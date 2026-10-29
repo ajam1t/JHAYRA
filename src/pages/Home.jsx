@@ -1,5 +1,5 @@
-import { Fragment, lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Frame from '../components/Frame';
 import Img from '../components/Img';
 import Icon from '../components/Icon';
@@ -10,9 +10,10 @@ import TemplateCanvas from '../components/TemplateCanvas';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard';
 import LazyMount from '../components/LazyMount';
 import Founder from '../components/Founder';
-import Monogram3D from '../components/Monogram3D';
 import { Seo } from '../lib/seo';
-import { useCategories, useOptionSummary, useProducts, useSamplePhoto } from '../lib/catalog';
+import { useCategories, useOptionSummary, useProducts } from '../lib/catalog';
+import { COLLECTION_MAP, collectionProducts } from '../lib/collections';
+import CampaignBanner from '../components/CampaignBanner';
 import { useTemplates } from '../lib/templates';
 import { ROOMS } from '../lib/rooms';
 import { HOME_FAQ } from '../lib/faq';
@@ -22,9 +23,9 @@ import { useCart } from '../state/cart';
 import { daysUntil, orderBy } from '../lib/festivals';
 import { money, SITE, waLink } from '../lib/site';
 import { BRAND } from '../lib/brand';
-import { MIN_PRICE, SIZES } from '../lib/frames';
+import { COLOURS, MIN_PRICE, SIZES } from '../lib/frames';
+import { photoHandoff, readPhoto } from '../lib/upload';
 
-const LivingStudio = lazy(() => import('../components/LivingStudio'));
 const WALL = Object.fromEntries(WALLS.map((w) => [w.id, w]));
 
 // Splits a headline into words that rise in one after another (CSS only;
@@ -200,22 +201,69 @@ function FestivalPicks({ festival, products, categories }) {
   );
 }
 
-/* ── 2 · Hero: real artwork on a styled wall ───────────────────────────── */
+/* ── Hero: an interactive living room ────────────────────────────── */
 const ART_CATS = ['nature', 'personalized', 'modern-art', 'art-abstract', 'canvas', 'religious', 'home-vastu', 'running-horses', 'photography'];
+// Finishes every product is offered in (catalog fallback: black, gold, brown).
+const HERO_FINISHES = ['Black', 'Gold', 'Brown'];
+const GAP_IN = 3;
+const HERO_FACTS = [
+  ['truck', 'Free delivery', 'across India'],
+  ['brush', 'Handcrafted', 'to order'],
+  ['wall', '4 sizes,', '3 frame finishes'],
+  ['lock', 'Secure', 'payments'],
+];
 
 function Hero({ products }) {
-  const sets = useMemo(() => {
-    const art = (products || []).filter((p) => p.thumbnail && ART_CATS.includes(p.category)).sort((a, b) => b.is_bestseller - a.is_bestseller);
-    const out = [];
-    for (let i = 0; i + 3 <= art.length && out.length < 5; i += 3) out.push(art.slice(i, i + 3));
-    return out;
-  }, [products]);
-  const [n, setN] = useState(0);
+  const navigate = useNavigate();
+  const toast = useToast();
+  const art = useMemo(() => (products || []).filter((p) => p.thumbnail && ART_CATS.includes(p.category)).sort((a, b) => b.is_bestseller - a.is_bestseller), [products]);
+  // Three slots on the wall; each remembers its own artwork, frame and size.
+  const [slots, setSlots] = useState(null);
   const [sel, setSel] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const fileRef = useRef(null);
   const room = useRef(null);
-  const set = sets[n % Math.max(1, sets.length)] || [];
-  const frames = set.map((p, i) => ({ key: p.id, src: p.thumbnail, wIn: 12, hIn: 18, dxIn: (i - 1) * 14.5, colour: '#1C1C1C', hotspot: `About ${p.name}` }));
-  const active = set.find((p) => p.id === sel);
+  useEffect(() => {
+    if (!slots && art.length >= 3) setSlots(art.slice(0, 3).map((p, i) => ({ key: `s${i}`, productId: p.id, photo: null, colour: 'Black', size: 'a3plus' })));
+  }, [art, slots]);
+
+  const list = slots || [];
+  const sizeOf = (slug) => SIZES.find((x) => x.slug === slug) || SIZES[1];
+  const prodOf = (s) => art.find((p) => p.id === s.productId);
+  // True relative scale: zoom out when larger sizes are chosen so all three still fit.
+  const totalW = list.reduce((a, s) => a + sizeOf(s.size).w, 0) + GAP_IN * Math.max(0, list.length - 1);
+  const maxH = Math.max(18, ...list.map((s) => sizeOf(s.size).h));
+  const zoom = Math.min(1.9, 118 / Math.max(totalW, 1), 52 / maxH);
+  let x = -totalW / 2;
+  const frames = list.map((s) => {
+    const sz = sizeOf(s.size);
+    const dx = x + sz.w / 2;
+    x += sz.w + GAP_IN;
+    const p = prodOf(s);
+    return { key: s.key, src: s.photo?.url || p?.thumbnail, wIn: sz.w, hIn: sz.h, dxIn: dx, colour: COLOURS[s.colour].hex, hotspot: `Change ${s.photo ? 'your photo' : p?.name || 'artwork'}` };
+  });
+  const cur = list.find((s) => s.key === sel);
+  const curP = cur && prodOf(cur);
+  const curSize = cur && sizeOf(cur.size);
+  const set = (patch) => setSlots((l) => l.map((s) => (s.key === sel ? { ...s, ...patch } : s)));
+
+  const onPhoto = async (file) => {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const photo = await readPhoto(file);
+      if (photo.noPreview) throw new Error('This photo type can’t be previewed here — open the studio to use it.');
+      set({ photo });
+    } catch (e) {
+      toast(e.message, 'err');
+    } finally {
+      setBusy(false);
+    }
+  };
+  const frameMyPhoto = () => {
+    photoHandoff.set(cur.photo);
+    navigate('/customize/photo');
+  };
 
   // Slight depth on scroll: desktop only, never with reduced motion.
   useEffect(() => {
@@ -225,8 +273,7 @@ function Hero({ products }) {
     const on = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const y = Math.min(window.scrollY, 700);
-        el.style.transform = `translate3d(0, ${y * 0.06}px, 0)`;
+        el.style.transform = `translate3d(0, ${Math.min(window.scrollY, 700) * 0.06}px, 0)`;
       });
     };
     window.addEventListener('scroll', on, { passive: true });
@@ -236,83 +283,116 @@ function Hero({ products }) {
     };
   }, []);
 
-  const step = (d) => {
-    setSel(null);
-    setN((x) => (x + d + sets.length) % sets.length);
-  };
-
   return (
     <section className="gh sf-hero mesh" aria-label="Welcome to JHAYRA">
       <div className="gh-copy wrap">
         <h1 className="gh-title sf-hero-title">
-          <Kinetic text="Crafting Memories" />{' '}
+          <Kinetic text="Your Home." />{' '}
           <em>
-            <Kinetic text="Into Art." start={2} />
+            <Kinetic text="Your Story." start={2} />
           </em>
         </h1>
         <p className="lead sf-in" style={{ '--d': '.25s' }}>
-          Discover thoughtfully designed wall art and personalised frames that make your spaces feel unmistakably yours.
+          Wall art and personalised frames that make your spaces feel unmistakably yours. Tap any frame on the wall to try a different artwork, frame, size — or your own photo.
         </p>
-        <div className="sf-hero-act">
-          <div>
-          <div className="row gh-ctas sf-in" style={{ '--d': '.32s' }}>
-            <Link to="/shop" className="btn btn-gold btn-lg sheen">
-              Shop Wall Art <Icon name="arrow" size={18} />
-            </Link>
-            <Link to="/customize" className="btn btn-ghost btn-lg">
-              Create Your Own
-            </Link>
-          </div>
-          <ul className="sf-hero-facts sf-in" style={{ '--d': '.4s' }}>
-            <li>
-              <Icon name="truck" size={16} /> Free delivery across India
-            </li>
-          </ul>
-          </div>
-          <Monogram3D className="sf-hero-3d sf-in" />
+        <div className="row gh-ctas sf-in" style={{ '--d': '.32s' }}>
+          <Link to="/shop" className="btn btn-gold btn-lg sheen">
+            Shop Wall Art <Icon name="arrow" size={18} />
+          </Link>
+          <Link to="/customize" className="btn btn-ghost btn-lg">
+            Create Your Own
+          </Link>
         </div>
+        <ul className="hx-facts sf-in" style={{ '--d': '.4s' }}>
+          {HERO_FACTS.map(([ic, a, b]) => (
+            <li key={a}>
+              <Icon name={ic} size={20} />
+              <span>
+                {a}
+                <br />
+                {b}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
       <div className="gh-room">
         <div className="gh-room-inner" ref={room}>
-          <RoomScene wall={WALL.porcelain} furniture="sofa" frames={frames} groupHeightIn={18} zoom={1.9} furnitureWidth={0.6} decor tone="gallery" selected={sel} onFrameClick={(k) => setSel((s) => (s === k ? null : k))} className="room-hero" />
+          <RoomScene wall={WALL.porcelain} furniture="sofa" frames={frames} groupHeightIn={maxH} zoom={zoom} furnitureWidth={0.6} decor tone="gallery" selected={sel} onFrameClick={(k) => setSel((s) => (s === k ? null : k))} className="room-hero" />
         </div>
         <div className="gh-hud">
-          <span className="gh-hint glass">{active ? 'Selected artwork' : 'Tap any artwork on the wall'}</span>
-          {sets.length > 1 && (
-            <span className="gh-arrows glass">
-              <button className="icon-btn" aria-label="Previous wall" onClick={() => step(-1)}>
-                <Icon name="arrowL" size={18} />
-              </button>
-              <span className="gh-count" aria-live="polite">
-                {String((n % sets.length) + 1).padStart(2, '0')} / {String(sets.length).padStart(2, '0')}
-              </span>
-              <button className="icon-btn" aria-label="Next wall" onClick={() => step(1)}>
-                <Icon name="arrow" size={18} />
-              </button>
-            </span>
-          )}
+          <span className="gh-hint glass">{cur ? 'Style this frame' : 'Tap any artwork on the wall'}</span>
         </div>
-        {active && (
-          <div className="gh-panel glass" role="dialog" aria-label={active.name}>
-            <div className="gh-panel-img">
-              <Img src={active.thumbnail} alt="" sizes="72px" width={160} />
+        {cur && (
+          <div className="hx-panel glass" role="dialog" aria-label="Style this frame">
+            <div className="hx-top">
+              <div className="grow">
+                <small>{cur.photo ? 'Your photo' : curP?.category?.replace(/-/g, ' ')}</small>
+                <b>{cur.photo ? 'Your memory, framed' : curP?.name}</b>
+                <span>
+                  {curSize.dimensions} · {cur.colour.toLowerCase()} frame · <strong>{money(curSize.price)}</strong>
+                </span>
+              </div>
+              <button className="icon-btn" onClick={() => setSel(null)} aria-label="Close">
+                <Icon name="close" size={16} />
+              </button>
             </div>
-            <div className="grow">
-              <small>{active.category?.replace(/-/g, ' ')}</small>
-              <b>{active.name}</b>
-              <span>from {money(active.price)}</span>
+            <div className="hx-row" role="group" aria-label="Artwork">
+              <span className="hx-lab">Artwork</span>
+              <div className="hx-thumbs">
+                <button type="button" className={`hx-thumb hx-own ${cur.photo ? 'on' : ''}`} onClick={() => fileRef.current?.click()} aria-label="Preview your own photo" disabled={busy}>
+                  {cur.photo ? <img src={cur.photo.url} alt="" /> : <Icon name="camera" size={18} />}
+                  <span>{busy ? '…' : 'Your photo'}</span>
+                </button>
+                {art.slice(0, 14).map((p) => (
+                  <button key={p.id} type="button" className={`hx-thumb ${!cur.photo && cur.productId === p.id ? 'on' : ''}`} aria-pressed={!cur.photo && cur.productId === p.id} aria-label={p.name} onClick={() => set({ productId: p.id, photo: null })}>
+                    <Img src={p.thumbnail} alt="" sizes="52px" width={120} />
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="gh-panel-actions">
-              <Link to={`/product/${active.id}`} className="btn btn-gold btn-sm">
-                View
-              </Link>
-              <Link to={`/visualise?p=${active.id}`} className="btn btn-ghost btn-sm">
-                In my room
-              </Link>
+            <div className="hx-row" role="radiogroup" aria-label="Frame">
+              <span className="hx-lab">Frame</span>
+              <div className="hx-chips">
+                {HERO_FINISHES.map((c) => (
+                  <button key={c} type="button" role="radio" aria-checked={cur.colour === c} className="hx-swatch" onClick={() => set({ colour: c })}>
+                    <span style={{ background: COLOURS[c].hex }} />
+                    {c}
+                  </button>
+                ))}
+              </div>
             </div>
-            <button className="icon-btn gh-panel-x" onClick={() => setSel(null)} aria-label="Close">
-              <Icon name="close" size={16} />
-            </button>
+            <div className="hx-row" role="radiogroup" aria-label="Size">
+              <span className="hx-lab">Size</span>
+              <div className="hx-chips">
+                {SIZES.map((z) => (
+                  <button key={z.slug} type="button" role="radio" aria-checked={cur.size === z.slug} className="hx-size" onClick={() => set({ size: z.slug })}>
+                    <b>{z.name}</b>
+                    <small>{money(z.price)}</small>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="hx-actions">
+              {cur.photo ? (
+                <button type="button" className="btn btn-gold btn-sm" onClick={frameMyPhoto}>
+                  Frame this photo <Icon name="arrow" size={15} />
+                </button>
+              ) : (
+                curP && (
+                  <Link to={`/product/${curP.id}?size=${cur.size}`} className="btn btn-gold btn-sm">
+                    View &amp; buy <Icon name="arrow" size={15} />
+                  </Link>
+                )
+              )}
+              {curP && !cur.photo && (
+                <Link to={`/visualise?p=${curP.id}`} className="btn btn-ghost btn-sm">
+                  On my wall
+                </Link>
+              )}
+            </div>
+            <p className="hx-note">Frames hang to scale against an 84-inch sofa. Your photo stays on this device until you order.</p>
+            <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => (onPhoto(e.target.files?.[0]), (e.target.value = ''))} />
           </div>
         )}
       </div>
@@ -320,61 +400,37 @@ function Hero({ products }) {
   );
 }
 
-/* ── 3 · Shop by room or category ──────────────────────────────────────── */
-function RoomsAndCategories({ products }) {
-  const { active } = useTemplates();
-  const list = (products || []).filter((p) => p.thumbnail);
-  const framesFor = (items, n = 2, wIn = 9.5, hIn = 13) => items.slice(0, n).map((p, k) => ({ key: p.id, src: p.thumbnail, wIn, hIn, dxIn: n > 1 ? (k - (n - 1) / 2) * (wIn + 2.5) : 0, colour: '#1C1C1C' }));
-  const personal = active.find((t) => t.group === 'couple-frame' && (t.slots?.length || 0) >= 2) || active[0];
-  // A five-frame gallery arrangement built from real artwork.
-  const gal = list.slice(6, 11);
-  const gallery = gal.map((p, k) => ({ key: p.id, src: p.thumbnail, wIn: k === 2 ? 12 : 8, hIn: k === 2 ? 16 : 10.5, dxIn: [-20, -10.5, 0, 10.5, 20][k], dyIn: [-2.5, 3.5, 0, -3, 2.5][k], colour: '#1C1C1C' }));
-  const tiles = [
-    ...['living', 'bedroom', 'office', 'dining'].map((id) => {
-      const r = ROOMS.find((x) => x.id === id);
-      const items = list.filter((p) => r.cats.includes(p.category));
-      return { id, label: r.label, sub: r.blurb, to: `/shop?room=${id}`, count: `${items.length} pieces`, scene: <RoomScene wall={WALL[r.wall]} furniture={r.furniture} frames={framesFor(items)} groupHeightIn={13} zoom={2.1} furnitureWidth={0.78} tone="gallery" className="room-mini" /> };
-    }),
-    {
-      id: 'personal',
-      label: 'Personalised photo frames',
-      sub: 'Your photos, names and dates',
-      to: '/customize',
-      count: `${active.length} designs`,
-      scene: (
-        <div className="env-solo">
-          {personal && (
-            <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false} mat>
-              <TemplateCanvas template={personal} mini />
-            </Frame>
-          )}
-        </div>
-      ),
-    },
-    { id: 'gallery', label: 'Gallery walls', sub: 'Plan a wall true to scale', to: '/wall-planner', count: 'Free planner', scene: <RoomScene wall={WALL.stone} furniture="console" frames={gallery} groupHeightIn={16} zoom={1.7} furnitureWidth={0.7} tone="gallery" className="room-mini" /> },
-  ];
+/* ── Shop by category: round artwork thumbnails from live categories ──── */
+function ShopByCategory({ products, categories }) {
+  const art = (products || []).filter((p) => p.thumbnail);
+  const cats = (categories || [])
+    .map((c) => {
+      const items = art.filter((p) => p.category === c.slug);
+      const pick = items.find((p) => p.is_bestseller) || items[0];
+      return pick && { slug: c.slug, name: c.name, img: pick.thumbnail, n: items.length };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 11);
+  if (!cats.length) return <div style={{ minHeight: 220 }} />;
+  const items = [...cats.slice(0, 6), { slug: 'custom', name: 'Custom Art', img: '/samples/couple-1.webp', to: '/customize' }, ...cats.slice(6)];
   return (
-    <section className="section sf-rooms">
+    <section className="hs hs-cats">
       <div className="wrap">
-        <SectionHead eyebrow="Shop by room or category" title="Art for every" em="room you live in.">
-          <Link to="/shop" className="link">
-            Shop all wall art <Icon name="arrow" size={16} />
+        <div className="hs-head">
+          <h2 className="hs-title">Shop by Category</h2>
+          <Link to="/shop" className="hs-all">
+            View all <Icon name="arrow" size={14} />
           </Link>
-        </SectionHead>
-        <div className="sf-room-grid">
-          {tiles.map((t, i) => (
-            <Reveal key={t.id} as={Link} to={t.to} className="env sf-tile" delay={(i % 3) * 0.06}>
-              <div className="env-scene">{t.scene}</div>
-              <div className="env-foot">
-                <span>
-                  <b>{t.label}</b>
-                  <small>{t.sub}</small>
-                </span>
-                <span className="sf-tile-n">
-                  {t.count} <Icon name="arrow" size={14} />
-                </span>
-              </div>
-            </Reveal>
+        </div>
+        <div className="hs-scroll hs-cat-row">
+          {items.map((c) => (
+            <Link key={c.slug} to={c.to || `/shop?category=${c.slug}`} className="hs-cat">
+              <span className="hs-cat-img">
+                <Img src={c.img} alt="" sizes="120px" width={260} />
+              </span>
+              <span className="hs-cat-name">{c.name}</span>
+            </Link>
           ))}
         </div>
       </div>
@@ -382,7 +438,203 @@ function RoomsAndCategories({ products }) {
   );
 }
 
-/* ── 4 · Bestsellers & trending ────────────────────────────────────────── */
+/* ── Shop by room: large room scenes that fill their cards ─────────────── */
+const ROOM_ORDER = ['living', 'bedroom', 'dining', 'office', 'pooja', 'kids'];
+function ShopByRoom({ products }) {
+  const art = (products || []).filter((p) => p.thumbnail);
+  return (
+    <section className="hs hs-rooms">
+      <div className="wrap">
+        <div className="hs-head">
+          <h2 className="hs-title">Shop by Room</h2>
+          <Link to="/room-inspiration" className="hs-all">
+            View all <Icon name="arrow" size={14} />
+          </Link>
+        </div>
+        <div className="hs-scroll hs-room-row">
+          {ROOM_ORDER.map((id) => {
+            const r = ROOMS.find((x) => x.id === id);
+            const items = art.filter((p) => r.cats.includes(p.category));
+            const big = items.slice(0, 3);
+            const frames = big.map((p, k) => ({ key: p.id, src: p.thumbnail, wIn: k === 1 ? 12 : 9.5, hIn: k === 1 ? 16 : 13, dxIn: (k - 1) * 13, dyIn: k === 1 ? -1.5 : 0, colour: '#1C1C1C' }));
+            return (
+              <Link key={id} to={`/shop?room=${id}`} className="hs-room">
+                <div className="hs-room-scene">
+                  <RoomScene wall={WALL[r.wall]} furniture={r.furniture} frames={frames} groupHeightIn={16} zoom={1.75} furnitureWidth={0.86} decor={id === 'living'} tone="gallery" className="room-mini" />
+                </div>
+                <span className="hs-room-label">
+                  <b>{r.label}</b>
+                  <small>{r.blurb}</small>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Featured collections: editorial cards, words left, art right ──────── */
+const FEATURED = [
+  ['nature-reimagined', 'Nature’s', 'Beauty'],
+  ['minimalist-living', 'Modern', 'Minimal'],
+  ['abstract-forms', 'Abstract', 'Forms'],
+  ['divine', 'Spiritual', '& Divine'],
+];
+function FeaturedCollections({ products }) {
+  const list = products || [];
+  const cards = FEATURED.map(([id, a, b]) => {
+    if (id === 'divine') {
+      const p = list.find((x) => x.thumbnail && x.category === 'religious' && x.is_bestseller) || list.find((x) => x.thumbnail && x.category === 'religious');
+      return { id, a, b, story: 'Devotional art that brings peace within — for the pooja room and beyond.', to: '/worlds/divine', img: p?.thumbnail };
+    }
+    const c = COLLECTION_MAP[id];
+    const p = collectionProducts(c, list).find((x) => x.thumbnail);
+    return { id, a, b, story: c.story, to: `/collections/${id}`, img: p?.thumbnail };
+  });
+  return (
+    <section className="hs hs-feat">
+      <div className="wrap">
+        <div className="hs-head">
+          <h2 className="hs-title">Featured Collections</h2>
+          <Link to="/collections" className="hs-all">
+            View all <Icon name="arrow" size={14} />
+          </Link>
+        </div>
+        <div className="hs-scroll hs-feat-row">
+          {cards.map((c, i) => (
+            <Link key={c.id} to={c.to} className={`hs-fc t${i}`}>
+              <span className="hs-fc-copy">
+                <b>
+                  {c.a}
+                  <br />
+                  {c.b}
+                </b>
+                <small>{c.story}</small>
+                <span className="hs-fc-go">
+                  Shop now <Icon name="arrow" size={14} />
+                </span>
+              </span>
+              <span className="hs-fc-art">{c.img && <Frame src={c.img} alt="" ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false} sizes="(max-width: 760px) 34vw, 12vw" />}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Brand benefits (each one stated in our policies) ───────────────────── */
+const BENEFITS = [
+  ['shield', 'Premium materials', 'PS moulding, HD print, front sheet'],
+  ['brush', 'Handcrafted to order', 'Made in India, one at a time'],
+  ['box', 'Packed securely', 'Quality-checked before dispatch'],
+  ['truck', 'Free delivery', 'Across India, 5–7 business days'],
+  ['lock', 'Secure payments', 'UPI, cards, netbanking'],
+];
+function Benefits() {
+  return (
+    <section className="hs-benefits" aria-label="Why shop with JHAYRA">
+      <ul className="wrap">
+        {BENEFITS.map(([ic, a, b]) => (
+          <li key={a}>
+            <Icon name={ic} size={26} stroke={1.4} />
+            <span>
+              <b>{a}</b>
+              <small>{b}</small>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/* ── Custom art + customer ratings ──────────────────────────────────────── */
+function CustomAndReviews({ products }) {
+  const rated = (products || []).filter((p) => p.thumbnail && p.rating && p.review_count);
+  const total = rated.reduce((a, p) => a + p.review_count, 0);
+  const avg = total ? rated.reduce((a, p) => a + p.rating * p.review_count, 0) / total : 0;
+  const top = [...rated].sort((a, b) => b.rating - a.rating || b.review_count - a.review_count).slice(0, 3);
+  return (
+    <section className="hs hs-duo">
+      <div className="wrap hs-duo-grid">
+        <div className="hs-custom">
+          <div className="hs-custom-copy">
+            <span className="hs-kick">Make it personal</span>
+            <h2 className="hs-title">Custom Art for Your Story</h2>
+            <p>Turn your photos, special places or meaningful moments into framed wall art. Upload, choose a style, add names or a date — the preview is exactly what we print.</p>
+            <ol className="hs-custom-steps">
+              <li>
+                <Icon name="upload" size={16} /> Upload a photo
+              </li>
+              <li>
+                <Icon name="brush" size={16} /> Choose a style
+              </li>
+              <li>
+                <Icon name="wall" size={16} /> We frame &amp; deliver
+              </li>
+            </ol>
+            <Link to="/customize/photo" className="btn btn-gold sheen">
+              Create Your Custom Art <Icon name="arrow" size={16} />
+            </Link>
+          </div>
+          <div className="hs-custom-art" aria-hidden="true">
+            <span className="hs-polaroid">
+              <img src="/samples/couple-2.webp" alt="" loading="lazy" width="300" height="300" />
+              <i>Your photo</i>
+            </span>
+            <Icon name="arrow" size={22} />
+            <span className="hs-custom-frame">
+              <Frame src="/samples/couple-2.webp" alt="" ratio={{ w: 12, h: 16 }} colour="#1C1C1C" mat glare sizes="160px" />
+            </span>
+          </div>
+        </div>
+        <div className="hs-reviews">
+          <h2 className="hs-title">What Our Customers Say</h2>
+          {total > 0 ? (
+            <>
+              <div className="hs-score">
+                <b>{avg.toFixed(1)}</b>
+                <span>
+                  <span className="hs-stars" aria-hidden="true">
+                    ★★★★★
+                  </span>
+                  <small>Average from {total.toLocaleString('en-IN')} product ratings</small>
+                </span>
+              </div>
+              <ul className="hs-toprated">
+                {top.map((p) => (
+                  <li key={p.id}>
+                    <Link to={`/product/${p.id}`}>
+                      <span className="hs-tr-img">
+                        <Img src={p.thumbnail} alt="" sizes="56px" width={140} />
+                      </span>
+                      <span>
+                        <b>{p.name}</b>
+                        <small>
+                          ★ {Number(p.rating).toFixed(1)} · {p.review_count.toLocaleString('en-IN')} ratings
+                        </small>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p className="muted">Ratings appear here as customers review their frames.</p>
+          )}
+          <p className="hs-since">
+            Trusted by {BRAND.homes} homes since {BRAND.since}.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Bestsellers & trending ────────────────────────────────────────── */
 function Bestsellers({ products, categories, loading }) {
   const { data: opts } = useOptionSummary();
   const items = (products || []).filter((p) => p.thumbnail && p.is_bestseller).slice(0, 8);
@@ -407,7 +659,7 @@ function Bestsellers({ products, categories, loading }) {
   );
 }
 
-/* ── 4b · The JHAYRA Signature Experience ──────────────────────────────── */
+/* ── The JHAYRA Signature Experience ──────────────────────────────── */
 // Scrolls to #signature below the sticky header; instant when reduced motion
 // is preferred. Sections above may still be mounting, so it re-checks once.
 function scrollToSignature() {
@@ -564,131 +816,7 @@ function Signature({ products }) {
   );
 }
 
-/* ── 5 · Create your own ───────────────────────────────────────────────── */
-const CREATE_STEPS = [
-  ['upload', 'Upload your photo', 'We check its resolution and tell you which sizes will print sharp.'],
-  ['move', 'Crop and position', 'Drag and zoom to frame it exactly how you want.'],
-  ['type', 'Add names, dates or a message', 'Where the design allows — set in our typography.'],
-  ['wall', 'Choose size and frame', `A4 to 24 × 36 inches, from ${money(MIN_PRICE)}.`],
-];
-function CreateYourOwn({ sample }) {
-  return (
-    <section className="section sf-create surface-night" id="create">
-      <span className="morph" aria-hidden="true" />
-      <div className="wrap">
-        <SectionHead eyebrow="Create your own art" title="Your memories deserve" em="a place on your wall.">
-          <Link to="/customize" className="btn btn-gold sheen">
-            Create Your Own Art <Icon name="arrow" size={16} />
-          </Link>
-        </SectionHead>
-        <div className="sf-create-grid">
-          <ol className="sf-steps">
-            {CREATE_STEPS.map(([ic, t, d], i) => (
-              <Reveal as="li" key={t} delay={i * 0.06}>
-                <span className="sf-step-ic">
-                  <Icon name={ic} size={20} />
-                </span>
-                <span>
-                  <b>{t}</b>
-                  <small>{d}</small>
-                </span>
-              </Reveal>
-            ))}
-            <li className="sf-steps-note">The preview is exactly what we print — then add it to your cart with your photo and choices saved.</li>
-          </ol>
-          <LazyMount minHeight={520} margin="300px">
-            <Suspense fallback={<div style={{ minHeight: 520 }} />}>
-              <LivingStudio compact samplePhoto={sample} />
-            </Suspense>
-          </LazyMount>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ── 6 · Visualise (blueprint of the real sizes against a sofa) ────────── */
-function Blueprint() {
-  // Inches → SVG units; a 84-inch three-seater for scale.
-  const k = 4;
-  const sofaW = 84;
-  const W = 120 * k;
-  const floor = 96 * k;
-  const sofaTop = floor - 34 * k;
-  const sizes = [...SIZES].reverse();
-  let x = (W - sizes.reduce((a, s) => a + s.w * k, 0) - (sizes.length - 1) * 4 * k) / 2;
-  return (
-    <svg className="blueprint" viewBox={`0 0 ${W} ${floor + 10}`} role="img" aria-label="JHAYRA frame sizes drawn to scale above an 84-inch sofa">
-      <defs>
-        <pattern id="bp-grid" width={12 * k} height={12 * k} patternUnits="userSpaceOnUse">
-          <path d={`M ${12 * k} 0 L 0 0 0 ${12 * k}`} fill="none" stroke="currentColor" strokeOpacity=".12" />
-        </pattern>
-      </defs>
-      <rect width={W} height={floor} fill="url(#bp-grid)" />
-      <line x1="0" x2={W} y1={floor} y2={floor} stroke="currentColor" strokeOpacity=".5" />
-      <rect className="bp-sofa" x={(W - sofaW * k) / 2} y={sofaTop} width={sofaW * k} height={34 * k} rx={6} />
-      <text className="bp-label" x={W / 2} y={sofaTop + 20 * k} textAnchor="middle">
-        Sofa · 84 in
-      </text>
-      {sizes.map((s, i) => {
-        const w = s.w * k;
-        const h = s.h * k;
-        const bottom = sofaTop - 8 * k;
-        const fx = x;
-        x += w + 4 * k;
-        return (
-          <g key={s.slug} className="bp-frame" style={{ '--i': i }}>
-            <rect x={fx} y={bottom - h} width={w} height={h} />
-            <text className="bp-label" x={fx + w / 2} y={bottom - h - 8} textAnchor="middle">
-              {s.name}
-            </text>
-            <text className="bp-dim" x={fx + w / 2} y={bottom - h / 2} textAnchor="middle">
-              {s.w}×{s.h}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
-function VisualiseSection() {
-  return (
-    <section className="section sf-viz">
-      <div className="wrap sf-viz-grid">
-        <Reveal className="sf-viz-copy">
-          <span className="eyebrow">Visualise</span>
-          <h2 className="h2">
-            See it on your wall <em>before you buy.</em>
-          </h2>
-          <ol className="sf-viz-steps">
-            <li>
-              <b>Take or upload a photo of your wall</b> — or start with one of our rooms.
-            </li>
-            <li>
-              <b>Choose any artwork, size and frame.</b> Every size is drawn to scale.
-            </li>
-            <li>
-              <b>Drag it into place</b> and compare it with something you know, like a sofa or a door.
-            </li>
-          </ol>
-          <p className="small muted">A photo preview to help you decide — no app or AR headset needed.</p>
-          <Link to="/visualise" className="btn btn-lg sheen">
-            Try Visualise <Icon name="arrow" size={18} />
-          </Link>
-        </Reveal>
-        <Reveal className="sf-viz-art" delay={0.08}>
-          <Blueprint />
-          <div className="sf-viz-chip glass">
-            <Icon name="wall" size={16} /> Four sizes, true to scale
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-/* ── 7 · Gift Finder teaser ────────────────────────────────────────────── */
+/* ── Gift Finder teaser ─────────────────────────────────────────────────── */
 const GIFT_FOR = [
   ['partner', 'Partner'],
   ['parents', 'Parents'],
@@ -728,221 +856,7 @@ function GiftTeaser() {
   );
 }
 
-/* ── 8 · Why JHAYRA ────────────────────────────────────────────────────── */
-function WhyJhayra({ products, categories }) {
-  const { active } = useTemplates();
-  const art = (products || []).filter((p) => p.thumbnail);
-  const cats = new Set(art.map((p) => p.category)).size;
-  const pics = art.filter((p) => ['religious', 'nature', 'art-abstract', 'modern-art'].includes(p.category)).slice(0, 3);
-  const benefits = [
-    ['sparkle', 'Personalised artwork', `${active.length || 'Over 100'} designs to fill with your photos, names and dates.`],
-    ['image', 'Thoughtfully selected designs', art.length ? `${art.length} ready-made artworks across ${cats || categories?.length || ''} styles.` : 'Ready-made artworks across many styles.'],
-    ['wall', 'Sizes and frame finishes', 'A4 to 24 × 36 inches, framed in black, gold or brown.'],
-    ['shield', 'Quality materials', 'Premium PS moulding, a high-definition print and a protective front sheet. Ready to hang.'],
-    ['truck', 'Free delivery across India', 'Made to order in 1–2 business days, delivered in 5–7.'],
-    ['refresh', 'Clear, honest support', 'Real people on WhatsApp to help with sizes, frames, gifts and orders.'],
-  ];
-  return (
-    <section className="section sf-why">
-      <div className="wrap sf-why-grid">
-        <div>
-          <SectionHead eyebrow="Why JHAYRA" title="Made for one wall —" em="yours." />
-          <p className="lead sf-why-lead">Every piece is printed and framed to order in India, for one customer at a time. Here is exactly what that means for you.</p>
-          <ul className="sf-benefits">
-            {benefits.map(([ic, t, d], i) => (
-              <Reveal as="li" key={t} delay={(i % 2) * 0.05}>
-                <Icon name={ic} size={20} />
-                <span>
-                  <b>{t}</b>
-                  <small>{d}</small>
-                </span>
-              </Reveal>
-            ))}
-          </ul>
-        </div>
-        <div className="sf-why-art" aria-hidden="true">
-          <span className="bh bh-circle" />
-          <span className="bh bh-half" />
-          <span className="bh bh-square" />
-          <span className="bh bh-bar" />
-          {pics.map((p, i) => (
-            <div key={p.id} className={`sf-why-f f${i}`}>
-              <Frame src={p.thumbnail} alt="" ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare sizes="(max-width: 900px) 40vw, 18vw" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ── 9 · Our story (no separate review system exists yet, so this shows the
-   brand's own record and studio photography rather than testimonials) ──── */
-function Story({ products }) {
-  const art = (products || []).filter((p) => p.thumbnail);
-  const rated = art.filter((p) => p.rating && p.review_count);
-  const reviews = rated.reduce((a, p) => a + p.review_count, 0);
-  const avg = reviews ? rated.reduce((a, p) => a + p.rating * p.review_count, 0) / reviews : 0;
-  const strip = art.filter((p) => ['family', 'wedding', 'love-romance', 'baby-kids', 'occasions', 'animals-pets'].includes(p.category)).slice(0, 6);
-  return (
-    <section className="section sf-story surface-cream">
-      <div className="wrap">
-        <div className="sf-story-grid">
-          <Reveal>
-            <span className="eyebrow">Since {BRAND.since}</span>
-            <h2 className="h2">
-              Crafting memories for <em>{BRAND.homes} homes.</em>
-            </h2>
-            <p className="lead">What started in {BRAND.since} as a small framing workshop now hangs in homes, offices and pooja rooms across India — every piece made to order, one customer at a time.</p>
-            <dl className="sf-stats">
-              <div>
-                <dt>Homes</dt>
-                <dd>{BRAND.homes}</dd>
-              </div>
-              <div>
-                <dt>Corporate clients</dt>
-                <dd>{BRAND.corporates}</dd>
-              </div>
-              <div>
-                <dt>Gifts framed</dt>
-                <dd>{BRAND.gifts}</dd>
-              </div>
-              {reviews > 0 && (
-                <div>
-                  <dt>Average product rating</dt>
-                  <dd>
-                    {avg.toFixed(1)}
-                    <small>/5 · {reviews.toLocaleString('en-IN')} ratings</small>
-                  </dd>
-                </div>
-              )}
-            </dl>
-            <Link to="/about" className="link">
-              Read our story <Icon name="arrow" size={16} />
-            </Link>
-          </Reveal>
-          <div className="sf-story-strip" aria-label="From the JHAYRA studio">
-            {strip.map((p, i) => (
-              <Reveal as={Link} key={p.id} to={`/product/${p.id}`} className="sf-story-pic" delay={i * 0.05}>
-                <Img src={p.thumbnail} alt={p.name} sizes="(max-width: 900px) 33vw, 16vw" width={480} />
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* Isometric exploded view of a real JHAYRA frame (layers from the FAQ). */
-const ISO = 'matrix(0.866 0.5 -0.866 0.5 0 0)';
-function IsoFrame({ src }) {
-  const w = 96;
-  const h = 128;
-  const layers = [
-    ['sheet', 'Front sheet'],
-    ['frame', 'PS moulding'],
-    ['print', 'HD print'],
-    ['back', 'Backing + hook'],
-  ];
-  return (
-    <svg className="iso" viewBox="-130 -40 300 300" role="img" aria-label="Exploded view of a JHAYRA frame: front sheet, PS moulding frame, high-definition print, backing with hook">
-      <defs>
-        <clipPath id="iso-clip">
-          <rect x="8" y="8" width={w - 16} height={h - 16} />
-        </clipPath>
-      </defs>
-      {layers.map(([id, label], i) => (
-        <g key={id} className={`iso-l iso-${id}`} style={{ '--k': i }}>
-          <g transform={ISO}>
-            {id === 'frame' && (
-              <path d={`M0 0H${w}V${h}H0Z M8 8V${h - 8}H${w - 8}V8Z`} fillRule="evenodd" />
-            )}
-            {id === 'print' && (src ? <image href={src} x="8" y="8" width={w - 16} height={h - 16} preserveAspectRatio="xMidYMid slice" clipPath="url(#iso-clip)" /> : <rect x="8" y="8" width={w - 16} height={h - 16} />)}
-            {id === 'sheet' && <rect x="0" y="0" width={w} height={h} />}
-            {id === 'back' && (
-              <>
-                <rect x="0" y="0" width={w} height={h} />
-                <circle cx={w / 2} cy="14" r="4" />
-              </>
-            )}
-          </g>
-          <text x="96" y="58">
-            {label}
-          </text>
-        </g>
-      ))}
-    </svg>
-  );
-}
-
-/* ── 10 · How it works & delivery ──────────────────────────────────────── */
-function HowItWorks({ products }) {
-  const steps = [
-    ['search', 'Discover a design', 'Browse wall art — or start with your own photo.'],
-    ['brush', 'Make it yours', 'Choose the size, frame and any personalisation.'],
-    ['box', 'Receive your art', 'We craft it, quality-check it and deliver it free.'],
-  ];
-  return (
-    <section className="section sf-how">
-      <div className="wrap">
-        <SectionHead eyebrow="How it works" title="Three steps to" em="a wall you love." center />
-        <ol className="sf-how-steps">
-          {steps.map(([ic, t, d], i) => (
-            <Reveal as="li" key={t} delay={i * 0.08}>
-              <span className="sf-how-n">{i + 1}</span>
-              <Icon name={ic} size={22} />
-              <b>{t}</b>
-              <small>{d}</small>
-            </Reveal>
-          ))}
-        </ol>
-        <Reveal className="sf-inside">
-          <IsoFrame src={(products || []).find((p) => p.thumbnail && p.is_bestseller)?.thumbnail} />
-          <div>
-            <span className="eyebrow">Inside every frame</span>
-            <h3 className="h3">Four layers, made to last.</h3>
-            <ul>
-              <li>
-                <b>Protective front sheet</b> keeps the print safe from dust and fingerprints.
-              </li>
-              <li>
-                <b>PS moulding frame</b> in black, gold or brown.
-              </li>
-              <li>
-                <b>High-definition print</b> of your chosen design or photo.
-              </li>
-              <li>
-                <b>Backing with hook</b> — ready to hang the day it arrives.
-              </li>
-            </ul>
-          </div>
-        </Reveal>
-        <Reveal className="sf-timeline" aria-label="Delivery timeline">
-          <div>
-            <b>Day 0</b>
-            <small>You place your order</small>
-          </div>
-          <div>
-            <b>1–2 business days</b>
-            <small>Crafted and quality-checked</small>
-          </div>
-          <div>
-            <b>5–7 business days</b>
-            <small>In transit — free across India</small>
-          </div>
-        </Reveal>
-        <div className="center" style={{ marginTop: 34 }}>
-          <Link to="/shop" className="btn btn-lg">
-            Explore Wall Art <Icon name="arrow" size={18} />
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ── 11 · FAQ (WAI-ARIA accordion: buttons, regions, arrow keys) ───────── */
+/* ── FAQ (WAI-ARIA accordion: buttons, regions, arrow keys) ───────── */
 function Faq() {
   const [open, setOpen] = useState(0);
   const id = useId();
@@ -988,7 +902,7 @@ function Faq() {
   );
 }
 
-/* ── 12 · Final call to action ─────────────────────────────────────────── */
+/* ── Final call to action ─────────────────────────────────────────── */
 function FinalCta() {
   return (
     <section className="sf-final mesh-dark">
@@ -1029,7 +943,6 @@ export default function Home() {
   }, [location.key, location.hash]);
   const { data: products, loading } = useProducts();
   const { data: categories } = useCategories();
-  const sample = useSamplePhoto();
 
   return (
     <>
@@ -1056,33 +969,27 @@ export default function Home() {
       />
       {festival ? <FestivalHero festival={festival} /> : <Hero products={products} />}
       {festival && <FestivalPicks festival={festival} products={products} categories={categories} />}
-      <LazyMount minHeight={760}>
-        <RoomsAndCategories products={products} />
+      <CampaignBanner />
+      <ShopByCategory products={products} categories={categories} />
+      <LazyMount minHeight={420}>
+        <ShopByRoom products={products} />
+      </LazyMount>
+      <LazyMount minHeight={360}>
+        <FeaturedCollections products={products} />
+      </LazyMount>
+      <Benefits />
+      <LazyMount minHeight={520}>
+        <CustomAndReviews products={products} />
       </LazyMount>
       <LazyMount minHeight={900}>
         <Bestsellers products={products} categories={categories} loading={loading} />
       </LazyMount>
       <Signature products={products} />
-      <LazyMount minHeight={900}>
-        <CreateYourOwn sample={sample} />
-      </LazyMount>
-      <LazyMount minHeight={700}>
-        <VisualiseSection />
-      </LazyMount>
       <LazyMount minHeight={360}>
         <GiftTeaser />
       </LazyMount>
-      <LazyMount minHeight={800}>
-        <WhyJhayra products={products} categories={categories} />
-      </LazyMount>
-      <LazyMount minHeight={760}>
-        <Story products={products} />
-      </LazyMount>
       <LazyMount minHeight={760}>
         <Founder />
-      </LazyMount>
-      <LazyMount minHeight={620}>
-        <HowItWorks products={products} />
       </LazyMount>
       <Faq />
       <FinalCta />

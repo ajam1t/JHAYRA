@@ -11,6 +11,7 @@ import { Categories, FrameOptions, HomepageCollections } from './Catalog';
 import Templates from './Templates';
 import Festivals from './Festivals';
 import Worlds from './Worlds';
+import Campaigns from './Campaigns';
 import './admin.css';
 
 function Login() {
@@ -158,6 +159,7 @@ const NAV = [
   ['/admin/orders', 'Orders', 'box'],
   ['/admin/products', 'Products', 'grid'],
   ['/admin/templates', 'Templates', 'sparkle'],
+  ['/admin/campaigns', 'Campaigns', 'calendar'],
   ['/admin/festivals', 'Festivals & offers', 'gift'],
   ['/admin/homepage', 'Homepage', 'image'],
   ['/admin/worlds', 'Worlds', 'sparkle'],
@@ -212,6 +214,7 @@ export default function Admin() {
                     <Route path="festivals" element={<Festivals />} />
                     <Route path="homepage" element={<HomepageCollections />} />
                     <Route path="worlds" element={<Worlds />} />
+                    <Route path="campaigns" element={<Campaigns />} />
                     <Route path="categories" element={<Categories />} />
                     <Route path="catalog" element={<FrameOptions />} />
                     <Route path="*" element={<Navigate to="/admin" replace />} />
