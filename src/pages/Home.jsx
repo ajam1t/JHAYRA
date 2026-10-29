@@ -249,7 +249,6 @@ function Hero({ products }) {
         </span>
         <h1 className="gh-title sf-hero-title">
           <Kinetic text="Crafting Memories" />{' '}
-          <br />
           <em>
             <Kinetic text="Into Art." start={2} />
           </em>

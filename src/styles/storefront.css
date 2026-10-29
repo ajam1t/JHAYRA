@@ -2486,3 +2486,133 @@
     background-position: 50% 0;
   }
 }
+
+/* ── Signature strip v3: ivory, gold hairlines, serif italic, foil shimmer ── */
+.sig-strip {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 42px;
+  padding: 8px 16px;
+  background: linear-gradient(180deg, #fbf8f1, #f4ecdc);
+  border-top: 1px solid rgba(176, 138, 69, 0.35);
+  border-bottom: 1px solid rgba(176, 138, 69, 0.35);
+  box-shadow: inset 0 3px 0 -2px rgba(176, 138, 69, 0.25), inset 0 -3px 0 -2px rgba(176, 138, 69, 0.25);
+  color: #1c1612;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 400;
+}
+.sig-strip::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(241, 221, 168, 0.55) 50%, transparent 60%);
+  transform: translateX(-100%);
+  animation: sig-shimmer 7s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes sig-shimmer {
+  0%,
+  60% {
+    transform: translateX(-100%);
+  }
+  85%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+.sig-strip:hover {
+  background: linear-gradient(180deg, #fffbf3, #efe3cc);
+  color: #1c1612;
+}
+.sig-rule {
+  flex: 0 1 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #b08a45);
+}
+.sig-rule:last-child {
+  background: linear-gradient(90deg, #b08a45, transparent);
+}
+.sig-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.sig-star {
+  font-size: 12px;
+  background: linear-gradient(135deg, #8c6a2e, #f1dda8 50%, #b08a45);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sig-kicker {
+  font-family: var(--fb);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #7e5f26;
+}
+.sig-text em {
+  font-family: var(--fd);
+  font-size: 18px;
+  font-style: italic;
+  line-height: 1;
+  color: #1c1612;
+}
+.sig-strip .sig-arrow {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-left: 4px;
+  border-radius: 50%;
+  border: 1px solid rgba(176, 138, 69, 0.6);
+  color: #7e5f26;
+  transition: transform 0.35s var(--ease), background 0.3s, color 0.3s;
+}
+.sig-strip:hover .sig-arrow,
+.sig-strip:focus-visible .sig-arrow {
+  transform: translateX(4px);
+  background: #1c1612;
+  color: #f1dda8;
+  border-color: #1c1612;
+}
+@media (max-width: 420px) {
+  .sig-strip {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  .sig-rule {
+    flex-basis: 18px;
+  }
+  .sig-kicker {
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+  }
+  .sig-text em {
+    font-size: 16.5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sig-strip::after {
+    animation: none;
+    display: none;
+  }
+}
+
+/* ── Hero headline on one line at every width ─────────────────────────── */
+.sf-hero .sf-hero-title {
+  white-space: nowrap;
+  font-size: clamp(28px, 9.2vw, 72px);
+}
+@media (min-width: 1000px) {
+  .sf-hero .sf-hero-title {
+    font-size: clamp(44px, 4.4vw, 76px);
+  }
+}

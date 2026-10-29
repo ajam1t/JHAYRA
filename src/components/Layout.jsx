@@ -110,9 +110,17 @@ function Header({ onMenu, menuOpen }) {
 function SignatureStrip() {
   return (
     <Link to="/#signature" className="sig-strip">
-      <span>
-        <span aria-hidden="true">✨ </span>The Jhayra Signature Experience <span className="sig-arrow" aria-hidden="true">→</span>
+      <span className="sig-rule" aria-hidden="true" />
+      <span className="sig-text">
+        <span className="sig-star" aria-hidden="true">
+          ✦
+        </span>
+        <span className="sig-kicker">The Jhayra</span> <em>Signature Experience</em>
+        <span className="sig-arrow" aria-hidden="true">
+          <Icon name="arrow" size={12} stroke={2} />
+        </span>
       </span>
+      <span className="sig-rule" aria-hidden="true" />
     </Link>
   );
 }
