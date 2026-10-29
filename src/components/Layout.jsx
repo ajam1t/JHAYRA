@@ -28,9 +28,20 @@ const MENU = [
   ['About', [['/about', 'Our Story'], ['/contact', 'Contact'], ['/support', 'Help & FAQs'], ['/orders', 'My Orders'], ['/wishlist', 'Wishlist'], ['/corporate', 'Corporate Gifting']]],
 ];
 
-function Logo() {
+// Always lands on the top of the homepage: from another page it navigates;
+// on the homepage itself (or /#signature) it clears the hash and scrolls up.
+function Logo({ onNavigate }) {
+  const { pathname, hash, search } = useLocation();
+  const navigate = useNavigate();
+  const onClick = (e) => {
+    onNavigate?.();
+    if (pathname !== '/') return;
+    e.preventDefault();
+    if (hash || search) navigate('/', { replace: true });
+    window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  };
   return (
-    <Link to="/" className="logo" aria-label="JHAYRA home">
+    <Link to="/" className="logo" aria-label="JHAYRA home" onClick={onClick}>
       <img className="logo-mark" src="/logo-mark.webp" alt="" width="44" height="40" />
       <span className="logo-words">
         <b>JHAYRA</b>
@@ -176,7 +187,7 @@ function MenuSheet({ onClose, returnFocus }) {
       <div className="scrim" onClick={onClose} />
       <aside className="sheet sheet-left menu-sheet" id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" ref={panel}>
         <div className="sheet-head">
-          <Logo />
+          <Logo onNavigate={onClose} />
           <button className="icon-btn" onClick={onClose} aria-label="Close menu">
             <Icon name="close" />
           </button>

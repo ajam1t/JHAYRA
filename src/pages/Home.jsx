@@ -244,9 +244,6 @@ function Hero({ products }) {
   return (
     <section className="gh sf-hero mesh" aria-label="Welcome to JHAYRA">
       <div className="gh-copy wrap">
-        <span className="eyebrow sf-in" style={{ '--d': '0s' }}>
-          Your home, your story
-        </span>
         <h1 className="gh-title sf-hero-title">
           <Kinetic text="Crafting Memories" />{' '}
           <em>
