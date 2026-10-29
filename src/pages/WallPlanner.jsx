@@ -84,7 +84,7 @@ export default function WallPlanner() {
 
   return (
     <>
-      <Seo title="Gallery Wall Planner — Design Your Wall" description="Plan a gallery wall in minutes: pick a layout, choose designs for each frame, see it true-to-scale above your sofa or bed, and add the whole set to your cart." path="/wall-planner" />
+      <Seo title="Gallery Wall Planner — Design Your Wall" description="Plan a gallery wall in minutes: pick a layout, choose designs for each frame, see it true-to-scale above your sofa or bed, and add the whole set to your bag." path="/wall-planner" />
       <section className="wrap page-hero" style={{ paddingBottom: 18 }}>
         <span className="eyebrow">Gallery wall planner</span>
         <h1 className="h1" style={{ marginTop: 12 }}>
@@ -195,7 +195,7 @@ export default function WallPlanner() {
               onClick={() => {
                 addWallToCart(cart, frames, colour);
                 cart.setDrawerOpen(true);
-                toast('Your gallery wall is in the cart', 'ok');
+                toast('Your gallery wall is in your bag', 'ok');
               }}
             >
               Add the set

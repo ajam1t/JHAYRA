@@ -11,6 +11,7 @@ import { loadFrameConfig, useAsync, useCategories, useProducts } from '../lib/ca
 import { useCart } from '../state/cart';
 import { useShop, useToast } from '../state/store';
 import { money, deliveryWindow, SITE, waLink } from '../lib/site';
+import DeliveryTimeline from '../components/DeliveryTimeline';
 import { readPhoto, uploadArtwork, QUALITY_LABEL } from '../lib/upload';
 import { optimized } from '../lib/img';
 
@@ -394,7 +395,7 @@ export default function Product() {
 
           <div className="pdp-actions" ref={atcRef}>
             <button className="btn btn-gold btn-lg grow" disabled={!option || busy} onClick={() => addToCart(false)}>
-              {busy ? 'Uploading your photo…' : `Add to cart · ${money(price)}`}
+              {busy ? 'Uploading your photo…' : `Add to bag · ${money(price)}`}
             </button>
             <button className={`icon-btn pdp-wish ${onWish ? 'on' : ''}`} onClick={() => toggleWish(product.id)} aria-pressed={onWish} aria-label="Save to wishlist">
               <Icon name="heart" />
@@ -405,6 +406,7 @@ export default function Product() {
           </button>
 
           <PincodeCheck />
+          <DeliveryTimeline />
 
           <ul className="pdp-promise">
             <li>
@@ -499,7 +501,7 @@ export default function Product() {
           </small>
         </div>
         <button className="btn btn-gold btn-sm" disabled={!option || busy} onClick={() => addToCart(false)} tabIndex={showSticky ? 0 : -1}>
-          Add to cart
+          Add to bag
         </button>
       </div>
     </>

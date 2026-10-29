@@ -276,7 +276,7 @@ export default function LivingStudio({ compact = false, samplePhoto }) {
             </small>
           </div>
           <button type="button" className="btn btn-gold btn-lg" disabled={busy} onClick={add}>
-            {busy ? 'Preparing your print…' : photo ? 'Add to cart' : 'Upload your photo'}
+            {busy ? 'Preparing your print…' : photo ? 'Add to bag' : 'Upload your photo'}
           </button>
         </div>
         <div className="ls-links">

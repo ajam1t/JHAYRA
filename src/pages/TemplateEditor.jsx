@@ -464,7 +464,7 @@ export default function TemplateEditor({ scratch = false }) {
               </small>
             </div>
             <button className="btn btn-gold btn-lg" disabled={busy} onClick={addToCart}>
-              {busy ? 'Uploading photos…' : missing.length ? `Add ${missing.length} more photo${missing.length > 1 ? 's' : ''}` : 'Add to cart'}
+              {busy ? 'Uploading photos…' : missing.length ? `Add ${missing.length} more photo${missing.length > 1 ? 's' : ''}` : 'Add to bag'}
             </button>
           </div>
           <a className="pdp-help" href={waLink(`Hi JHAYRA! I'm designing "${base.title}" and need help.`)} target="_blank" rel="noopener noreferrer">

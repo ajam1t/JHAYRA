@@ -36,4 +36,16 @@ export const STARTER = [
   { file: 'cma-149803.jpg', category: 'christian', name: 'Virgin and Child with a Goldfinch', tags: ['madonna', 'mary', 'jesus'], text: 'Mary in prayer over the Christ Child, who holds a goldfinch — by Neroccio de’ Landi, Siena, c. 1490.', acc: '1980.101' },
 ].map((p) => ({ ...p, description: `${p.text} Printed to order on archival paper in a black frame. ${CMA(p.acc)}` }));
 
-export const STARTER_CATEGORIES = { mithila: 'Mithila Heritage', buddhist: 'Buddhist', jain: 'Jain', christian: 'Christian' };
+// Maps drawn by JHAYRA from Natural Earth public-domain data (naturalearthdata.com);
+// India is shown with its official boundaries.
+const NE = 'Map drawn from Natural Earth public-domain data; India shown with its official boundaries.';
+const MAPS = [
+  { file: 'map-world-gold-ivory.jpg', name: 'World Map — Gold on Ivory', tags: ['map', 'world map', 'travel'], text: 'The world in champagne gold on warm ivory, titled “Wander Often, Wonder Always” — for travellers, studies and offices.' },
+  { file: 'map-world-gold-black.jpg', name: 'World Map — Gold on Black', tags: ['map', 'world map', 'travel'], text: 'A gold world map on deep black, titled “Wander Often, Wonder Always” — a striking piece for living rooms and offices.' },
+  { file: 'map-world-black-white.jpg', name: 'World Map — Black & White', tags: ['map', 'world map', 'minimal'], text: 'A clean black-and-white world map, titled “Wander Often, Wonder Always” — minimal art for any room.' },
+  { file: 'map-india-gold-ivory.jpg', name: 'India Map — Gold on Ivory', tags: ['map', 'india map', 'india'], text: 'India in champagne gold on warm ivory, titled “Unity in Diversity”.' },
+  { file: 'map-india-gold-black.jpg', name: 'India Map — Gold on Black', tags: ['map', 'india map', 'india'], text: 'India in gold on deep black, titled “Unity in Diversity”.' },
+].map((p) => ({ ...p, category: 'maps', description: `${p.text} Printed to order and framed. ${NE}` }));
+STARTER.push(...MAPS);
+
+export const STARTER_CATEGORIES = { mithila: 'Mithila Heritage', buddhist: 'Buddhist', jain: 'Jain', christian: 'Christian', maps: 'Maps' };

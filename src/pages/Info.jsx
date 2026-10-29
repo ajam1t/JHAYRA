@@ -126,9 +126,9 @@ const LEGAL = {
     title: 'Cookie Policy',
     desc: 'How JHAYRA uses cookies and local storage.',
     sections: [
-      ['What we store', 'We keep your cart, wishlist, recently viewed designs, saved delivery details and order history in your browser’s local storage so they’re there when you return.'],
+      ['What we store', 'We keep your bag, wishlist, recently viewed designs, saved delivery details and order history in your browser’s local storage so they’re there when you return.'],
       ['Essential storage', 'These are needed for the shop to work and are never shared.'],
-      ['Your choices', 'You can clear site data from your browser settings at any time; this will empty your cart, wishlist and saved details.'],
+      ['Your choices', 'You can clear site data from your browser settings at any time; this will empty your bag, wishlist and saved details.'],
     ],
   },
 };

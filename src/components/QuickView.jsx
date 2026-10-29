@@ -84,7 +84,7 @@ export default function QuickView({ product, onClose }) {
             </>
           )}
           <button className="btn btn-gold btn-lg btn-block" style={{ marginTop: 24 }} disabled={!size} onClick={add}>
-            Add to cart{size ? ` · ${money(size.price)}` : ''}
+            Add to bag{size ? ` · ${money(size.price)}` : ''}
           </button>
           <div className="qv-links">
             <Link to={`/product/${product.id}`} onClick={onClose} className="link">

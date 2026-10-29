@@ -115,8 +115,8 @@ function Header({ onMenu, menuOpen }) {
           <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search (Ctrl K)">
             Search
           </button>
-          <Link to="/cart" aria-label={`Cart, ${count} items`}>
-            Cart{count > 0 ? ` (${count})` : ''}
+          <Link to="/cart" aria-label={`Bag, ${count} items`}>
+            Bag{count > 0 ? ` (${count})` : ''}
           </Link>
         </div>
       </div>
@@ -285,11 +285,11 @@ function BottomNav() {
           <span>{label}</span>
         </NavLink>
       ))}
-      <NavLink to="/cart" aria-label={`Cart, ${count} items`}>
+      <NavLink to="/cart" aria-label={`Bag, ${count} items`}>
         <span className="bn-ic" aria-hidden="true">
           <Icon name="bag" size={21} />
         </span>
-        <span>Cart</span>
+        <span>Bag</span>
         <CountBadge count={count} />
       </NavLink>
     </nav>
@@ -316,12 +316,12 @@ function CartDrawer() {
   return (
     <>
       <div className="scrim" onClick={close} />
-      <aside className="sheet sheet-right" role="dialog" aria-modal="true" aria-label="Your cart">
+      <aside className="sheet sheet-right" role="dialog" aria-modal="true" aria-label="Your bag">
         <div className="sheet-head">
           <h2>
-            Your cart <span className="muted small">({count})</span>
+            Your bag <span className="muted small">({count})</span>
           </h2>
-          <button className="icon-btn" onClick={close} aria-label="Close cart">
+          <button className="icon-btn" onClick={close} aria-label="Close bag">
             <Icon name="close" />
           </button>
         </div>
@@ -392,7 +392,7 @@ function CartDrawer() {
               <Icon name="lock" size={18} /> Checkout · {money(subtotal)}
             </button>
             <button className="btn btn-ghost btn-sm btn-block" style={{ marginTop: 10 }} onClick={() => (close(), navigate('/cart'))}>
-              View cart & apply coupon
+              View bag & apply coupon
             </button>
           </div>
         )}
@@ -546,13 +546,6 @@ function Footer() {
             <p>
               Wall art and personalised photo art, handcrafted in India since {BRAND.since}. {BRAND.homes} homes and counting.
             </p>
-            <div className="footer-join">
-              <b>New collections, first</b>
-              <span>Get a WhatsApp message when we launch new art — no spam, leave any time.</span>
-              <a className="btn btn-light btn-sm" href={waLink('Hi JHAYRA! Please send me updates about new collections.')} target="_blank" rel="noopener noreferrer">
-                <WhatsAppGlyph size={16} /> Join on WhatsApp
-              </a>
-            </div>
           </div>
           {cols.map(([title, links]) => (
             <div key={title}>

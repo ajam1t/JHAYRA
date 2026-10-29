@@ -218,7 +218,7 @@ export default function Visualise() {
           )}
           <div className="viz-actions">
             <button className="btn btn-gold btn-block" onClick={addToCart} disabled={!product || !size}>
-              Add to cart · {money(size?.price ?? 0)}
+              Add to bag · {money(size?.price ?? 0)}
             </button>
             {product && (
               <Link to={`/product/${product.id}`} className="btn btn-ghost btn-block">

@@ -79,7 +79,7 @@ function StarterImport({ onDone }) {
         </button>
       </div>
       <p className="ad-muted">
-        Public-domain (CC0) paintings from The Cleveland Museum of Art’s Open Access collection, prepared as print-ready files: 6 Mithila (Madhubani) paintings, 8 Kalighat paintings of Lakshmi, Durga, Hanuman and Ram, 4 Buddhist, 2 Jain and 3 Christian works. They are added at ₹499 with the same sizes and frames as your other products — edit prices or remove any in Products. Running it again skips products that already exist.
+        Public-domain (CC0) paintings from The Cleveland Museum of Art’s Open Access collection, prepared as print-ready files: 6 Mithila (Madhubani) paintings, 8 Kalighat paintings of Lakshmi, Durga, Hanuman and Ram, 4 Buddhist, 2 Jain and 3 Christian works — plus 5 world and India map prints drawn from Natural Earth public-domain data (India with its official boundaries). They are added at ₹499 with the same sizes and frames as your other products — edit prices or remove any in Products. Running it again skips products that already exist.
       </p>
       <div className="ad-starter-thumbs">
         {STARTER.map((s) => (

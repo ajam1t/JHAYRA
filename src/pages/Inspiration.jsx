@@ -54,7 +54,7 @@ function Room({ room, products, index }) {
             onClick={() => {
               addWallToCart(cart, frames, room.colour);
               cart.setDrawerOpen(true);
-              toast(`${room.title} — added to your cart`, 'ok');
+              toast(`${room.title} — added to your bag`, 'ok');
             }}
           >
             Shop the wall · {money(total)}

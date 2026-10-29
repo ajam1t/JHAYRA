@@ -326,7 +326,7 @@ export default function Checkout() {
       <section className="wrap checkout">
         <div className="ck-main">
           <Link to="/cart" className="crumbs" style={{ display: 'inline-flex' }}>
-            <Icon name="arrowL" size={16} /> Back to cart
+            <Icon name="arrowL" size={16} /> Back to bag
           </Link>
           <h1 className="h1" style={{ marginBottom: 6 }}>
             Checkout

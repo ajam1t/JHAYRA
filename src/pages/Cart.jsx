@@ -63,10 +63,10 @@ export default function Cart() {
 
   return (
     <>
-      <Seo title="Your Cart" path="/cart" noindex />
+      <Seo title="Your Bag" path="/cart" noindex />
       <section className="wrap page-hero" style={{ paddingBottom: 10 }}>
-        <span className="eyebrow">Cart</span>
-        <h1 className="h1">{cart.items.length ? 'Almost on your wall.' : 'Your cart is empty.'}</h1>
+        <span className="eyebrow">Bag</span>
+        <h1 className="h1">{cart.items.length ? 'Almost on your wall.' : 'Your bag is empty.'}</h1>
       </section>
       {cart.items.length === 0 ? (
         <section className="wrap section-sm center">

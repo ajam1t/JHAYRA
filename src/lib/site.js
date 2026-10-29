@@ -20,15 +20,23 @@ export function waLink(text = '') {
 export const money = (n) => '₹' + Math.round(Number(n) || 0).toLocaleString('en-IN');
 
 // Made to order: 1–2 business days to craft, then 5–7 business days in transit.
+// Business days skip Sundays.
+const addBiz = (d, n) => {
+  const x = new Date(d);
+  while (n > 0) {
+    x.setDate(x.getDate() + 1);
+    if (x.getDay() !== 0) n--;
+  }
+  return x;
+};
+
 export function deliveryWindow(from = new Date()) {
-  const addBiz = (d, n) => {
-    const x = new Date(d);
-    while (n > 0) {
-      x.setDate(x.getDate() + 1);
-      if (x.getDay() !== 0) n--;
-    }
-    return x;
-  };
   const fmt = (d) => d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
   return { early: fmt(addBiz(from, 6)), late: fmt(addBiz(from, 9)) };
+}
+
+// Order placed → dispatched (1–2 business days) → delivered (5–7 more).
+export function deliveryTimeline(from = new Date()) {
+  const fmt = (d) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  return { placed: fmt(from), ship: [fmt(addBiz(from, 1)), fmt(addBiz(from, 2))], arrive: [fmt(addBiz(from, 6)), fmt(addBiz(from, 9))] };
 }

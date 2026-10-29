@@ -418,16 +418,22 @@ function Hero({ products }) {
 const FRAME_ORDER = ['black', 'gold', 'brown', 'natural', 'white', 'silver'];
 const FRAME_LABEL = { brown: 'Wood', natural: 'Natural wood' };
 
-function CategoryCard({ c, colours }) {
+function CategoryCard({ c, colours, i }) {
   const [sel, setSel] = useState(colours[0]?.slug);
   const cur = colours.find((x) => x.slug === sel) || colours[0];
   return (
-    <article className="hc-card">
+    <article className="hc-card" style={{ '--i': i }}>
       <Link to={`/shop?category=${c.slug}`} className="hc-link">
-        <span className="hc-stage">
-          <Frame src={c.img} alt={`${c.name} wall art in a ${cur?.name.toLowerCase() || 'black'} frame`} ratio={{ w: 9.5, h: 13 }} colour={cur?.hex || '#1C1C1C'} thickness={4.2} glare sizes="(max-width: 760px) 44vw, 15vw" />
+        <span className="hc-hang">
+          <span className="hc-wire" aria-hidden="true" />
+          <span className="hc-stage" key={cur?.slug}>
+            <Frame src={c.img} alt={`${c.name} wall art in a ${cur?.name.toLowerCase() || 'black'} frame`} ratio={{ w: 9.5, h: 13 }} colour={cur?.hex || '#1C1C1C'} thickness={4} glare sizes="(max-width: 760px) 34vw, 12vw" />
+          </span>
         </span>
         <span className="hc-name">{c.name}</span>
+        <small className="hc-n">
+          {c.n} design{c.n > 1 ? 's' : ''}
+        </small>
       </Link>
       {colours.length > 1 && (
         <div className="hc-swatches" role="radiogroup" aria-label={`${c.name} frame colour`}>
@@ -469,8 +475,8 @@ function ShopByCategory({ products, categories }) {
           </Link>
         </div>
         <div className="hs-scroll hc-row">
-          {cats.map((c) => (
-            <CategoryCard key={c.slug} c={c} colours={c.colours} />
+          {cats.map((c, i) => (
+            <CategoryCard key={c.slug} c={c} colours={c.colours} i={i} />
           ))}
         </div>
       </div>
@@ -876,29 +882,24 @@ function Faq() {
 /* ── Final call to action ─────────────────────────────────────────── */
 function FinalCta() {
   return (
-    <section className="sf-final mesh-dark">
-      <span className="dust" aria-hidden="true">
-        {Array.from({ length: 7 }, (_, i) => (
-          <i key={i} style={{ '--i': i }} />
-        ))}
-      </span>
-      <div className="wrap center">
-        <Reveal>
-          <span className="deco deco-light" aria-hidden="true" />
-          <h2 className="display sf-final-title">
+    <section className="wrap fc">
+      <Reveal className="fc-card">
+        <span className="fc-glow" aria-hidden="true" />
+        <div className="fc-copy">
+          <h2 className="fc-title">
             Make your walls <em>mean something.</em>
           </h2>
-          <p className="lead">Find the artwork that feels like you, or turn a favourite memory into something lasting.</p>
-          <div className="row" style={{ justifyContent: 'center', flexWrap: 'wrap', marginTop: 28 }}>
-            <Link to="/shop" className="btn btn-light btn-lg sheen">
-              Shop Wall Art <Icon name="arrow" size={18} />
-            </Link>
-            <Link to="/customize" className="btn btn-ghost-light btn-lg">
-              Create Your Own
-            </Link>
-          </div>
-        </Reveal>
-      </div>
+          <p>Find art that feels like you, or turn a favourite memory into something lasting.</p>
+        </div>
+        <div className="fc-btns">
+          <Link to="/shop" className="btn btn-lg sheen">
+            Shop Wall Art <Icon name="arrow" size={18} />
+          </Link>
+          <Link to="/customize" className="btn btn-ghost btn-lg">
+            Create Your Own
+          </Link>
+        </div>
+      </Reveal>
     </section>
   );
 }
