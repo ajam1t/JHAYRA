@@ -67,6 +67,7 @@ const LEGAL = {
       ['Information we collect', 'Your name, mobile number, email (optional) and delivery address when you order or contact us, and the photos and text you add to personalised products.'],
       ['How we use it', 'To make and deliver your order, send order updates on WhatsApp/SMS, provide support and improve our service. We never sell your personal data.'],
       ['Your photos', 'Photos you upload are stored privately and used only to produce your order. They are visible only to our production team, and are not used for marketing without your written permission.'],
+      ['Visit statistics', 'We count anonymous visits — page, device type, referring website and page-load speed, linked to a random browser ID — to improve the site. No names, emails or IP addresses are recorded. See our Cookie Policy.'],
       ['Payments', 'Online payments are processed by Razorpay. We do not receive or store your card, UPI or banking credentials.'],
       ['WhatsApp communications', 'When you message us or order, you agree to receive order-related messages from us on WhatsApp.'],
       ['Data security', 'We use industry-standard safeguards to protect your information. No system is perfectly secure, but we take care to keep your data safe.'],
@@ -128,6 +129,7 @@ const LEGAL = {
     sections: [
       ['What we store', 'We keep your bag, wishlist, recently viewed designs, saved delivery details and order history in your browser’s local storage so they’re there when you return.'],
       ['Essential storage', 'These are needed for the shop to work and are never shared.'],
+      ['Visit statistics', 'To understand which pages are useful and how fast the site loads, we count visits with a random ID kept in your browser. We record the page, device type (phone, tablet or computer), the website that sent you and page-load timings — never your name, email or IP address. We skip this if your browser sends “Do Not Track” or Global Privacy Control.'],
       ['Your choices', 'You can clear site data from your browser settings at any time; this will empty your bag, wishlist and saved details.'],
     ],
   },

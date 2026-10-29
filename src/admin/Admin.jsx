@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import Icon from '../components/Icon';
 import { useAuth } from '../state/store';
-import { supabase } from '../lib/supabase';
-import { money } from '../lib/site';
 import { Seo } from '../lib/seo';
 import Orders from './Orders';
 import { ProductList, ProductForm } from './Products';
@@ -12,6 +10,7 @@ import Templates from './Templates';
 import Festivals from './Festivals';
 import Worlds from './Worlds';
 import Campaigns from './Campaigns';
+import Dashboard from './Dashboard';
 import './admin.css';
 
 function Login() {
@@ -64,108 +63,52 @@ function Login() {
   );
 }
 
-function Dashboard() {
-  const [stats, setStats] = useState(null);
-  useEffect(() => {
-    (async () => {
-      const since = new Date(Date.now() - 30 * 86400000).toISOString();
-      const [{ data: orders }, { count: products }] = await Promise.all([
-        supabase.from('orders').select('id,order_number,customer_name,total_amount,payment_status,order_status,created_at').order('created_at', { ascending: false }).limit(200),
-        supabase.from('products').select('id', { count: 'exact', head: true }).eq('active', true),
-      ]);
-      const list = orders || [];
-      const paid = list.filter((o) => o.payment_status === 'paid');
-      const recent = paid.filter((o) => o.created_at >= since);
-      setStats({
-        products,
-        paid30: recent.length,
-        revenue30: recent.reduce((s, o) => s + (+o.total_amount || 0), 0),
-        toShip: paid.filter((o) => !['shipped', 'delivered', 'cancelled'].includes(o.order_status)).length,
-        latest: list.slice(0, 8),
-      });
-    })();
-  }, []);
-  if (!stats) return <div className="ad-muted">Loading…</div>;
+const NAV = [
+  ['Overview', [['/admin', 'Dashboard', 'grid', true]]],
+  [
+    'Sell',
+    [
+      ['/admin/orders', 'Orders', 'box'],
+      ['/admin/products', 'Products', 'image'],
+      ['/admin/templates', 'Personalised templates', 'sparkle'],
+    ],
+  ],
+  [
+    'Marketing',
+    [
+      ['/admin/campaigns', 'Campaigns', 'calendar'],
+      ['/admin/festivals', 'Festivals & offers', 'gift'],
+      ['/admin/homepage', 'Homepage collections', 'home'],
+    ],
+  ],
+  [
+    'Catalogue',
+    [
+      ['/admin/worlds', 'Worlds & starter art', 'palette'],
+      ['/admin/categories', 'Categories', 'filter'],
+      ['/admin/catalog', 'Sizes & finishes', 'wall'],
+    ],
+  ],
+];
+const FLAT = NAV.flatMap(([, l]) => l);
+const TABS = [FLAT[0], FLAT[1], FLAT[2], FLAT[4]];
+
+function SideNav({ onPick }) {
   return (
-    <>
-      <h1 className="ad-h1">Dashboard</h1>
-      <div className="ad-stats">
-        <div>
-          <span>Revenue, last 30 days</span>
-          <b>{money(stats.revenue30)}</b>
+    <nav onClick={onPick}>
+      {NAV.map(([group, links]) => (
+        <div key={group} className="ad-nav-group">
+          <span>{group}</span>
+          {links.map(([to, label, ic, end]) => (
+            <NavLink key={to} to={to} end={end}>
+              <Icon name={ic} size={18} /> {label}
+            </NavLink>
+          ))}
         </div>
-        <div>
-          <span>Paid orders, 30 days</span>
-          <b>{stats.paid30}</b>
-        </div>
-        <div>
-          <span>Waiting to ship</span>
-          <b>{stats.toShip}</b>
-        </div>
-        <div>
-          <span>Live products</span>
-          <b>{stats.products ?? '—'}</b>
-        </div>
-      </div>
-      <div className="ad-card">
-        <div className="ad-row-between">
-          <h2>Latest orders</h2>
-          <Link to="/admin/orders" className="ad-link">
-            All orders →
-          </Link>
-        </div>
-        <table className="ad-table">
-          <tbody>
-            {stats.latest.map((o) => (
-              <tr key={o.id}>
-                <td>{o.order_number || o.id.slice(0, 8)}</td>
-                <td>{o.customer_name}</td>
-                <td>{money(o.total_amount)}</td>
-                <td>
-                  <span className={`ad-badge s-${o.payment_status}`}>{o.payment_status}</span>
-                </td>
-                <td>
-                  <span className="ad-badge">{o.order_status}</span>
-                </td>
-                <td className="ad-muted">{new Date(o.created_at).toLocaleDateString('en-IN')}</td>
-              </tr>
-            ))}
-            {!stats.latest.length && (
-              <tr>
-                <td className="ad-muted">No orders yet — they’ll appear here the moment someone pays.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-      <div className="ad-tips ad-card">
-        <h2>Quick links</h2>
-        <div className="ad-quick">
-          <Link to="/admin/products/new">+ Add product</Link>
-          <Link to="/admin/templates">Edit personalised templates</Link>
-          <Link to="/admin/festivals">Festival themes & offers</Link>
-          <Link to="/admin/homepage">Homepage collections</Link>
-          <a href="/?festival=diwali" target="_blank" rel="noreferrer">
-            Preview Diwali theme ↗
-          </a>
-        </div>
-      </div>
-    </>
+      ))}
+    </nav>
   );
 }
-
-const NAV = [
-  ['/admin', 'Dashboard', 'home', true],
-  ['/admin/orders', 'Orders', 'box'],
-  ['/admin/products', 'Products', 'grid'],
-  ['/admin/templates', 'Templates', 'sparkle'],
-  ['/admin/campaigns', 'Campaigns', 'calendar'],
-  ['/admin/festivals', 'Festivals & offers', 'gift'],
-  ['/admin/homepage', 'Homepage', 'image'],
-  ['/admin/worlds', 'Worlds', 'sparkle'],
-  ['/admin/categories', 'Categories', 'filter'],
-  ['/admin/catalog', 'Sizes & finishes', 'wall'],
-];
 
 export default function Admin() {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -183,28 +126,34 @@ export default function Admin() {
               <Navigate to="/admin/login" replace />
             ) : (
               <div className={`ad ${open ? 'nav-open' : ''}`}>
-                <aside className="ad-side">
-                  <Link to="/" className="ad-brand">
-                    <img src="/logo-mark.webp" alt="" width="30" height="27" /> JHAYRA
+                <aside className="ad-side" aria-label="Admin menu">
+                  <Link to="/admin" className="ad-brand" onClick={() => setOpen(false)}>
+                    <img src="/logo-mark.webp" alt="" width="30" height="27" />
+                    <span>
+                      JHAYRA <small>Admin</small>
+                    </span>
                   </Link>
-                  <nav onClick={() => setOpen(false)}>
-                    {NAV.map(([to, label, ic, end]) => (
-                      <NavLink key={to} to={to} end={end}>
-                        <Icon name={ic} size={18} /> {label}
-                      </NavLink>
-                    ))}
-                  </nav>
+                  <SideNav onPick={() => setOpen(false)} />
                   <div className="ad-side-foot">
+                    <a href="/" target="_blank" rel="noreferrer" className="ad-btn ad-btn-ghost">
+                      View store ↗
+                    </a>
                     <small>{user.email}</small>
-                    <button className="ad-btn" onClick={signOut}>
+                    <button className="ad-btn ad-btn-ghost" onClick={signOut}>
                       <Icon name="logout" size={16} /> Sign out
                     </button>
                   </div>
                 </aside>
+                {open && <button className="ad-scrim" aria-label="Close menu" onClick={() => setOpen(false)} />}
+                <header className="ad-top">
+                  <Link to="/admin" className="ad-top-brand">
+                    <img src="/logo-mark.webp" alt="" width="26" height="23" /> Admin
+                  </Link>
+                  <a href="/" target="_blank" rel="noreferrer" className="ad-top-link">
+                    Store ↗
+                  </a>
+                </header>
                 <main className="ad-main">
-                  <button className="ad-menu" onClick={() => setOpen((o) => !o)} aria-label="Menu">
-                    <Icon name="menu" />
-                  </button>
                   <Routes>
                     <Route index element={<Dashboard />} />
                     <Route path="orders" element={<Orders />} />
@@ -220,6 +169,18 @@ export default function Admin() {
                     <Route path="*" element={<Navigate to="/admin" replace />} />
                   </Routes>
                 </main>
+                <nav className="ad-tabs" aria-label="Admin sections">
+                  {TABS.map(([to, label, ic, end]) => (
+                    <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)}>
+                      <Icon name={ic} size={20} />
+                      <span>{label}</span>
+                    </NavLink>
+                  ))}
+                  <button type="button" className={open ? 'active' : ''} onClick={() => setOpen((x) => !x)} aria-expanded={open}>
+                    <Icon name="menu" size={20} />
+                    <span>More</span>
+                  </button>
+                </nav>
               </div>
             )
           }

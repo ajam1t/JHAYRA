@@ -6,6 +6,7 @@ const URL = import.meta.env.VITE_SUPABASE_URL || 'https://gwxdzemazqontjobqnyy.s
 const KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_aY3MrFdQflveTXhDNb_YyQ_S7HOZUE3';
 
 export const SUPABASE_URL = URL;
+export const SUPABASE_KEY = KEY;
 export const supabase = createClient(URL, KEY, {
   auth: { persistSession: true, autoRefreshToken: true },
 });

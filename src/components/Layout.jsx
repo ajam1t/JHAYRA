@@ -4,6 +4,7 @@ import Icon, { WhatsAppGlyph } from './Icon';
 import Frame from './Frame';
 import Img from './Img';
 import { useCart } from '../state/cart';
+import { trackView } from '../lib/analytics';
 import { useShop } from '../state/store';
 import { SITE, money, waLink } from '../lib/site';
 import { BRAND } from '../lib/brand';
@@ -616,6 +617,7 @@ export default function Layout() {
     setMenu(false);
     setDrawerOpen(false);
   }, [pathname, setDrawerOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => trackView(pathname), [pathname]);
 
   const bottomNav = !(pathname.startsWith('/checkout') || /^\/customize\/.+/.test(pathname));
   useEffect(() => {
