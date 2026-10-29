@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 import Frame from './Frame';
 import Icon from './Icon';
 import { Stars } from './ProductCard';
-import { loadFrameConfig, useAsync } from '../lib/catalog';
+import { useFrameConfig } from '../lib/catalog';
 import { useCart } from '../state/cart';
 import { money } from '../lib/site';
 
 /** Size + frame chooser in a dialog, using the product's real options and prices. */
 export default function QuickView({ product, onClose }) {
   const cart = useCart();
-  const { data: cfg } = useAsync(() => loadFrameConfig(product.dbId), [product.dbId]);
+  const { data: cfg } = useFrameConfig(product.dbId);
   const [sizeSlug, setSizeSlug] = useState(null);
   const [colourName, setColourName] = useState('Black');
 

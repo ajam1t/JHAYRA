@@ -116,7 +116,7 @@ try {
     rest('frame_sizes?select=*&active=eq.true&order=display_order.asc'),
     rest('frame_colours?select=*&active=eq.true&order=display_order.asc'),
     rest('frame_materials?select=*&active=eq.true&order=display_order.asc'),
-    rest('product_options?select=product_id,option_type,option_slug'),
+    rest('product_options?select=*'),
   ]);
   mkdirSync(join(dist, 'data'), { recursive: true });
   writeFileSync(join(dist, 'data', 'catalog.json'), JSON.stringify({ at: new Date().toISOString(), products: snapProducts, categories, collections, frameTables: { sizes, colours, materials }, options }));

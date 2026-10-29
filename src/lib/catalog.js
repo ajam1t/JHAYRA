@@ -170,42 +170,49 @@ export const useOptionSummary = () => useAsync(loadOptionSummary, [], 'opt-summa
 export const useFrameTables = () => useAsync(loadFrameTables, [], 'frame-tables');
 
 // Mirrors the options logic of the original site so prices match the payment function.
-export function loadFrameConfig(productDbId) {
-  return cached('cfg:' + productDbId, async () => {
-    const [{ data: opts }, tables] = await Promise.all([
-      supabase.from('product_options').select('*').eq('product_id', productDbId),
-      loadFrameTablesLive(),
-    ]);
-    if (!opts || !opts.length) return fallbackConfig();
-    const bySlug = (rows) => new Map(rows.map((r) => [r.slug, r]));
-    const sizes = bySlug(tables.sizes);
-    const colours = bySlug(tables.colours);
-    const materials = bySlug(tables.materials);
-    const pick = (type) => opts.filter((o) => o.option_type === type).sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-    const cfg = {
-      sizes: pick('size')
-        .map((o) => {
-          const s = sizes.get(o.option_slug);
-          return s && { slug: s.slug, name: s.name, dimensions: s.dimensions, ratioW: +s.ratio_w, ratioH: +s.ratio_h, price: o.price_override != null ? +o.price_override : +s.base_price, isDefault: o.is_default };
-        })
-        .filter(Boolean),
-      colours: pick('colour')
-        .map((o) => {
-          const c = colours.get(o.option_slug);
-          return c && { slug: c.slug, name: c.name, hex: c.hex, isDefault: o.is_default };
-        })
-        .filter(Boolean),
-      materials: pick('material')
-        .map((o) => {
-          const m = materials.get(o.option_slug);
-          return m && { slug: m.slug, name: m.name, description: m.description, isDefault: o.is_default };
-        })
-        .filter(Boolean),
-    };
-    if (!cfg.sizes.length || !cfg.colours.length || !cfg.materials.length) return fallbackConfig();
-    return cfg;
-  });
+function buildConfig(opts, tables) {
+  if (!opts || !opts.length) return fallbackConfig();
+  const bySlug = (rows) => new Map(rows.map((r) => [r.slug, r]));
+  const sizes = bySlug(tables.sizes);
+  const colours = bySlug(tables.colours);
+  const materials = bySlug(tables.materials);
+  const pick = (type) => opts.filter((o) => o.option_type === type).sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+  const cfg = {
+    sizes: pick('size')
+      .map((o) => {
+        const s = sizes.get(o.option_slug);
+        return s && { slug: s.slug, name: s.name, dimensions: s.dimensions, ratioW: +s.ratio_w, ratioH: +s.ratio_h, price: o.price_override != null ? +o.price_override : +s.base_price, isDefault: o.is_default };
+      })
+      .filter(Boolean),
+    colours: pick('colour')
+      .map((o) => {
+        const c = colours.get(o.option_slug);
+        return c && { slug: c.slug, name: c.name, hex: c.hex, isDefault: o.is_default };
+      })
+      .filter(Boolean),
+    materials: pick('material')
+      .map((o) => {
+        const m = materials.get(o.option_slug);
+        return m && { slug: m.slug, name: m.name, description: m.description, isDefault: o.is_default };
+      })
+      .filter(Boolean),
+  };
+  if (!cfg.sizes.length || !cfg.colours.length || !cfg.materials.length) return fallbackConfig();
+  return cfg;
 }
+// Snapshot first (instant render), then the live database, which replaces it
+// if prices or options changed. The payment function re-checks prices anyway.
+export function loadFrameConfig(productDbId) {
+  return fresh(
+    'cfg:' + productDbId,
+    (s) => s.frameTables?.sizes?.length && s.options?.[0]?.option_type && 'price_override' in s.options[0] && buildConfig(s.options.filter((o) => o.product_id === productDbId), s.frameTables),
+    async () => {
+      const [{ data: opts }, tables] = await Promise.all([supabase.from('product_options').select('*').eq('product_id', productDbId), loadFrameTablesLive()]);
+      return buildConfig(opts, tables);
+    }
+  );
+}
+export const useFrameConfig = (productDbId) => useAsync(() => (productDbId ? loadFrameConfig(productDbId) : Promise.resolve(null)), [productDbId], productDbId ? 'cfg:' + productDbId : undefined);
 
 export function useAsync(fn, deps = [], key) {
   const [state, setState] = useState({ data: null, loading: true, error: null });

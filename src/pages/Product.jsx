@@ -7,7 +7,7 @@ import PanZoom, { IDENTITY, ZoomControls } from '../components/PanZoom';
 import WallStudio from '../components/WallStudio';
 import ProductCard, { Stars, categoryLabel } from '../components/ProductCard';
 import { Seo } from '../lib/seo';
-import { loadFrameConfig, useAsync, useCategories, useProducts } from '../lib/catalog';
+import { useFrameConfig, useCategories, useProducts } from '../lib/catalog';
 import { useCart } from '../state/cart';
 import { useShop, useToast } from '../state/store';
 import { money, deliveryWindow, SITE, waLink } from '../lib/site';
@@ -83,7 +83,7 @@ export default function Product() {
   const { data: products, loading } = useProducts();
   const { data: categories } = useCategories();
   const product = products?.find((p) => p.id === id || p.slug === id);
-  const { data: cfg } = useAsync(() => (product ? loadFrameConfig(product.dbId) : Promise.resolve(null)), [product?.dbId]);
+  const { data: cfg } = useFrameConfig(product?.dbId);
 
   const [view, setView] = useState(params.get('view') === 'room' ? 'room' : 'frame');
   const [img, setImg] = useState(0);

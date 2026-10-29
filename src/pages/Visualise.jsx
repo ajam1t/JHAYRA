@@ -6,7 +6,7 @@ import Icon from '../components/Icon';
 import RoomScene, { WALLS } from '../components/RoomScene';
 import { CameraWall } from '../components/WallStudio';
 import { Seo } from '../lib/seo';
-import { loadFrameConfig, searchProducts, useAsync, useCategories, useProducts } from '../lib/catalog';
+import { useFrameConfig, searchProducts, useCategories, useProducts } from '../lib/catalog';
 import { useCart } from '../state/cart';
 import { useToast } from '../state/store';
 import { money } from '../lib/site';
@@ -43,7 +43,7 @@ export default function Visualise() {
   const file = useRef(null);
 
   const product = useMemo(() => (products || []).find((p) => p.id === pid) || (products || []).find((p) => p.is_bestseller && p.thumbnail), [products, pid]);
-  const { data: cfg } = useAsync(() => (product ? loadFrameConfig(product.dbId) : Promise.resolve(null)), [product?.dbId]);
+  const { data: cfg } = useFrameConfig(product?.dbId);
 
   useEffect(() => {
     if (!cfg) return;
