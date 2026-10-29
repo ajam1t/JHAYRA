@@ -4822,3 +4822,72 @@
 @media (prefers-reduced-motion: reduce) {
   .mith-motif { animation: none; }
 }
+
+/* ── Reviews on phones: score beside the stars, smaller fan — one screen ── */
+@media (max-width: 759px) {
+  .rv {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: 'title title' 'ring stars' 'ring sub' 'fan fan';
+    column-gap: 16px;
+    align-items: center;
+    padding: 20px 16px 14px;
+    text-align: left;
+  }
+  .rv .hs-title {
+    grid-area: title;
+    margin-bottom: 14px;
+    text-align: center;
+    font-size: 26px;
+  }
+  .rv-score {
+    grid-area: ring;
+    width: 92px;
+    height: 92px;
+    margin: 0;
+  }
+  .rv-num b {
+    font-size: 34px;
+  }
+  .rv-num small {
+    font-size: 9.5px;
+  }
+  .rv-stars {
+    grid-area: stars;
+    align-self: end;
+    margin: 0;
+    font-size: 19px;
+    letter-spacing: 3px;
+  }
+  .rv-sub {
+    grid-area: sub;
+    align-self: start;
+    margin: 4px 0 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  .rv-fan {
+    grid-area: fan;
+    height: 168px;
+    margin-top: 14px;
+  }
+  .rv-card {
+    width: 80px;
+    gap: 4px;
+    transform: translateX(-50%) translateX(calc(var(--k) * 92px)) rotate(calc(var(--k) * 5deg)) translateY(calc(var(--k) * var(--k) * 6px));
+  }
+  .rv-badge {
+    top: -7px;
+    right: -7px;
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+  .rv-name {
+    width: 96px;
+    font-size: 11.5px;
+    text-align: center;
+  }
+  .rv-note {
+    display: none;
+  }
+}
