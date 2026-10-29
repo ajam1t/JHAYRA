@@ -113,7 +113,7 @@ export default function Founder({ variant = 'home' }) {
                   <WhatsAppGlyph size={18} /> Say hello on WhatsApp
                 </a>
               )}
-              <Link to="/#signature" className="btn btn-ghost-light">
+              <Link to="/signature-experience" className="btn btn-ghost-light">
                 The Signature Experience
               </Link>
             </div>

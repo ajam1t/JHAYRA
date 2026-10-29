@@ -3554,3 +3554,100 @@
     height: auto;
   }
 }
+
+/* ── Shop by room v2: reference-style cards ────────────────────────────── */
+.hs-room-row {
+  grid-auto-columns: 74%;
+}
+@media (min-width: 640px) {
+  .hs-room-row {
+    grid-auto-columns: 40%;
+  }
+}
+@media (min-width: 1000px) {
+  .hs-room-row {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    overflow: visible;
+    margin: 0;
+    padding: 4px 0;
+  }
+}
+.hs-room {
+  border-radius: 8px;
+  background: #f3ece1;
+  box-shadow: 0 1px 2px rgba(60, 45, 20, 0.06);
+  transition: box-shadow 0.4s var(--ease), transform 0.4s var(--ease);
+}
+.hs-room:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px rgba(60, 45, 20, 0.14);
+}
+.hs-room-scene {
+  aspect-ratio: 5 / 3.2;
+  border-radius: 8px 8px 0 0;
+}
+.hs-room-scene .room.room-mini {
+  border-radius: 0;
+}
+.hs-room-label {
+  padding: 12px 14px 14px;
+}
+.hs-room-label b {
+  font-size: 14.5px;
+}
+.hs-room-label small {
+  font-size: 13px;
+}
+
+/* ── Reviews: top-rated frames side by side ───────────────────────────── */
+.hs-toprated {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.hs-toprated a {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  min-height: 0;
+  text-align: center;
+  justify-items: center;
+}
+.hs-toprated .hs-tr-img {
+  width: 100%;
+  height: auto;
+  box-shadow: none;
+  overflow: visible;
+  filter: drop-shadow(0 8px 12px rgba(40, 30, 15, 0.2));
+}
+.hs-toprated b {
+  font-size: 13px;
+  line-height: 1.25;
+}
+.hs-toprated small {
+  font-size: 12px;
+}
+
+/* ── Hero: 3D frame beside the buttons on phones and tablets ──────────── */
+@media (max-width: 999px) {
+  .sf-hero .sf-hero-act .gh-ctas {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+  .sf-hero .sf-hero-act .gh-ctas .btn {
+    flex: none;
+  }
+}
+/* Gift Finder looks like every other bottom-bar item (gold only when current) */
+.bottom-nav .bn-gift:not(.active) .bn-ic,
+.bottom-nav a:not(.active) .bn-ic {
+  background: none;
+  box-shadow: none;
+  color: inherit;
+}
+.bottom-nav a:not(.active) {
+  color: var(--muted);
+}
+.bottom-nav a .bn-ic svg {
+  animation: none;
+}

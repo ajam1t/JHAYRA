@@ -10,6 +10,7 @@ import { BRAND } from '../lib/brand';
 import { loadProducts, searchProducts } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
 import { useFestival } from '../state/festival';
+import { liveCampaigns, targetFor, useCampaigns } from '../lib/campaigns';
 
 // Desktop header. Visualise stays one tap away from product pages, Create
 // and the menu rather than taking a permanent slot here.
@@ -31,17 +32,22 @@ const MENU = [
 ];
 
 // Always lands on the top of the homepage: from another page it navigates;
-// on the homepage itself (or /#signature) it clears the hash and scrolls up.
-function Logo({ onNavigate }) {
+// on the homepage itself it clears any hash and scrolls up.
+// Home links: on the homepage itself, clear any #hash/?query and scroll to the top.
+function useHomeClick(onNavigate) {
   const { pathname, hash, search } = useLocation();
   const navigate = useNavigate();
-  const onClick = (e) => {
+  return (e) => {
     onNavigate?.();
     if (pathname !== '/') return;
     e.preventDefault();
     if (hash || search) navigate('/', { replace: true });
     window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   };
+}
+
+function Logo({ onNavigate }) {
+  const onClick = useHomeClick(onNavigate);
   return (
     <Link to="/" className="logo" aria-label="JHAYRA home" onClick={onClick}>
       <img className="logo-mark" src="/logo-mark.webp" alt="" width="44" height="40" />
@@ -77,6 +83,7 @@ function Announce() {
 // Search and cart live in the bottom bar and menu on phones; desktop keeps
 // them as quiet text links beside the main navigation.
 function Header({ onMenu, menuOpen }) {
+  const homeClick = useHomeClick();
   const { count, setDrawerOpen } = useCart();
   const { setSearchOpen } = useShop();
   const [scrolled, setScrolled] = useState(false);
@@ -99,7 +106,7 @@ function Header({ onMenu, menuOpen }) {
         </div>
         <nav className="nav" aria-label="Main">
           {NAV.map(([to, label, end]) => (
-            <NavLink key={to} to={to} end={end}>
+            <NavLink key={to} to={to} end={end} onClick={to === '/' ? homeClick : undefined}>
               {label}
             </NavLink>
           ))}
@@ -117,12 +124,33 @@ function Header({ onMenu, menuOpen }) {
   );
 }
 
-// Invitation to the Signature Experience section on the homepage. The link
-// carries #signature; the homepage scrolls to it (see Home.jsx), so browser
-// back/forward and opening in a new tab behave like any link.
-function SignatureStrip() {
+// Slim strip under the header. On the homepage it carries the live campaign
+// (e.g. Diwali) when there is one; everywhere else it invites people to the
+// Signature Experience.
+function TopStrip() {
+  const { pathname } = useLocation();
+  const live = liveCampaigns(useCampaigns());
+  if (pathname === '/') {
+    const c = live[0];
+    if (!c) return null;
+    return (
+      <Link to={targetFor(c.target).to} className="sig-strip camp-strip">
+        <span className="sig-rule" aria-hidden="true" />
+        <span className="sig-text">
+          <span className="sig-star" aria-hidden="true">
+            ✦
+          </span>
+          <span className="sig-kicker">{c.kicker}</span> <em>{c.title}</em>
+          <span className="sig-arrow" aria-hidden="true">
+            <Icon name="arrow" size={12} stroke={2} />
+          </span>
+        </span>
+        <span className="sig-rule" aria-hidden="true" />
+      </Link>
+    );
+  }
   return (
-    <Link to="/#signature" className="sig-strip">
+    <Link to="/signature-experience" className="sig-strip">
       <span className="sig-rule" aria-hidden="true" />
       <span className="sig-text">
         <span className="sig-star" aria-hidden="true">
@@ -149,6 +177,7 @@ function CountBadge({ count }) {
 }
 
 function MenuSheet({ onClose, returnFocus }) {
+  const homeClick = useHomeClick(onClose);
   const { setSearchOpen } = useShop();
   const panel = useRef(null);
   // Focus the panel, trap Tab inside it, close on Escape, restore focus on close.
@@ -198,7 +227,7 @@ function MenuSheet({ onClose, returnFocus }) {
           <button type="button" className="menu-search" onClick={() => (onClose(), setSearchOpen(true))}>
             <Icon name="search" size={18} /> Search art, designs and gifts
           </button>
-          <Link to="/" className="menu-home" onClick={onClose}>
+          <Link to="/" className="menu-home" onClick={homeClick}>
             Home <Icon name="arrow" size={18} />
           </Link>
           {MENU.map(([title, links]) => (
@@ -234,22 +263,16 @@ const BOTTOM = [
 ];
 function BottomNav() {
   const { count, setDrawerOpen, drawerOpen } = useCart();
+  const homeClick = useHomeClick();
   const { pathname } = useLocation();
   // Checkout and the design editors have their own fixed action bars.
   if (pathname.startsWith('/checkout') || /^\/customize\/.+/.test(pathname)) return null;
   return (
     <nav className="bottom-nav" aria-label="Quick">
       {BOTTOM.map(([to, label, icon, end]) => (
-        <NavLink key={to} to={to} end={end} className={to === '/gift-finder' ? 'bn-gift' : undefined}>
+        <NavLink key={to} to={to} end={end} onClick={to === '/' ? homeClick : undefined}>
           <span className="bn-ic" aria-hidden="true">
             <Icon name={icon} size={21} />
-            {to === '/gift-finder' && (
-              <>
-                <i className="bn-spark s1" />
-                <i className="bn-spark s2" />
-                <i className="bn-spark s3" />
-              </>
-            )}
           </span>
           <span>{label}</span>
         </NavLink>
@@ -606,7 +629,7 @@ export default function Layout() {
       </a>
       <Announce />
       <Header onMenu={() => setMenu(true)} menuOpen={menu} />
-      {!pathname.startsWith('/checkout') && <SignatureStrip />}
+      {!pathname.startsWith('/checkout') && <TopStrip />}
       <main id="main" key={pathname} className="page-enter">
         <Outlet />
       </main>
