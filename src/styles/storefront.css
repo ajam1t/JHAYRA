@@ -4998,3 +4998,26 @@
 @media (prefers-reduced-motion: reduce) {
   .fcx-f, .fcx-copy, .fcx-tabs button.run i { animation: none; }
 }
+
+/* ── Touch targets: at least 24 px for footer, breadcrumb and help links ── */
+.footer li a,
+.crumbs a,
+.pdp-help,
+.ad-login a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+.footer li a {
+  padding-block: 3px;
+}
+.pdp-help {
+  flex-wrap: wrap;
+  gap: 0 0.3em;
+}
+@media (max-width: 760px) {
+  .room-hotspot {
+    width: 26px !important;
+    height: 26px !important;
+  }
+}

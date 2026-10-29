@@ -34,6 +34,15 @@ export default function Customize() {
     return l;
   }, [active, moment, group, q]);
 
+  // Show designs in pages of 24 so the page stays short and fast on phones.
+  const PAGE = 24;
+  const [shown, setShown] = useState(PAGE);
+  const key = `${group}|${q}|${params.get('moment') || ''}`;
+  const [lastKey, setLastKey] = useState(key);
+  if (key !== lastKey) {
+    setLastKey(key);
+    setShown(PAGE);
+  }
   const usedGroups = groups.filter((g) => active.some((t) => t.group === g.id));
 
   return (
@@ -114,7 +123,7 @@ export default function Customize() {
             {list.length} design{list.length === 1 ? '' : 's'}
           </p>
           <div className="tgrid">
-            {list.map((t, i) => (
+            {list.slice(0, shown).map((t, i) => (
               <Reveal key={t.id} delay={Math.min(i, 8) * 0.03}>
                 <Link to={`/customize/${t.id}`} className="tcard">
                   <div className="tcard-stage">
@@ -131,6 +140,13 @@ export default function Customize() {
               </Reveal>
             ))}
           </div>
+          {list.length > shown && (
+            <div className="center" style={{ marginTop: 28 }}>
+              <button type="button" className="btn btn-ghost" onClick={() => setShown((n) => n + PAGE)}>
+                Show more designs <span className="muted small">({list.length - shown} more)</span>
+              </button>
+            </div>
+          )}
           {!list.length && (
             <div className="empty">
               <p className="muted">No designs match — try “Design from scratch” and make exactly what you want.</p>
