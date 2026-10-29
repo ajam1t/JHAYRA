@@ -84,7 +84,7 @@ function Announce() {
 // them as quiet text links beside the main navigation.
 function Header({ onMenu, menuOpen }) {
   const homeClick = useHomeClick();
-  const { count, setDrawerOpen } = useCart();
+  const { count } = useCart();
   const { setSearchOpen } = useShop();
   const [scrolled, setScrolled] = useState(false);
 
@@ -115,9 +115,9 @@ function Header({ onMenu, menuOpen }) {
           <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search (Ctrl K)">
             Search
           </button>
-          <button type="button" onClick={() => setDrawerOpen(true)} aria-label={`Cart, ${count} items`}>
+          <Link to="/cart" aria-label={`Cart, ${count} items`}>
             Cart{count > 0 ? ` (${count})` : ''}
-          </button>
+          </Link>
         </div>
       </div>
     </header>
@@ -270,7 +270,7 @@ const BOTTOM = [
   ['/gift-finder', 'Gift Finder', 'gift'],
 ];
 function BottomNav() {
-  const { count, setDrawerOpen, drawerOpen } = useCart();
+  const { count } = useCart();
   const homeClick = useHomeClick();
   const { pathname } = useLocation();
   // Checkout and the design editors have their own fixed action bars.
@@ -285,13 +285,13 @@ function BottomNav() {
           <span>{label}</span>
         </NavLink>
       ))}
-      <button type="button" className={drawerOpen || pathname === '/cart' ? 'active' : ''} onClick={() => setDrawerOpen(true)} aria-label={`Cart, ${count} items`}>
+      <NavLink to="/cart" aria-label={`Cart, ${count} items`}>
         <span className="bn-ic" aria-hidden="true">
           <Icon name="bag" size={21} />
         </span>
         <span>Cart</span>
         <CountBadge count={count} />
-      </button>
+      </NavLink>
     </nav>
   );
 }

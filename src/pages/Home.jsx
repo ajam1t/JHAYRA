@@ -565,6 +565,106 @@ function FeaturedCollections({ products }) {
   );
 }
 
+/* ── Custom art: an animated walk-through of photo → framed art ─────────── */
+const CS_STEPS = [
+  ['upload', 'Upload a photo', 'Any phone photo — we check it will print sharp.'],
+  ['brush', 'Choose a style', 'Original, monochrome, vintage or pencil sketch.'],
+  ['type', 'Add names & a date', 'Set in our typography, exactly as you type.'],
+  ['wall', 'We frame & deliver', 'Handcrafted to order, delivered free across India.'],
+];
+const CS_STYLES = [
+  ['Original', 'none'],
+  ['Monochrome', 'grayscale(1) contrast(1.08)'],
+  ['Vintage', 'sepia(0.55) saturate(0.85) contrast(0.95) brightness(1.04)'],
+  ['Pencil sketch', 'grayscale(1) contrast(1.6) brightness(1.15)'],
+];
+function CustomStudio() {
+  const [step, setStep] = useState(0);
+  const [style, setStyle] = useState(0);
+  const [live, setLive] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const box = useRef(null);
+  const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Play only while the section is on screen.
+  useEffect(() => {
+    const el = box.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => setLive(e.isIntersecting), { threshold: 0.3 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => {
+    if (reduce) return setStep(3);
+    if (!live || paused) return;
+    const t = setTimeout(() => setStep((x) => (x + 1) % 4), step === 3 ? 3600 : 2600);
+    return () => clearTimeout(t);
+  }, [step, live, paused, reduce]);
+  // While on "Choose a style", flick through the looks.
+  useEffect(() => {
+    if (step !== 1 || reduce) return setStyle(step === 0 ? 0 : 2);
+    setStyle(0);
+    const t = setInterval(() => setStyle((x) => (x + 1) % CS_STYLES.length), 620);
+    return () => clearInterval(t);
+  }, [step, reduce]);
+  return (
+    <div className="cs" ref={box} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <div className="cs-copy">
+        <span className="hs-kick">Make it personal</span>
+        <h2 className="hs-title">Custom Art for Your Story</h2>
+        <p>Turn your photos, special places and meaningful moments into framed wall art. The preview is exactly what we print.</p>
+        <ol className="cs-steps">
+          {CS_STEPS.map(([ic, t, d], i) => (
+            <li key={t} className={i === step ? 'on' : i < step ? 'done' : ''}>
+              <button type="button" onClick={() => (setStep(i), setPaused(true))} aria-current={i === step ? 'step' : undefined}>
+                <span className="cs-n">{i < step ? <Icon name="check" size={14} stroke={2.2} /> : i + 1}</span>
+                <span>
+                  <b>{t}</b>
+                  <small>{d}</small>
+                </span>
+                <span className="cs-bar" aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ol>
+        <Link to="/customize/photo" className="btn btn-gold btn-lg sheen">
+          Create Your Custom Art <Icon name="arrow" size={18} />
+        </Link>
+      </div>
+      <div className={`cs-stage s${step}`} aria-hidden="true">
+        <span className="cs-glow" />
+        <div className="cs-upload">
+          <Icon name="upload" size={18} />
+          <span>
+            our-day.jpg <i />
+          </span>
+        </div>
+        <div className="cs-art">
+          <div className="cs-mat">
+            <div className="cs-photo">
+              <img src="/samples/couple-2.webp" alt="" loading="lazy" width="560" height="560" style={{ filter: CS_STYLES[style][1] }} />
+              <span className="cs-crop" />
+            </div>
+            <div className="cs-caption">
+              <b>Aarav &amp; Ananya</b>
+              <small>14 · 02 · 2024</small>
+            </div>
+          </div>
+        </div>
+        <div className="cs-chips">
+          {CS_STYLES.map(([n], i) => (
+            <span key={n} className={i === style ? 'on' : ''}>
+              {n}
+            </span>
+          ))}
+        </div>
+        <div className="cs-badge">
+          <Icon name="truck" size={15} /> Framed &amp; delivered free
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Custom art + customer ratings ──────────────────────────────────────── */
 function CustomAndReviews({ products }) {
   const rated = (products || []).filter((p) => p.thumbnail && p.rating && p.review_count);
@@ -574,72 +674,41 @@ function CustomAndReviews({ products }) {
   return (
     <section className="hs hs-duo">
       <div className="wrap hs-duo-grid">
-        <div className="hs-custom">
-          <div className="hs-custom-copy">
-            <span className="hs-kick">Make it personal</span>
-            <h2 className="hs-title">Custom Art for Your Story</h2>
-            <p>Turn your photos, special places or meaningful moments into framed wall art. Upload, choose a style, add names or a date — the preview is exactly what we print.</p>
-            <ol className="hs-custom-steps">
-              <li>
-                <Icon name="upload" size={16} /> Upload a photo
-              </li>
-              <li>
-                <Icon name="brush" size={16} /> Choose a style
-              </li>
-              <li>
-                <Icon name="wall" size={16} /> We frame &amp; deliver
-              </li>
-            </ol>
-            <Link to="/customize/photo" className="btn btn-gold sheen">
-              Create Your Custom Art <Icon name="arrow" size={16} />
-            </Link>
-          </div>
-          <div className="hs-custom-art" aria-hidden="true">
-            <span className="hs-polaroid">
-              <img src="/samples/couple-2.webp" alt="" loading="lazy" width="300" height="300" />
-              <i>Your photo</i>
-            </span>
-            <Icon name="arrow" size={22} />
-            <span className="hs-custom-frame">
-              <Frame src="/samples/couple-2.webp" alt="" ratio={{ w: 12, h: 16 }} colour="#1C1C1C" mat glare sizes="160px" />
-            </span>
-          </div>
-        </div>
-        <div className="hs-reviews">
+        <CustomStudio />
+        <div className="hs-reviews rv">
           <h2 className="hs-title">What Our Customers Say</h2>
           {total > 0 ? (
             <>
-              <div className="hs-score">
-                <b>{avg.toFixed(1)}</b>
-                <span>
-                  <span className="hs-stars" aria-hidden="true">
-                    ★★★★★
-                  </span>
-                  <small>Average from {total.toLocaleString('en-IN')} product ratings</small>
+              <div className="rv-score">
+                <svg className="rv-ring" viewBox="0 0 120 120" aria-hidden="true">
+                  <circle cx="60" cy="60" r="52" className="rv-track" />
+                  <circle cx="60" cy="60" r="52" className="rv-fill" style={{ '--v': avg / 5 }} />
+                </svg>
+                <span className="rv-num">
+                  <b>{avg.toFixed(1)}</b>
+                  <small>out of 5</small>
                 </span>
               </div>
-              <ul className="hs-toprated">
-                {top.map((p) => (
-                  <li key={p.id}>
-                    <Link to={`/product/${p.id}`}>
-                      <span className="hs-tr-img">
-                        <Frame src={p.thumbnail} alt="" ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false} sizes="(max-width: 760px) 28vw, 120px" />
-                      </span>
-                      <b>{p.name}</b>
-                      <small>
-                        ★ {Number(p.rating).toFixed(1)} · {p.review_count.toLocaleString('en-IN')}
-                      </small>
-                    </Link>
-                  </li>
+              <div className="rv-stars" aria-label={`Average ${avg.toFixed(1)} out of 5`}>
+                <span style={{ '--pct': `${(avg / 5) * 100}%` }}>★★★★★</span>
+              </div>
+              <p className="rv-sub">
+                from <b>{total.toLocaleString('en-IN')}</b> product ratings · trusted by <b>{BRAND.homes}</b> homes since {BRAND.since}
+              </p>
+              <div className="rv-fan">
+                {top.map((p, k) => (
+                  <Link key={p.id} to={`/product/${p.id}`} className="rv-card" style={{ '--k': k - 1 }}>
+                    <Frame src={p.thumbnail} alt={p.name} ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false} sizes="(max-width: 760px) 30vw, 130px" />
+                    <span className="rv-badge">★ {Number(p.rating).toFixed(1)}</span>
+                    <span className="rv-name">{p.name}</span>
+                  </Link>
                 ))}
-              </ul>
+              </div>
+              <small className="rv-note">Top-rated designs</small>
             </>
           ) : (
             <p className="muted">Ratings appear here as customers review their frames.</p>
           )}
-          <p className="hs-since">
-            Trusted by {BRAND.homes} homes since {BRAND.since}.
-          </p>
         </div>
       </div>
     </section>
@@ -647,24 +716,111 @@ function CustomAndReviews({ products }) {
 }
 
 /* ── Bestsellers & trending ────────────────────────────────────────── */
-function Bestsellers({ products, categories, loading }) {
+function Bestsellers({ products }) {
   const { data: opts } = useOptionSummary();
-  const items = (products || []).filter((p) => p.thumbnail && p.is_bestseller).slice(0, 8);
+  // Bestsellers, most-reviewed first.
+  const items = useMemo(() => (products || []).filter((p) => p.thumbnail && p.is_bestseller).sort((a, b) => (b.review_count || 0) - (a.review_count || 0)).slice(0, 8), [products]);
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const drag = useRef(null);
+  const n = items.length;
+  const go = (d) => setI((x) => (x + d + n) % n);
+  useEffect(() => {
+    if (n < 2 || paused || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const t = setInterval(() => setI((x) => (x + 1) % n), 4200);
+    return () => clearInterval(t);
+  }, [n, paused]);
+  if (!n) return <div style={{ minHeight: 520 }} />;
+  const cur = items[i % n];
+  const o = opts?.[cur.dbId];
   return (
-    <section className="section sf-best">
+    <section className="section sf-best bf" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
       <div className="wrap">
-        <SectionHead eyebrow="Most loved" title="Bestsellers &" em="trending designs.">
-          <Link to="/shop?sort=bestsellers" className="link">
-            Shop all bestsellers <Icon name="arrow" size={16} />
+        <div className="hs-head">
+          <h2 className="hs-title">Bestsellers</h2>
+          <Link to="/shop?sort=bestsellers" className="hs-all">
+            View all <Icon name="arrow" size={14} />
           </Link>
-        </SectionHead>
-        <div className="grid-products sf-stagger">
-          {loading && !products ? Array.from({ length: 8 }, (_, i) => <ProductCardSkeleton key={i} />) : items.map((p, i) => <ProductCard key={p.id} product={p} categories={categories} index={i} options={opts?.[p.dbId]} />)}
         </div>
-        <div className="center" style={{ marginTop: 36 }}>
-          <Link to="/shop" className="btn btn-lg">
-            Shop All <Icon name="arrow" size={18} />
-          </Link>
+        <div
+          className="bf-stage"
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Bestsellers"
+          onPointerDown={(e) => {
+            drag.current = e.clientX;
+            setPaused(true);
+          }}
+          onPointerUp={(e) => {
+            if (drag.current == null) return;
+            const dx = e.clientX - drag.current;
+            drag.current = null;
+            if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowRight') go(1);
+            if (e.key === 'ArrowLeft') go(-1);
+          }}
+        >
+          <span className="bf-spot" aria-hidden="true" />
+          {items.map((p, k) => {
+            let d = k - i;
+            if (d > n / 2) d -= n;
+            if (d < -n / 2) d += n;
+            const hidden = Math.abs(d) > 2;
+            return (
+              <Link
+                key={p.id}
+                to={`/product/${p.id}`}
+                className={`bf-card ${d === 0 ? 'on' : ''}`}
+                style={{ '--d': d, '--ad': Math.abs(d) }}
+                aria-hidden={d !== 0}
+                tabIndex={d === 0 ? 0 : -1}
+                draggable="false"
+                onClick={(e) => {
+                  if (d !== 0) {
+                    e.preventDefault();
+                    setI(k);
+                  }
+                }}
+                hidden={hidden}
+              >
+                <Frame src={p.thumbnail} alt={d === 0 ? p.name : ''} ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare sizes="(max-width: 760px) 56vw, 280px" />
+              </Link>
+            );
+          })}
+        </div>
+        <div className="bf-info" aria-live="polite">
+          <span className="bf-count">
+            {String(i + 1).padStart(2, '0')} <i>/</i> {String(n).padStart(2, '0')}
+          </span>
+          <small>{cur.category?.replace(/-/g, ' ')}</small>
+          <h3 key={cur.id}>{cur.name}</h3>
+          <p>
+            {cur.rating ? (
+              <>
+                <span className="bf-stars">★</span> {Number(cur.rating).toFixed(1)} · {cur.review_count?.toLocaleString('en-IN')} ratings ·{' '}
+              </>
+            ) : null}
+            from <b>{money(cur.price)}</b>
+            {o?.sizes ? ` · ${o.sizes} sizes` : ''}
+          </p>
+          <div className="bf-ctl">
+            <button type="button" className="icon-btn" aria-label="Previous bestseller" onClick={() => (go(-1), setPaused(true))}>
+              <Icon name="arrowL" size={18} />
+            </button>
+            <Link to={`/product/${cur.id}`} className="btn btn-gold sheen">
+              View this frame <Icon name="arrow" size={16} />
+            </Link>
+            <button type="button" className="icon-btn" aria-label="Next bestseller" onClick={() => (go(1), setPaused(true))}>
+              <Icon name="arrow" size={18} />
+            </button>
+          </div>
+          <div className="bf-dots" aria-hidden="true">
+            {items.map((p, k) => (
+              <span key={p.id} className={k === i ? 'on' : ''} />
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -788,7 +944,7 @@ export default function Home() {
         <CustomAndReviews products={products} />
       </LazyMount>
       <LazyMount minHeight={900}>
-        <Bestsellers products={products} categories={categories} loading={loading} />
+        <Bestsellers products={products} />
       </LazyMount>
       <Faq />
       <FinalCta />
