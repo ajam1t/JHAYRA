@@ -5172,3 +5172,24 @@
     grid-column: auto;
   }
 }
+/* Brand-coloured social buttons in the footer */
+.footer-social a.fs-ig {
+  background: none;
+  box-shadow: 0 4px 10px rgba(214, 36, 159, 0.25);
+  border-radius: 11px;
+  overflow: hidden;
+}
+.footer-social a.fs-wa {
+  background: #25d366;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+}
+.footer-social a.fs-ig:hover,
+.footer-social a.fs-wa:hover {
+  background: none;
+  color: #fff;
+  transform: translateY(-2px);
+}
+.footer-social a.fs-wa:hover {
+  background: #1fb757;
+}

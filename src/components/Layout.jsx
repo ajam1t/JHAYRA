@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import Icon, { WhatsAppGlyph } from './Icon';
+import Icon, { InstagramLogo, WhatsAppGlyph } from './Icon';
 import Frame from './Frame';
 import Img from './Img';
 import { useCart } from '../state/cart';
@@ -562,11 +562,11 @@ function Footer() {
             <Logo />
             <p>Handcrafted wall art and personalised frames, made in India since {BRAND.since}.</p>
             <div className="footer-social">
-              <a href={SITE.instagram} target="_blank" rel="noopener noreferrer" aria-label="JHAYRA on Instagram">
-                <Icon name="instagram" size={18} />
+              <a href={SITE.instagram} target="_blank" rel="noopener noreferrer" aria-label="JHAYRA on Instagram" className="fs-ig">
+                <InstagramLogo size={40} />
               </a>
-              <a href={waLink()} target="_blank" rel="noopener noreferrer" aria-label="Chat with JHAYRA on WhatsApp">
-                <WhatsAppGlyph size={18} />
+              <a href={waLink()} target="_blank" rel="noopener noreferrer" aria-label="Chat with JHAYRA on WhatsApp" className="fs-wa">
+                <WhatsAppGlyph size={20} />
               </a>
             </div>
           </div>
