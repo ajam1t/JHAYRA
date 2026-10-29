@@ -4787,25 +4787,6 @@
   padding-top: 13px;
   padding-bottom: 12px;
 }
-/* Madhubani-style double-line border, top and bottom */
-.mith-border,
-.mith-strip::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 6px;
-  pointer-events: none;
-  background:
-    linear-gradient(#d4472c, #d4472c) 0 0 / 100% 1px no-repeat,
-    linear-gradient(#d4472c, #d4472c) 0 100% / 100% 1px no-repeat;
-}
-.mith-border {
-  top: 2px;
-}
-.mith-strip::after {
-  bottom: 2px;
-}
 .mith-motif {
   color: #e8a828;
   font-size: 15px;

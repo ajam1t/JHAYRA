@@ -137,7 +137,6 @@ function TopStrip() {
     if (!c)
       return (
         <Link to="/worlds/heritage" className="fest-strip mith-strip">
-          <span className="mith-border" aria-hidden="true" />
           <span className="mith-motif" aria-hidden="true">
             ❁
           </span>
