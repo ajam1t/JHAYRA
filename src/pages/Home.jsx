@@ -439,25 +439,16 @@ function ShopByCategory({ products, categories }) {
   );
 }
 
-/* ── Shop by room: warm room scenes that fill each card ─────────────────── */
-// [room, title, line, frames [w, h] in inches, furniture width share, art zoom, art centre height]
+/* ── Shop by room: real interior photographs ─────────────────────────── */
+// Photos: Unsplash and Pexels (free for commercial use), cropped in public/rooms.
 const ROOM_CARDS = [
-  ['living', 'Living Room', 'Make a statement', [[12, 16], [12, 16]], 0.8, 1.75, 0.255],
-  ['bedroom', 'Bedroom', 'Calm and cozy vibes', [[18, 24]], 0.76, 1.15, 0.26],
-  ['dining', 'Dining Room', 'Elevate every meal', [[18, 24]], 0.8, 1.15, 0.31],
-  ['office', 'Office', 'Stay inspired', [[9.5, 13], [9.5, 13]], 0.46, 1.95, 0.245],
-  ['pooja', 'Pooja & Vastu', 'A sacred corner', [[12, 16]], 0.44, 1.65, 0.255],
+  ['living', 'Living Room', 'Make a statement'],
+  ['bedroom', 'Bedroom', 'Calm and cozy vibes'],
+  ['dining', 'Dining Room', 'Elevate every meal'],
+  ['office', 'Office', 'Stay inspired'],
+  ['entryway', 'Entryway', 'A warm first impression'],
 ];
-function ShopByRoom({ products }) {
-  const art = (products || []).filter((p) => p.thumbnail);
-  // Each card shows different pieces from its room's categories.
-  const used = new Set();
-  const pick = (cats, n) => {
-    const pool = art.filter((p) => cats.includes(p.category) && !used.has(p.id));
-    const out = pool.slice(0, n);
-    out.forEach((p) => used.add(p.id));
-    return out;
-  };
+function ShopByRoom() {
   return (
     <section className="hs hs-rooms">
       <div className="wrap">
@@ -468,29 +459,17 @@ function ShopByRoom({ products }) {
           </Link>
         </div>
         <div className="hs-scroll hs-room-row">
-          {ROOM_CARDS.map(([id, title, line, sizes, fw, zoom, y]) => {
-            const r = ROOMS.find((x) => x.id === id);
-            const items = pick(r.cats, sizes.length);
-            const gap = 2.5;
-            const total = sizes.reduce((t, [w]) => t + w, 0) + gap * (sizes.length - 1);
-            let x = -total / 2;
-            const frames = sizes.map(([w, h], k) => {
-              const dx = x + w / 2;
-              x += w + gap;
-              return { key: `${id}${k}`, src: items[k]?.thumbnail, wIn: w, hIn: h, dxIn: dx, y, colour: '#1C1C1C', thickness: 3 };
-            });
-            return (
-              <Link key={id} to={`/shop?room=${id}`} className="hs-room">
-                <div className="hs-room-scene">
-                  <RoomScene wall={WALL.ivory} furniture={r.furniture} frames={frames} zoom={zoom} furnitureWidth={fw} decor tone="gallery" className="room-mini" />
-                </div>
-                <span className="hs-room-label">
-                  <b>{title}</b>
-                  <small>{line}</small>
-                </span>
-              </Link>
-            );
-          })}
+          {ROOM_CARDS.map(([id, title, line]) => (
+            <Link key={id} to={`/shop?room=${id}`} className="hs-room">
+              <div className="hs-room-scene">
+                <img src={`/rooms/${id}.webp`} alt={`${title} styled with framed wall art`} width="900" height="611" loading="lazy" decoding="async" />
+              </div>
+              <span className="hs-room-label">
+                <b>{title}</b>
+                <small>{line}</small>
+              </span>
+            </Link>
+          ))}
         </div>
       </div>
     </section>
@@ -787,7 +766,7 @@ export default function Home() {
       {festival && <FestivalPicks festival={festival} products={products} categories={categories} />}
       <ShopByCategory products={products} categories={categories} />
       <LazyMount minHeight={420}>
-        <ShopByRoom products={products} />
+        <ShopByRoom />
       </LazyMount>
       <LazyMount minHeight={360}>
         <FeaturedCollections products={products} />

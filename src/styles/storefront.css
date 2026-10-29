@@ -3651,3 +3651,193 @@
 .bottom-nav a .bn-ic svg {
   animation: none;
 }
+.hs-room-scene img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.8s var(--ease);
+}
+.hs-room:hover .hs-room-scene img {
+  transform: scale(1.05);
+}
+
+/* ═══════════════ Festival strip: diyas, sparks, marigold garland ═══════ */
+.fest-strip {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 10px 14px 8px;
+  background:
+    radial-gradient(40% 140% at 50% 120%, rgba(255, 176, 64, 0.45), transparent 70%),
+    radial-gradient(30% 120% at 10% 50%, rgba(255, 140, 40, 0.25), transparent 70%),
+    radial-gradient(30% 120% at 90% 50%, rgba(255, 140, 40, 0.25), transparent 70%),
+    linear-gradient(90deg, #4a0f19, #6b1624 50%, #4a0f19);
+  color: #fbe7c2;
+  border-bottom: 1px solid #c9a55c;
+}
+/* Marigold garland: a scalloped row of orange and yellow blooms on top */
+.fest-garland {
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background:
+    radial-gradient(circle at 8px 6px, #f7a21b 0 4.5px, transparent 5px) 0 0 / 16px 12px repeat-x,
+    radial-gradient(circle at 16px 7px, #ffd04a 0 4px, transparent 4.5px) 0 0 / 16px 12px repeat-x;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+  animation: garland 16s linear infinite;
+}
+@keyframes garland {
+  to {
+    background-position: 160px 0, 160px 0;
+  }
+}
+.fest-text {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  white-space: nowrap;
+}
+.fest-kicker {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #f2c86a;
+}
+.fest-text em {
+  font-family: var(--fd);
+  font-style: italic;
+  font-size: 20px;
+  line-height: 1;
+  background: linear-gradient(100deg, #f8dfa5 20%, #fff6dd 45%, #e7b95a 55%, #f8dfa5 80%) 0 0 / 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: fest-foil 5s ease-in-out infinite;
+}
+@keyframes fest-foil {
+  50% {
+    background-position: 100% 0;
+  }
+}
+/* Diya: clay lamp with a flickering flame and warm glow */
+.fest-diya {
+  position: relative;
+  flex: none;
+  width: 20px;
+  height: 9px;
+  margin-top: 8px;
+  border-radius: 0 0 12px 12px;
+  background: linear-gradient(#d0742c, #8a3a14);
+  box-shadow: 0 0 14px 4px rgba(255, 170, 60, 0.35);
+}
+.fest-flame {
+  position: absolute;
+  left: 50%;
+  bottom: 7px;
+  width: 7px;
+  height: 13px;
+  margin-left: -3.5px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 50% 70%, #fff7d6 0 25%, #ffcf4a 45%, #ff8a1e 80%);
+  box-shadow: 0 0 10px 3px rgba(255, 190, 70, 0.7);
+  transform-origin: 50% 100%;
+  animation: flicker 1.6s ease-in-out infinite alternate;
+}
+.fest-diya:last-of-type .fest-flame {
+  animation-delay: -0.7s;
+}
+@keyframes flicker {
+  0% {
+    transform: scale(1) rotate(-2deg);
+    opacity: 0.95;
+  }
+  40% {
+    transform: scale(1.12, 0.92) rotate(3deg);
+  }
+  70% {
+    transform: scale(0.92, 1.1) rotate(-1deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.05) rotate(2deg);
+    opacity: 0.88;
+  }
+}
+/* Rising golden sparks */
+.fest-sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.fest-sparks i {
+  position: absolute;
+  bottom: -4px;
+  left: calc(6% + var(--i) * 12.5%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #ffd98a;
+  box-shadow: 0 0 6px 2px rgba(255, 200, 100, 0.7);
+  opacity: 0;
+  animation: fest-spark 4.5s ease-out infinite;
+  animation-delay: calc(var(--i) * -0.6s);
+}
+@keyframes fest-spark {
+  15% {
+    opacity: 1;
+  }
+  to {
+    transform: translate(calc((var(--i) - 4) * 3px), -46px) scale(0.4);
+    opacity: 0;
+  }
+}
+.fest-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f2c86a, #c9963e);
+  color: #3d0b13;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s var(--ease);
+}
+.fest-strip:hover .fest-cta {
+  transform: translateX(3px);
+}
+.fest-strip:focus-visible {
+  outline: 2px solid #f2c86a;
+  outline-offset: -4px;
+}
+@media (max-width: 420px) {
+  .fest-strip {
+    gap: 8px;
+    padding: 10px 8px 8px;
+  }
+  .fest-kicker {
+    display: none;
+  }
+  .fest-text em {
+    font-size: 19px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fest-garland,
+  .fest-text em,
+  .fest-flame,
+  .fest-sparks i {
+    animation: none;
+  }
+}

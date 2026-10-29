@@ -134,18 +134,26 @@ function TopStrip() {
     const c = live[0];
     if (!c) return null;
     return (
-      <Link to={targetFor(c.target).to} className="sig-strip camp-strip">
-        <span className="sig-rule" aria-hidden="true" />
-        <span className="sig-text">
-          <span className="sig-star" aria-hidden="true">
-            ✦
-          </span>
-          <span className="sig-kicker">{c.kicker}</span> <em>{c.title}</em>
-          <span className="sig-arrow" aria-hidden="true">
-            <Icon name="arrow" size={12} stroke={2} />
-          </span>
+      <Link to={targetFor(c.target).to} className="fest-strip">
+        <span className="fest-garland" aria-hidden="true" />
+        <span className="fest-sparks" aria-hidden="true">
+          {Array.from({ length: 8 }, (_, i) => (
+            <i key={i} style={{ '--i': i }} />
+          ))}
         </span>
-        <span className="sig-rule" aria-hidden="true" />
+        <span className="fest-diya" aria-hidden="true">
+          <span className="fest-flame" />
+        </span>
+        <span className="fest-text">
+          <span className="fest-kicker">{c.kicker}</span>
+          <em>{c.title}</em>
+        </span>
+        <span className="fest-diya" aria-hidden="true">
+          <span className="fest-flame" />
+        </span>
+        <span className="fest-cta">
+          Shop <Icon name="arrow" size={13} stroke={2} />
+        </span>
       </Link>
     );
   }
