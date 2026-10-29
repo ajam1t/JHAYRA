@@ -5021,3 +5021,11 @@
     height: 26px !important;
   }
 }
+/* Homepage: no double gap between the bestsellers carousel and the FAQ */
+.sf-best.section {
+  padding-bottom: clamp(16px, 3vw, 32px);
+}
+.sf-best + .sf-faq.section,
+.sf-faq.section {
+  padding-top: clamp(20px, 3vw, 40px);
+}
