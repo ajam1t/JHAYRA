@@ -13,7 +13,6 @@ import Monogram3D from '../components/Monogram3D';
 import { Seo } from '../lib/seo';
 import { useCategories, useOptionSummary, useProducts } from '../lib/catalog';
 import { COLLECTION_MAP, collectionProducts } from '../lib/collections';
-import CampaignBanner from '../components/CampaignBanner';
 import { useTemplates } from '../lib/templates';
 import { ROOMS } from '../lib/rooms';
 import { HOME_FAQ } from '../lib/faq';
@@ -786,7 +785,6 @@ export default function Home() {
       />
       {festival ? <FestivalHero festival={festival} /> : <Hero products={products} />}
       {festival && <FestivalPicks festival={festival} products={products} categories={categories} />}
-      <CampaignBanner />
       <ShopByCategory products={products} categories={categories} />
       <LazyMount minHeight={420}>
         <ShopByRoom products={products} />
