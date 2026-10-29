@@ -11,7 +11,7 @@ import ProductCard, { ProductCardSkeleton } from '../components/ProductCard';
 import LazyMount from '../components/LazyMount';
 import Monogram3D from '../components/Monogram3D';
 import { Seo } from '../lib/seo';
-import { useCategories, useOptionSummary, useProducts } from '../lib/catalog';
+import { useCategories, useFrameTables, useOptionSummary, useProducts } from '../lib/catalog';
 import { COLLECTION_MAP, collectionProducts } from '../lib/collections';
 import { useTemplates } from '../lib/templates';
 import { ROOMS } from '../lib/rooms';
@@ -407,20 +407,53 @@ function Hero({ products }) {
   );
 }
 
-/* ── Shop by category: round artwork thumbnails from live categories ──── */
+/* ── Shop by category: A4 framed artwork in the real frame colours ─────── */
+// Colours shown are those the category's products are actually offered in
+// (product_options), using the frame_colours table for names and shades.
+const FRAME_ORDER = ['black', 'gold', 'brown', 'natural', 'white', 'silver'];
+const FRAME_LABEL = { brown: 'Wood', natural: 'Natural wood' };
+
+function CategoryCard({ c, colours }) {
+  const [sel, setSel] = useState(colours[0]?.slug);
+  const cur = colours.find((x) => x.slug === sel) || colours[0];
+  return (
+    <article className="hc-card">
+      <Link to={`/shop?category=${c.slug}`} className="hc-link">
+        <span className="hc-stage">
+          <Frame src={c.img} alt={`${c.name} wall art in a ${cur?.name.toLowerCase() || 'black'} frame`} ratio={{ w: 9.5, h: 13 }} colour={cur?.hex || '#1C1C1C'} thickness={4.2} glare sizes="(max-width: 760px) 44vw, 15vw" />
+        </span>
+        <span className="hc-name">{c.name}</span>
+      </Link>
+      {colours.length > 1 && (
+        <div className="hc-swatches" role="radiogroup" aria-label={`${c.name} frame colour`}>
+          {colours.map((x) => (
+            <button key={x.slug} type="button" role="radio" aria-checked={x.slug === cur?.slug} aria-label={`${FRAME_LABEL[x.slug] || x.name} frame`} title={FRAME_LABEL[x.slug] || x.name} style={{ '--sw': x.hex }} onClick={() => setSel(x.slug)} />
+          ))}
+        </div>
+      )}
+    </article>
+  );
+}
+
 function ShopByCategory({ products, categories }) {
+  const { data: opts } = useOptionSummary();
+  const { data: tables } = useFrameTables();
   const art = (products || []).filter((p) => p.thumbnail);
+  const hexOf = Object.fromEntries((tables?.colours || []).map((c) => [c.slug, c]));
   const cats = (categories || [])
     .map((c) => {
       const items = art.filter((p) => p.category === c.slug);
       const pick = items.find((p) => p.is_bestseller) || items[0];
-      return pick && { slug: c.slug, name: c.name, img: pick.thumbnail, n: items.length };
+      if (!pick) return null;
+      const slugs = new Set(items.flatMap((p) => opts?.[p.dbId]?.colourSlugs || []));
+      if (!slugs.size) ['black', 'gold', 'brown'].forEach((x) => slugs.add(x));
+      const colours = FRAME_ORDER.filter((x) => slugs.has(x)).map((x) => ({ slug: x, name: hexOf[x]?.name || x, hex: hexOf[x]?.hex || COLOURS[x[0].toUpperCase() + x.slice(1)]?.hex || '#1C1C1C' }));
+      return { slug: c.slug, name: c.name, img: pick.thumbnail, n: items.length, colours };
     })
     .filter(Boolean)
     .sort((a, b) => b.n - a.n)
-    .slice(0, 11);
-  if (!cats.length) return <div style={{ minHeight: 220 }} />;
-  const items = [...cats.slice(0, 6), { slug: 'custom', name: 'Custom Art', img: '/samples/couple-1.webp', to: '/customize' }, ...cats.slice(6)];
+    .slice(0, 10);
+  if (!cats.length) return <div style={{ minHeight: 420 }} />;
   return (
     <section className="hs hs-cats">
       <div className="wrap">
@@ -430,14 +463,9 @@ function ShopByCategory({ products, categories }) {
             View all <Icon name="arrow" size={14} />
           </Link>
         </div>
-        <div className="hs-scroll hs-cat-row">
-          {items.map((c) => (
-            <Link key={c.slug} to={c.to || `/shop?category=${c.slug}`} className="hs-cat">
-              <span className="hs-cat-img">
-                <Img src={c.img} alt="" sizes="120px" width={260} />
-              </span>
-              <span className="hs-cat-name">{c.name}</span>
-            </Link>
+        <div className="hs-scroll hc-row">
+          {cats.map((c) => (
+            <CategoryCard key={c.slug} c={c} colours={c.colours} />
           ))}
         </div>
       </div>

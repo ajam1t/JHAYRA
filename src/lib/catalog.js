@@ -89,13 +89,16 @@ function fallbackConfig() {
 // the standard fallback (all four sizes, black/gold/brown).
 export function loadOptionSummary() {
   return cached('opt-summary', async () => {
-    const { data, error } = await supabase.from('product_options').select('product_id,option_type');
+    const { data, error } = await supabase.from('product_options').select('product_id,option_type,option_slug');
     if (error) throw error;
     const out = {};
     for (const o of data || []) {
-      const x = (out[o.product_id] ||= { sizes: 0, colours: 0 });
+      const x = (out[o.product_id] ||= { sizes: 0, colours: 0, colourSlugs: [] });
       if (o.option_type === 'size') x.sizes++;
-      else if (o.option_type === 'colour') x.colours++;
+      else if (o.option_type === 'colour') {
+        x.colours++;
+        x.colourSlugs.push(o.option_slug);
+      }
     }
     return out;
   });

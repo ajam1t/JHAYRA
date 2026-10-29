@@ -3869,3 +3869,81 @@
 .sf-hero .room-hero .room-frame .frame {
   filter: drop-shadow(0 10px 14px rgba(70, 50, 20, 0.28));
 }
+
+/* ── Shop by category: A4 framed cards on an ivory wall ─────────────────── */
+.hs-cats {
+  background: linear-gradient(180deg, transparent, #f6efe3 30%, #f6efe3 80%, transparent);
+}
+.hc-row {
+  grid-auto-columns: 46%;
+  gap: 16px;
+}
+@media (min-width: 640px) {
+  .hc-row {
+    grid-auto-columns: 28%;
+  }
+}
+@media (min-width: 1000px) {
+  .hc-row {
+    grid-auto-columns: calc((100% - 4 * 20px) / 5);
+    gap: 20px;
+  }
+}
+.hc-card {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+.hc-link {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  width: 100%;
+}
+.hc-stage {
+  width: 100%;
+  padding: 18px 14% 22px;
+  background: radial-gradient(70% 60% at 50% 35%, #fffaf0, #efe5d3);
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgba(176, 138, 69, 0.18);
+}
+.hc-stage .frame {
+  filter: drop-shadow(0 14px 16px rgba(60, 42, 18, 0.26)) drop-shadow(0 2px 3px rgba(60, 42, 18, 0.2));
+  transition: transform 0.5s var(--ease);
+}
+.hc-card:hover .hc-stage .frame {
+  transform: translateY(-4px);
+}
+.hc-name {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #fbf7ef;
+  box-shadow: 0 1px 0 rgba(176, 138, 69, 0.25), 0 4px 10px rgba(60, 45, 20, 0.06);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #1c1612;
+  text-align: center;
+}
+.hc-swatches {
+  display: flex;
+  gap: 6px;
+}
+.hc-swatches button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+.hc-swatches button::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--sw);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18), inset 0 2px 3px rgba(255, 255, 255, 0.25);
+}
+.hc-swatches button[aria-checked='true'] {
+  box-shadow: 0 0 0 1.5px #1c1612;
+}
