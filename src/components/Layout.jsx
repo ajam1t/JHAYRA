@@ -550,10 +550,9 @@ function SearchPalette() {
 
 function Footer() {
   const cols = [
-    ['Shop', [['/shop', 'All wall art'], ['/shop?room=living', 'Living room'], ['/shop?room=bedroom', 'Bedroom'], ['/shop?room=office', 'Office'], ['/shop?room=dining', 'Dining room'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/collections', 'Collections']]],
-    ['Create', [['/customize', 'Create your own'], ['/customize/photo', 'Upload your photo'], ['/visualise', 'Visualise on your wall'], ['/wall-planner', 'Gallery wall planner'], ['/gift-finder', 'Gift finder'], ['/corporate', 'Corporate gifting']]],
-    ['Help', [['/support', 'Help & FAQs'], ['/orders', 'Track my order'], ['/shipping-policy', 'Shipping policy'], ['/refund', 'Returns & refunds'], ['/replacement-policy', 'Replacement promise'], ['/contact', 'Contact us']]],
-    ['Jhayra', [['/about', 'About Jhayra'], ['/worlds', 'Worlds'], ['/journal', 'Inspiration journal'], ['/privacy', 'Privacy policy'], ['/terms', 'Terms & conditions']]],
+    ['Shop', [['/shop', 'All wall art'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/collections', 'Collections'], ['/customize', 'Create your own'], ['/gift-finder', 'Gift finder'], ['/corporate', 'Corporate gifting']]],
+    ['Help', [['/support', 'Help & FAQs'], ['/orders', 'Track my order'], ['/shipping-policy', 'Shipping'], ['/refund', 'Returns & refunds'], ['/contact', 'Contact us']]],
+    ['Jhayra', [['/about', 'About us'], ['/worlds', 'Worlds'], ['/journal', 'Journal'], ['/visualise', 'Visualise']]],
   ];
   return (
     <footer className="footer">
@@ -561,13 +560,18 @@ function Footer() {
         <div className="footer-top">
           <div className="footer-brand">
             <Logo />
-            <p className="footer-claim">Art that lives with you.</p>
-            <p>
-              Wall art and personalised photo art, handcrafted in India since {BRAND.since}. {BRAND.homes} homes and counting.
-            </p>
+            <p>Handcrafted wall art and personalised frames, made in India since {BRAND.since}.</p>
+            <div className="footer-social">
+              <a href={SITE.instagram} target="_blank" rel="noopener noreferrer" aria-label="JHAYRA on Instagram">
+                <Icon name="instagram" size={18} />
+              </a>
+              <a href={waLink()} target="_blank" rel="noopener noreferrer" aria-label="Chat with JHAYRA on WhatsApp">
+                <WhatsAppGlyph size={18} />
+              </a>
+            </div>
           </div>
           {cols.map(([title, links]) => (
-            <div key={title}>
+            <nav key={title} className="footer-col" aria-label={title}>
               <h4>{title}</h4>
               <ul>
                 {links.map(([to, label]) => (
@@ -576,33 +580,14 @@ function Footer() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
           ))}
-        </div>
-        <div className="footer-contact">
-          <a href={waLink()} target="_blank" rel="noopener noreferrer">
-            <WhatsAppGlyph size={16} /> {SITE.phoneDisplay}
-          </a>
-          <a href={`mailto:${SITE.email}`}>
-            <Icon name="mail" size={16} /> {SITE.email}
-          </a>
-          <a href={SITE.instagram} target="_blank" rel="noopener noreferrer">
-            <Icon name="instagram" size={16} /> @thejhayra
-          </a>
-          <span>
-            <Icon name="clock" size={16} /> Mon–Sat 9–7 · Sun 10–4
-          </span>
-        </div>
-        <div className="footer-word" aria-hidden="true">
-          JHAYRA
         </div>
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} JHAYRA · Made in India</span>
           <nav aria-label="Legal">
             <Link to="/privacy">Privacy</Link>
             <Link to="/terms">Terms</Link>
-            <Link to="/refund">Refunds</Link>
-            <Link to="/shipping-policy">Shipping</Link>
             <Link to="/cookie-policy">Cookies</Link>
           </nav>
         </div>

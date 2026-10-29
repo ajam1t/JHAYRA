@@ -5049,3 +5049,126 @@
 .sf-best .section-head {
   margin-bottom: 16px;
 }
+
+/* ═════════════ Footer: compact, warm champagne ═════════════ */
+.footer {
+  padding: 28px 0 0;
+  background: linear-gradient(180deg, #f1e7d4 0%, #e9dcc1 100%);
+  color: #4a3d2e;
+  border-top: 1px solid rgba(176, 138, 69, 0.35);
+}
+.footer-top {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px 14px;
+  padding-bottom: 20px;
+}
+.footer-brand {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 16px;
+}
+.footer-brand p {
+  grid-column: 1 / -1;
+  margin: 0;
+  max-width: 44ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #5c4e3c;
+}
+.footer .logo b {
+  color: #1c1612;
+}
+.footer .logo small {
+  color: #7e5f26;
+}
+.footer-social {
+  grid-row: 1;
+  grid-column: 2;
+  display: flex;
+  gap: 8px;
+}
+.footer-social a {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  color: #5c4a2c;
+  box-shadow: inset 0 0 0 1px rgba(176, 138, 69, 0.4);
+  transition: background 0.25s, color 0.25s, transform 0.25s;
+}
+.footer-social a:hover {
+  background: #1c1612;
+  color: #f6ead0;
+  transform: translateY(-2px);
+}
+.footer h4 {
+  margin: 0 0 8px;
+  font-family: var(--fb);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7e5f26;
+}
+.footer ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+.footer li a {
+  font-size: 13px;
+  color: #3d3226;
+}
+.footer a:hover {
+  color: #1c1612;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 16px;
+  margin-top: 0;
+  padding: 12px 0 14px;
+  border-top: 1px solid rgba(126, 95, 38, 0.2);
+  font-size: 12px;
+  color: #6b5d4a;
+}
+.footer-bottom nav {
+  display: flex;
+  gap: 14px;
+}
+.footer-bottom a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  color: #6b5d4a;
+}
+@media (min-width: 900px) {
+  .footer {
+    padding-top: 40px;
+  }
+  .footer-top {
+    grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+    gap: 28px;
+    padding-bottom: 28px;
+  }
+  .footer-brand {
+    grid-column: auto;
+    align-content: start;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .footer-social {
+    grid-row: auto;
+    grid-column: auto;
+  }
+}

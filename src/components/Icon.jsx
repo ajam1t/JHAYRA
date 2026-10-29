@@ -49,7 +49,7 @@ const P = {
   wall: 'M3 4h18v16H3zM3 9h18M3 14h18M9 4v5M15 9v5M9 14v6',
   camera: 'M4 8h3l2-3h6l2 3h3v11H4zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
   move: 'M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3',
-  instagram: 'M4 4h16v16H4zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM17.2 6.8h.01',
+  instagram: 'M8 3h8a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5zM12 15.6a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2zM17.4 6.6h.01',
   filter: 'M4 6h16M7 12h10M10 18h4',
   edit: 'M4 20h4L19 9l-4-4L4 16zM14 6l4 4',
   logout: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11',
