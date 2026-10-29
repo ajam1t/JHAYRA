@@ -51,7 +51,7 @@ function Logo({ onNavigate }) {
   const onClick = useHomeClick(onNavigate);
   return (
     <Link to="/" className="logo" aria-label="JHAYRA home" onClick={onClick}>
-      <img className="logo-mark" src="/logo-mark.webp" alt="" width="44" height="40" />
+      <img className="logo-mark" src="/logo-mark-88.webp" srcSet="/logo-mark-88.webp 88w, /logo-mark.webp 180w" sizes="44px" alt="" width="44" height="40" fetchpriority="high" />
       <span className="logo-words">
         <b>JHAYRA</b>
         <small>{SITE.tagline}</small>

@@ -532,13 +532,41 @@ function FeaturedCollections({ products }) {
   const list = products || [];
   const cards = FEATURED.map(([id, a, b]) => {
     if (id === 'divine') {
-      const p = list.find((x) => x.thumbnail && x.category === 'religious' && x.is_bestseller) || list.find((x) => x.thumbnail && x.category === 'religious');
-      return { id, a, b, story: 'Devotional art that brings peace within — for the pooja room and beyond.', to: '/worlds/divine', img: p?.thumbnail };
+      const items = list.filter((x) => x.thumbnail && x.category === 'religious').sort((x, y) => (y.is_bestseller ? 1 : 0) - (x.is_bestseller ? 1 : 0));
+      return { id, a, b, kicker: 'Pooja room & beyond', story: 'Devotional art that brings peace within — for the pooja room and beyond.', to: '/worlds/divine', items };
     }
     const c = COLLECTION_MAP[id];
-    const p = collectionProducts(c, list).find((x) => x.thumbnail);
-    return { id, a, b, story: c.story, to: `/collections/${id}`, img: p?.thumbnail };
-  });
+    const items = collectionProducts(c, list).filter((x) => x.thumbnail);
+    return { id, a, b, kicker: c.kicker, story: c.story, to: `/collections/${id}`, items };
+  }).filter((c) => c.items.length);
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [live, setLive] = useState(false);
+  const box = useRef(null);
+  const touch = useRef(null);
+  const n = cards.length;
+  useEffect(() => {
+    const el = box.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => setLive(e.isIntersecting), { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [n]);
+  useEffect(() => {
+    if (!live || paused || n < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const t = setTimeout(() => setI((x) => (x + 1) % n), 5200);
+    return () => clearTimeout(t);
+  }, [i, live, paused, n]);
+  // Keep the active tab in view as the showcase advances.
+  useEffect(() => {
+    const bar = box.current?.querySelector('.fcx-tabs');
+    const tab = bar?.children[i % (n || 1)];
+    if (bar && tab) bar.scrollTo({ left: tab.offsetLeft - (bar.clientWidth - tab.offsetWidth) / 2, behavior: 'smooth' });
+  }, [i, n]);
+  if (!n) return <div style={{ minHeight: 320 }} />;
+  const k = i % n;
+  const c = cards[k];
+  const go = (d) => (setI((x) => (x + d + n) % n), setPaused(true));
   return (
     <section className="hs hs-feat">
       <div className="wrap">
@@ -548,23 +576,49 @@ function FeaturedCollections({ products }) {
             View all <Icon name="arrow" size={14} />
           </Link>
         </div>
-        <div className="hs-scroll hs-feat-row">
-          {cards.map((c, i) => (
-            <Link key={c.id} to={c.to} className={`hs-fc t${i}`}>
-              <span className="hs-fc-copy">
-                <b>
-                  {c.a}
-                  <br />
-                  {c.b}
-                </b>
-                <small>{c.story}</small>
-                <span className="hs-fc-go">
-                  Shop now <Icon name="arrow" size={14} />
+        <div className="fcx" ref={box} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+          <div className="fcx-tabs" role="tablist" aria-label="Featured collections">
+            {cards.map((x, j) => (
+              <button key={x.id} type="button" role="tab" id={`fcx-t-${x.id}`} aria-selected={j === k} aria-controls="fcx-panel" className={j === k ? `on${paused ? '' : ' run'}` : ''} onClick={() => (setI(j), setPaused(true))}>
+                <Img src={x.items[0].thumbnail} alt="" sizes="28px" width={80} />
+                <span>
+                  {x.a} {x.b}
                 </span>
+                <i aria-hidden="true" key={`${k}-${paused}`} />
+              </button>
+            ))}
+          </div>
+          <div
+            className={`fcx-stage t${k}`}
+            id="fcx-panel"
+            role="tabpanel"
+            aria-labelledby={`fcx-t-${c.id}`}
+            onTouchStart={(e) => (touch.current = e.touches[0].clientX)}
+            onTouchEnd={(e) => {
+              const dx = e.changedTouches[0].clientX - (touch.current ?? 0);
+              if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+            }}
+          >
+            <div className="fcx-copy" key={`c-${c.id}`}>
+              <span className="fcx-kick">
+                {c.kicker} · {c.items.length} design{c.items.length > 1 ? 's' : ''}
               </span>
-              <span className="hs-fc-art">{c.img && <Frame src={c.img} alt="" ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false} sizes="(max-width: 760px) 34vw, 12vw" />}</span>
+              <h3>
+                {c.a} <em>{c.b}</em>
+              </h3>
+              <p>{c.story}</p>
+              <Link to={c.to} className="btn btn-sm fcx-go">
+                Shop collection <Icon name="arrow" size={14} />
+              </Link>
+            </div>
+            <Link to={c.to} className="fcx-fan" key={`f-${c.id}`} tabIndex={-1} aria-hidden="true">
+              {c.items.slice(0, 3).map((p, j) => (
+                <span key={p.id} className={`fcx-f f${j}`}>
+                  <Frame src={p.thumbnail} alt="" ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false} sizes="(max-width: 760px) 30vw, 180px" />
+                </span>
+              ))}
             </Link>
-          ))}
+          </div>
         </div>
       </div>
     </section>

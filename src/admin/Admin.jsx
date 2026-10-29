@@ -11,6 +11,31 @@ import Festivals from './Festivals';
 import Worlds from './Worlds';
 import Campaigns from './Campaigns';
 import Dashboard from './Dashboard';
+import { supabase } from '../lib/supabase';
+import { FESTIVALS, FESTIVALS_PATH, saveFestivals } from '../lib/festivals';
+import { CAMPAIGNS_PATH, DEFAULT_CAMPAIGNS, saveCampaigns } from '../lib/campaigns';
+import { TEMPLATES_PATH, saveTemplates } from '../lib/templates';
+import seedTemplates from '../templates.json';
+
+// The storefront reads its editable settings from Supabase Storage. Until an
+// admin saves each one, every page load hits a missing file (a 400 in the
+// console), so the first admin visit stores the current defaults.
+let ensured = false;
+async function ensureSiteConfig() {
+  if (ensured) return;
+  ensured = true;
+  const missing = async (path) => {
+    const { data } = supabase.storage.from('product-images').getPublicUrl(path);
+    const r = await fetch(`${data.publicUrl}?v=${Date.now()}`, { method: 'HEAD' }).catch(() => null);
+    return r && !r.ok;
+  };
+  const jobs = [
+    [FESTIVALS_PATH, () => saveFestivals(FESTIVALS)],
+    [CAMPAIGNS_PATH, () => saveCampaigns(DEFAULT_CAMPAIGNS)],
+    [TEMPLATES_PATH, () => saveTemplates(seedTemplates)],
+  ];
+  for (const [path, save] of jobs) if (await missing(path)) await save().catch(() => {});
+}
 import './admin.css';
 
 function Login() {
@@ -113,6 +138,9 @@ function SideNav({ onPick }) {
 export default function Admin() {
   const { user, isAdmin, loading, signOut } = useAuth();
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (user && isAdmin) ensureSiteConfig();
+  }, [user, isAdmin]);
   if (loading) return <div className="ad-login ad-muted">Loading…</div>;
   return (
     <>

@@ -2808,84 +2808,6 @@
   color: var(--muted);
 }
 
-/* Featured collections: editorial cards */
-.hs-feat-row {
-  grid-auto-columns: 86%;
-}
-@media (min-width: 640px) {
-  .hs-feat-row {
-    grid-auto-columns: 48%;
-  }
-}
-@media (min-width: 1100px) {
-  .hs-feat-row {
-    grid-auto-flow: row;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    overflow: visible;
-    margin: 0;
-    padding: 4px 0;
-  }
-}
-.hs-fc {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 42%;
-  align-items: center;
-  gap: 10px;
-  min-height: 210px;
-  padding: 22px 14px 22px 22px;
-  border-radius: 6px;
-  overflow: hidden;
-  background: linear-gradient(135deg, #f7efe2, #efe3cf);
-  transition: transform 0.4s var(--ease), box-shadow 0.4s;
-}
-.hs-fc.t1 {
-  background: linear-gradient(135deg, #f5efe6, #e9e1d4);
-}
-.hs-fc.t2 {
-  background: linear-gradient(135deg, #f3e8de, #e8d6c6);
-}
-.hs-fc.t3 {
-  background: linear-gradient(135deg, #f6ecd9, #ead8b5);
-}
-.hs-fc:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 30px rgba(60, 45, 20, 0.12);
-}
-.hs-fc-copy {
-  display: grid;
-  gap: 10px;
-  align-content: center;
-}
-.hs-fc-copy b {
-  font-family: var(--fd);
-  font-weight: 400;
-  font-size: clamp(24px, 2.2vw, 30px);
-  line-height: 1;
-  color: #1c1612;
-}
-.hs-fc-copy small {
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--ink-2);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.hs-fc-go {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #5c4a2c;
-}
-.hs-fc-art {
-  filter: drop-shadow(0 14px 18px rgba(40, 30, 15, 0.25));
-  transform: rotate(2deg);
-}
-
 /* Benefits row */
 .hs-benefits {
   margin-top: clamp(28px, 4vw, 44px);
@@ -4891,4 +4813,188 @@
   .sf-hero.gh {
     overflow: clip;
   }
+}
+/* Long product grids: cards below the fold skip rendering until scrolled near */
+.grid-products > :nth-child(n + 9) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}
+/* Phones: a smaller WhatsApp button that steps aside while a frame is being styled */
+@media (max-width: 640px) {
+  .wa-fab {
+    height: 48px;
+    padding: 0 12px;
+    right: 12px;
+  }
+  body:has(.hx-panel) .wa-fab {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* ═════════════ Featured collections: tabbed showcase with a fanned trio ══ */
+.fcx-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 calc(var(--gutter) * -1) 12px;
+  padding: 2px var(--gutter);
+}
+.fcx-tabs::-webkit-scrollbar {
+  display: none;
+}
+.fcx-tabs button {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #fbf7ef;
+  box-shadow: inset 0 0 0 1px rgba(176, 138, 69, 0.28);
+  font-size: 13px;
+  font-weight: 600;
+  color: #5c4a2c;
+  transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+}
+.fcx-tabs img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.fcx-tabs button.on {
+  background: #1c1612;
+  color: #f6ead0;
+  box-shadow: none;
+}
+.fcx-tabs i {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, #c9a55c, #f1dda8);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.fcx-tabs button.run i {
+  animation: fcx-prog 5.2s linear forwards;
+}
+@keyframes fcx-prog {
+  to { transform: scaleX(1); }
+}
+.fcx-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 250px;
+  padding: 22px 16px 22px 22px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: radial-gradient(70% 90% at 80% 40%, rgba(255, 246, 225, 0.95), transparent 70%), linear-gradient(135deg, #f7efe2, #ecdfc8);
+  box-shadow: inset 0 0 0 1px rgba(176, 138, 69, 0.2);
+  transition: background 0.6s;
+  touch-action: pan-y;
+}
+.fcx-stage.t1 { background: radial-gradient(70% 90% at 80% 40%, rgba(255, 255, 255, 0.9), transparent 70%), linear-gradient(135deg, #f4f0ea, #e4ddd2); }
+.fcx-stage.t2 { background: radial-gradient(70% 90% at 80% 40%, rgba(255, 240, 230, 0.9), transparent 70%), linear-gradient(135deg, #f4e9e0, #e6d3c3); }
+.fcx-stage.t3 { background: radial-gradient(70% 90% at 80% 40%, rgba(255, 236, 196, 0.95), transparent 70%), linear-gradient(135deg, #f7ecd6, #e8d2a6); }
+.fcx-copy {
+  display: grid;
+  gap: 8px;
+  align-content: center;
+  animation: fcx-in 0.6s var(--ease) both;
+}
+.fcx-kick {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7e5f26;
+}
+.fcx-copy h3 {
+  margin: 0;
+  font-family: var(--fd);
+  font-weight: 400;
+  font-size: clamp(28px, 3.4vw, 44px);
+  line-height: 1;
+  color: #1c1612;
+}
+.fcx-copy h3 em {
+  color: #7e5f26;
+}
+.fcx-copy p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 42ch;
+}
+.fcx-go {
+  justify-self: start;
+  margin-top: 4px;
+}
+.fcx-fan {
+  position: relative;
+  height: 210px;
+}
+.fcx-f {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 46%;
+  filter: drop-shadow(0 14px 16px rgba(40, 30, 15, 0.26));
+  animation: fcx-deal 0.7s var(--ease-spring) both;
+}
+.fcx-f.f0 { z-index: 3; width: 56%; transform: translate(-50%, -50%); }
+.fcx-f.f1 { z-index: 2; transform: translate(-108%, -46%) rotate(-8deg); animation-delay: 0.08s; }
+.fcx-f.f2 { z-index: 1; transform: translate(8%, -46%) rotate(8deg); animation-delay: 0.14s; }
+.fcx-stage:hover .fcx-f.f1 { transform: translate(-118%, -48%) rotate(-11deg); }
+.fcx-stage:hover .fcx-f.f2 { transform: translate(18%, -48%) rotate(11deg); }
+.fcx-f { transition: transform 0.5s var(--ease-spring); }
+@keyframes fcx-deal {
+  from { opacity: 0; translate: 0 24px; scale: 0.9; }
+}
+@keyframes fcx-in {
+  from { opacity: 0; transform: translateY(10px); }
+}
+@media (min-width: 900px) {
+  .fcx-stage {
+    min-height: 320px;
+    padding: 34px 40px;
+  }
+  .fcx-fan {
+    height: 280px;
+  }
+  .fcx-f { width: 34%; }
+  .fcx-f.f0 { width: 40%; }
+}
+@media (max-width: 420px) {
+  .fcx-stage {
+    padding: 18px 10px 18px 16px;
+    min-height: 230px;
+  }
+  .fcx-copy p {
+    font-size: 12.5px;
+  }
+  .fcx-fan {
+    height: 180px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fcx-f, .fcx-copy, .fcx-tabs button.run i { animation: none; }
 }

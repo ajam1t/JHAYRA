@@ -2,7 +2,7 @@
 // image CDN that resizes them and converts to WebP on the fly (~25x smaller).
 // If it is ever unreachable, <Img> falls back to the original URL.
 
-const WIDTHS = [320, 480, 640, 900, 1200, 1600];
+const WIDTHS = [160, 240, 320, 480, 640, 900, 1200, 1600];
 
 export function isRemote(src) {
   return typeof src === 'string' && /^https?:\/\//.test(src);
