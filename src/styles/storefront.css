@@ -3841,3 +3841,16 @@
     animation: none;
   }
 }
+/* Hero sits right under the strip: no empty band above the headline */
+.sf-hero .gh-copy.wrap {
+  padding-top: 18px;
+  align-self: start;
+}
+@media (min-width: 1000px) {
+  .sf-hero .gh-copy.wrap {
+    padding-top: 48px;
+  }
+}
+.sf-hero .sf-hero-title {
+  margin-top: 0;
+}
