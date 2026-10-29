@@ -46,7 +46,7 @@ export const DEFAULT_CAMPAIGNS = [
     imageProduct: 'p043',
     start: '2026-10-20',
     end: '2026-11-08',
-    enabled: true,
+    enabled: false,
     priority: 1,
   },
   {

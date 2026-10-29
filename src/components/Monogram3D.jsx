@@ -50,7 +50,7 @@ export default function Monogram3D({ className = '' }) {
           <div className="m3d-box">
             <div className="m3d-face m3d-front">
               <div className="m3d-mat">
-                <img src="/logo-mark-lg.webp" alt="" width="360" height="320" draggable="false" />
+                <img src="/logo-mark.webp" alt="" width="180" height="160" draggable="false" />
                 <span className="m3d-word">JHAYRA</span>
               </div>
               <span className="m3d-sheen" />

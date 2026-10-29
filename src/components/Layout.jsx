@@ -133,7 +133,26 @@ function TopStrip() {
   const live = liveCampaigns(useCampaigns());
   if (pathname === '/') {
     const c = live[0];
-    if (!c) return null;
+    // No festival running: feature the Mithila (Madhubani) heritage collection.
+    if (!c)
+      return (
+        <Link to="/worlds/heritage" className="fest-strip mith-strip">
+          <span className="mith-border" aria-hidden="true" />
+          <span className="mith-motif" aria-hidden="true">
+            ❁
+          </span>
+          <span className="fest-text">
+            <span className="fest-kicker">Heritage of Bihar</span>
+            <em>Mithila Art</em>
+          </span>
+          <span className="mith-motif" aria-hidden="true">
+            ❁
+          </span>
+          <span className="fest-cta">
+            Explore <Icon name="arrow" size={13} stroke={2} />
+          </span>
+        </Link>
+      );
     return (
       <Link to={targetFor(c.target).to} className="fest-strip">
         <span className="fest-garland" aria-hidden="true" />

@@ -835,7 +835,7 @@ function Bestsellers({ products }) {
 
 /* ── FAQ (WAI-ARIA accordion: buttons, regions, arrow keys) ───────── */
 function Faq() {
-  const [open, setOpen] = useState(0);
+  const [open, setOpen] = useState(-1);
   const id = useId();
   const btns = useRef([]);
   const onKey = (e, i) => {
@@ -880,30 +880,6 @@ function Faq() {
 }
 
 /* ── Final call to action ─────────────────────────────────────────── */
-function FinalCta() {
-  return (
-    <section className="wrap fc">
-      <Reveal className="fc-card">
-        <span className="fc-glow" aria-hidden="true" />
-        <div className="fc-copy">
-          <h2 className="fc-title">
-            Make your walls <em>mean something.</em>
-          </h2>
-          <p>Find art that feels like you, or turn a favourite memory into something lasting.</p>
-        </div>
-        <div className="fc-btns">
-          <Link to="/shop" className="btn btn-lg sheen">
-            Shop Wall Art <Icon name="arrow" size={18} />
-          </Link>
-          <Link to="/customize" className="btn btn-ghost btn-lg">
-            Create Your Own
-          </Link>
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
 export default function Home() {
   const festival = useFestival();
   const { data: products, loading } = useProducts();
@@ -948,7 +924,6 @@ export default function Home() {
         <Bestsellers products={products} />
       </LazyMount>
       <Faq />
-      <FinalCta />
     </>
   );
 }

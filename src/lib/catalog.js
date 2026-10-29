@@ -4,6 +4,7 @@ import { SIZES, COLOURS } from './frames';
 
 // Small promise cache so navigating between pages never refetches the catalog.
 const cache = new Map();
+const listeners = new Map();
 function cached(key, loader, ttl = 5 * 60 * 1000) {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.t < ttl) return hit.p;
@@ -16,6 +17,54 @@ function cached(key, loader, ttl = 5 * 60 * 1000) {
 }
 export function invalidateCatalog() {
   cache.clear();
+}
+
+// Build-time snapshot (/data/catalog.json) from the site's own CDN. Lists show
+// it instantly, then the live database answer replaces it if anything changed.
+let snap = null;
+function snapshot() {
+  if (!snap) snap = typeof fetch === 'undefined' ? Promise.resolve(null) : fetch('/data/catalog.json').then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  return snap;
+}
+function fresh(key, fromSnap, live, ttl) {
+  return cached(
+    key,
+    () =>
+      new Promise((resolve, reject) => {
+        let done = false;
+        let snapJson = '';
+        const l = live().then(
+          (data) => {
+            if (!done) {
+              done = true;
+              resolve(data);
+            } else if (JSON.stringify(data) !== snapJson) {
+              cache.set(key, { p: Promise.resolve(data), t: Date.now() });
+              (listeners.get(key) || new Set()).forEach((fn) => fn(data));
+            }
+            return data;
+          },
+          (e) => {
+            if (!done) reject(e);
+          }
+        );
+        snapshot().then((s) => {
+          const data = s && fromSnap(s);
+          if (data && !done) {
+            done = true;
+            snapJson = JSON.stringify(data);
+            resolve(data);
+          }
+        });
+        return l;
+      }),
+    ttl
+  );
+}
+function subscribe(key, fn) {
+  if (!listeners.has(key)) listeners.set(key, new Set());
+  listeners.get(key).add(fn);
+  return () => listeners.get(key).delete(fn);
 }
 
 export function mapProduct(row) {
@@ -34,27 +83,31 @@ export function mapProduct(row) {
 }
 
 export function loadProducts() {
-  return cached('products', async () => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*, product_images(*)')
-      .eq('active', true)
-      .order('display_order');
-    if (error) throw error;
-    return (data || []).map(mapProduct);
-  });
+  return fresh(
+    'products',
+    (s) => s.products?.length && s.products.map(mapProduct),
+    async () => {
+      const { data, error } = await supabase.from('products').select('*, product_images(*)').eq('active', true).order('display_order');
+      if (error) throw error;
+      return (data || []).map(mapProduct);
+    }
+  );
 }
 
 export function loadCategories() {
-  return cached('categories', async () => {
-    const { data, error } = await supabase.from('categories').select('*').eq('active', true).order('display_order');
-    if (error) throw error;
-    return data || [];
-  });
+  return fresh(
+    'categories',
+    (s) => s.categories?.length && s.categories,
+    async () => {
+      const { data, error } = await supabase.from('categories').select('*').eq('active', true).order('display_order');
+      if (error) throw error;
+      return data || [];
+    }
+  );
 }
 
 export function loadCollections() {
-  return cached('collections', async () => {
+  return fresh('collections', (s) => s.collections?.length && s.collections, async () => {
     const { data, error } = await supabase
       .from('homepage_collections')
       .select('*')
@@ -65,16 +118,19 @@ export function loadCollections() {
   });
 }
 
-export function loadFrameTables() {
-  return cached('frame-tables', async () => {
-    const [s, c, m] = await Promise.all([
-      supabase.from('frame_sizes').select('*').eq('active', true).order('display_order'),
-      supabase.from('frame_colours').select('*').eq('active', true).order('display_order'),
-      supabase.from('frame_materials').select('*').eq('active', true).order('display_order'),
-    ]);
-    return { sizes: s.data || [], colours: c.data || [], materials: m.data || [] };
-  });
+async function frameTablesLive() {
+  const [s, c, m] = await Promise.all([
+    supabase.from('frame_sizes').select('*').eq('active', true).order('display_order'),
+    supabase.from('frame_colours').select('*').eq('active', true).order('display_order'),
+    supabase.from('frame_materials').select('*').eq('active', true).order('display_order'),
+  ]);
+  return { sizes: s.data || [], colours: c.data || [], materials: m.data || [] };
 }
+// For display (swatches, size names). Prices always use the live tables below.
+export function loadFrameTables() {
+  return fresh('frame-tables', (s) => s.frameTables?.sizes?.length && s.frameTables, frameTablesLive);
+}
+const loadFrameTablesLive = () => cached('frame-tables-live', frameTablesLive);
 
 function fallbackConfig() {
   return {
@@ -87,31 +143,38 @@ function fallbackConfig() {
 // Sizes and frame finishes offered per product, in one query for whole grids.
 // Map of product dbId → { sizes, colours }. Products without option rows use
 // the standard fallback (all four sizes, black/gold/brown).
-export function loadOptionSummary() {
-  return cached('opt-summary', async () => {
-    const { data, error } = await supabase.from('product_options').select('product_id,option_type,option_slug');
-    if (error) throw error;
-    const out = {};
-    for (const o of data || []) {
-      const x = (out[o.product_id] ||= { sizes: 0, colours: 0, colourSlugs: [] });
-      if (o.option_type === 'size') x.sizes++;
-      else if (o.option_type === 'colour') {
-        x.colours++;
-        x.colourSlugs.push(o.option_slug);
-      }
+function summarise(rows) {
+  const out = {};
+  for (const o of rows || []) {
+    const x = (out[o.product_id] ||= { sizes: 0, colours: 0, colourSlugs: [] });
+    if (o.option_type === 'size') x.sizes++;
+    else if (o.option_type === 'colour') {
+      x.colours++;
+      x.colourSlugs.push(o.option_slug);
     }
-    return out;
-  });
+  }
+  return out;
 }
-export const useOptionSummary = () => useAsync(loadOptionSummary, []);
-export const useFrameTables = () => useAsync(loadFrameTables, []);
+export function loadOptionSummary() {
+  return fresh(
+    'opt-summary',
+    (s) => s.options?.length && summarise(s.options),
+    async () => {
+      const { data, error } = await supabase.from('product_options').select('product_id,option_type,option_slug');
+      if (error) throw error;
+      return summarise(data);
+    }
+  );
+}
+export const useOptionSummary = () => useAsync(loadOptionSummary, [], 'opt-summary');
+export const useFrameTables = () => useAsync(loadFrameTables, [], 'frame-tables');
 
 // Mirrors the options logic of the original site so prices match the payment function.
 export function loadFrameConfig(productDbId) {
   return cached('cfg:' + productDbId, async () => {
     const [{ data: opts }, tables] = await Promise.all([
       supabase.from('product_options').select('*').eq('product_id', productDbId),
-      loadFrameTables(),
+      loadFrameTablesLive(),
     ]);
     if (!opts || !opts.length) return fallbackConfig();
     const bySlug = (rows) => new Map(rows.map((r) => [r.slug, r]));
@@ -144,8 +207,9 @@ export function loadFrameConfig(productDbId) {
   });
 }
 
-export function useAsync(fn, deps = []) {
+export function useAsync(fn, deps = [], key) {
   const [state, setState] = useState({ data: null, loading: true, error: null });
+  useEffect(() => (key ? subscribe(key, (data) => setState({ data, loading: false, error: null })) : undefined), [key]);
   useEffect(() => {
     let live = true;
     setState((s) => ({ ...s, loading: true }));
@@ -160,9 +224,9 @@ export function useAsync(fn, deps = []) {
   return state;
 }
 
-export const useProducts = () => useAsync(loadProducts, []);
-export const useCategories = () => useAsync(loadCategories, []);
-export const useCollections = () => useAsync(loadCollections, []);
+export const useProducts = () => useAsync(loadProducts, [], 'products');
+export const useCategories = () => useAsync(loadCategories, [], 'categories');
+export const useCollections = () => useAsync(loadCollections, [], 'collections');
 
 // Light fuzzy search across names, categories, tags and descriptions.
 export function searchProducts(products, q) {

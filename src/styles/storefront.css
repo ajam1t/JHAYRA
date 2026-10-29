@@ -3999,73 +3999,6 @@
   .hc-hang, .hc-stage { animation: none; }
 }
 
-/* ── Final call to action: compact champagne band ───────────────────── */
-.fc {
-  padding-block: clamp(28px, 5vw, 56px);
-}
-.fc-card {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px 32px;
-  padding: clamp(24px, 4vw, 40px) clamp(20px, 4vw, 48px);
-  border-radius: 20px;
-  background: linear-gradient(120deg, #f7ecd6 0%, #ecd7ac 55%, #e2c48a 100%);
-  box-shadow: inset 0 0 0 1px rgba(126, 95, 38, 0.18), 0 18px 40px -24px rgba(90, 64, 20, 0.45);
-}
-.fc-glow {
-  position: absolute;
-  inset: -40% -10% auto auto;
-  width: 60%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 250, 235, 0.85), transparent 65%);
-  animation: fc-drift 9s ease-in-out infinite alternate;
-  pointer-events: none;
-}
-.fc-copy {
-  position: relative;
-  max-width: 560px;
-}
-.fc-title {
-  margin: 0;
-  font-family: var(--fd);
-  font-weight: 400;
-  font-size: clamp(28px, 4.2vw, 44px);
-  line-height: 1.05;
-  color: #1c1612;
-}
-.fc-title em {
-  color: #7e5f26;
-}
-.fc-copy p {
-  margin: 8px 0 0;
-  color: #4a3f33;
-  font-size: 15px;
-}
-.fc-btns {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.fc-btns .btn-ghost {
-  background: rgba(255, 255, 255, 0.55);
-}
-@media (max-width: 640px) {
-  .fc-btns { width: 100%; flex-wrap: nowrap; }
-  .fc-btns .btn { flex: 1; padding-inline: 10px; min-height: 48px; font-size: 14px; }
-  .fc-btns .btn svg { display: none; }
-}
-@keyframes fc-drift {
-  to { transform: translate(-18%, 20%); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .fc-glow { animation: none; }
-}
 /* Heading above the interactive room, matching the other section titles */
 .sf-hero .gh-room {
   display: flex;
@@ -4831,3 +4764,61 @@
 @keyframes dt-line { from { background-position: left; } }
 @media (max-width: 420px) { .dt-steps b { font-size: 0.8rem; } .dt-steps small { font-size: 0.7rem; } .dt-ic { width: 40px; height: 40px; } .dt-steps li + li::before { top: 19px; right: calc(50% + 26px); width: calc(100% - 52px); } }
 @media (prefers-reduced-motion: reduce) { .dt-steps li, .dt-steps li + li::before { animation: none; } }
+
+/* ── Performance: skip rendering work for sections that are off screen ── */
+.hs,
+.sf-best,
+.sf-faq {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 640px;
+}
+.hc-hang,
+.m3d-sway {
+  will-change: transform;
+}
+
+/* ── Default strip: Mithila (Madhubani) heritage — indigo, vermilion, turmeric ── */
+.mith-strip {
+  background:
+    radial-gradient(40% 140% at 50% 120%, rgba(232, 168, 40, 0.28), transparent 70%),
+    linear-gradient(90deg, #1d2547, #26305c 50%, #1d2547);
+  color: #f6e7c4;
+  border-bottom: 0;
+  padding-top: 13px;
+  padding-bottom: 12px;
+}
+/* Madhubani-style double-line border with a dotted band, top and bottom */
+.mith-border,
+.mith-strip::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, #e8a828 0 1.3px, transparent 1.6px) 0 50% / 8px 6px repeat-x,
+    linear-gradient(#d4472c, #d4472c) 0 0 / 100% 1px no-repeat,
+    linear-gradient(#d4472c, #d4472c) 0 100% / 100% 1px no-repeat;
+}
+.mith-border {
+  top: 2px;
+}
+.mith-strip::after {
+  bottom: 2px;
+}
+.mith-motif {
+  color: #e8a828;
+  font-size: 15px;
+  line-height: 1;
+  animation: mith-turn 14s linear infinite;
+}
+.mith-strip .fest-text em {
+  color: #f6c766;
+}
+@keyframes mith-turn {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mith-motif { animation: none; }
+}

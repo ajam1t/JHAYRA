@@ -87,7 +87,15 @@ const PRIVATE = [
 
 const urls = [];
 for (const [path, title, description] of STATIC) {
-  write(path, page({ path, title, description, body: `<h1>${esc(title.split('|')[0].trim())}</h1><p>${esc(description)}</p>` }));
+  // Homepage: tell Google the site name and logo (shown beside search results).
+  const jsonLd =
+    path === '/'
+      ? [
+          { '@context': 'https://schema.org', '@type': 'WebSite', name: 'JHAYRA', url: `${SITE}/` },
+          { '@context': 'https://schema.org', '@type': 'Organization', name: 'JHAYRA', url: `${SITE}/`, logo: `${SITE}/icon-512.png`, sameAs: ['https://www.instagram.com/thejhayra'] },
+        ]
+      : undefined;
+  write(path, page({ path, title, description, jsonLd, body: `<h1>${esc(title.split('|')[0].trim())}</h1><p>${esc(description)}</p>` }));
   urls.push([path, path === '/' ? '1.0' : '0.8']);
 }
 for (const [path, title] of PRIVATE) write(path, page({ path, title, description: 'JHAYRA', noindex: true }));
@@ -96,6 +104,25 @@ write('/app-shell', page({ path: '/', title: 'JHAYRA — Personalised Photo Fram
 
 // 404: same app shell, marked noindex. Vercel serves it with a real 404 status.
 writeFileSync(join(dist, '404.html'), page({ path: '/404', title: 'Page Not Found | JHAYRA', description: 'This page has moved.', noindex: true }));
+
+// Catalogue snapshot served from the same domain (CDN edge near the visitor),
+// so product grids paint without waiting on the database; the app refreshes
+// from Supabase right after and swaps in any newer data.
+try {
+  const [snapProducts, categories, collections, sizes, colours, materials, options] = await Promise.all([
+    rest('products?select=*,product_images(*)&active=eq.true&order=display_order.asc'),
+    rest('categories?select=*&active=eq.true&order=display_order.asc'),
+    rest('homepage_collections?select=*&active=eq.true&order=display_order.asc').catch(() => []),
+    rest('frame_sizes?select=*&active=eq.true&order=display_order.asc'),
+    rest('frame_colours?select=*&active=eq.true&order=display_order.asc'),
+    rest('frame_materials?select=*&active=eq.true&order=display_order.asc'),
+    rest('product_options?select=product_id,option_type,option_slug'),
+  ]);
+  mkdirSync(join(dist, 'data'), { recursive: true });
+  writeFileSync(join(dist, 'data', 'catalog.json'), JSON.stringify({ at: new Date().toISOString(), products: snapProducts, categories, collections, frameTables: { sizes, colours, materials }, options }));
+} catch (e) {
+  console.warn('[prerender] catalogue snapshot skipped:', e.message);
+}
 
 let products = [];
 try {
