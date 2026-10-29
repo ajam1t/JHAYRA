@@ -4421,14 +4421,104 @@
   opacity: 1;
   transform: none;
 }
+/* Phones: heading, then the animated preview beside the steps, then the
+   button — the whole card fits on one screen. */
 @media (max-width: 759px) {
+  .cs {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    grid-template-areas: 'kick kick' 'title title' 'lead lead' 'stage steps' 'cta cta';
+    gap: 0 12px;
+    padding: 18px 16px;
+  }
+  .cs-copy {
+    display: contents;
+  }
+  .cs-copy .hs-kick { grid-area: kick; }
+  .cs-copy .hs-title { grid-area: title; margin: 4px 0 6px; font-size: 26px; }
+  .cs-copy > p { grid-area: lead; margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; }
+  .cs-steps { grid-area: steps; align-self: center; margin: 0; gap: 2px; }
+  .cs-copy > .btn { grid-area: cta; margin-top: 14px; width: 100%; }
   .cs-stage {
-    order: -1;
-    min-height: 360px;
+    grid-area: stage;
+    min-height: 238px;
+  }
+  .cs-art {
+    width: 86%;
+  }
+  .cs-mat {
+    padding: 6px 6px 22px;
+  }
+  .cs-stage.s2 .cs-mat,
+  .cs-stage.s3 .cs-mat {
+    padding: 8px 8px 6px;
+  }
+  .cs-stage.s2 .cs-caption,
+  .cs-stage.s3 .cs-caption {
+    height: 32px;
+    margin-top: 5px;
+  }
+  .cs-stage.s3 .cs-art {
+    padding: 7px;
+  }
+  .cs-caption b { font-size: 13px; }
+  .cs-caption small { font-size: 7.5px; letter-spacing: 0.2em; }
+  .cs-upload {
+    top: 2%;
+    left: 0;
+    padding: 6px 8px;
+    gap: 5px;
+    font-size: 10px;
+  }
+  .cs-upload i { width: 64px; }
+  .cs-chips {
+    bottom: 0;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px;
+    padding: 4px;
+    border-radius: 12px;
+    white-space: normal;
   }
   .cs-chips span {
-    padding: 5px 8px;
-    font-size: 11px;
+    padding: 3px 6px;
+    font-size: 9.5px;
+  }
+  .cs-badge {
+    bottom: 0;
+    right: auto;
+    left: 50%;
+    padding: 6px 9px;
+    gap: 5px;
+    font-size: 9.5px;
+    white-space: nowrap;
+    transform: translate(-50%, 10px) scale(0.9);
+  }
+  .cs-stage.s3 .cs-badge {
+    transform: translate(-50%, 0);
+  }
+  .cs-steps button {
+    grid-template-columns: 24px 1fr;
+    gap: 8px;
+    padding: 8px 8px 9px;
+  }
+  .cs-n {
+    width: 24px;
+    height: 24px;
+    font-size: 11.5px;
+  }
+  .cs-steps b {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+  .cs-steps small,
+  .cs-steps li.on small {
+    display: none;
+  }
+  .cs-bar {
+    left: 8px;
+    right: 8px;
+    bottom: 3px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
