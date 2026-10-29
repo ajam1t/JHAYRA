@@ -207,7 +207,7 @@ const GAP_IN = 3;
 const HERO_FACTS = [
   ['truck', 'Free delivery', 'across India'],
   ['brush', 'Handcrafted', 'to order'],
-  ['wall', '4 sizes,', '3 frame finishes'],
+  ['wall', '4 sizes', '3 frame finishes'],
   ['lock', 'Secure', 'payments'],
 ];
 
@@ -311,13 +311,14 @@ function Hero({ products }) {
           <Monogram3D className="sf-hero-3d sf-in" />
         </div>
         <ul className="hx-facts sf-in" style={{ '--d': '.4s' }}>
-          {HERO_FACTS.map(([ic, a, b]) => (
-            <li key={a}>
-              <Icon name={ic} size={20} />
-              <span>
-                {a}
-                <br />
-                {b}
+          {HERO_FACTS.map(([ic, a, b], i) => (
+            <li key={a} className={`hxf-${ic}`} style={{ '--i': i }}>
+              <span className="hxf-ic">
+                <Icon name={ic} size={19} />
+              </span>
+              <span className="hxf-t">
+                <b>{a}</b>
+                <small>{b}</small>
               </span>
             </li>
           ))}
