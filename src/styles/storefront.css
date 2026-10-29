@@ -4872,3 +4872,23 @@
   min-height: 44px;
   align-items: center;
 }
+
+/* Phones: while a frame is being styled, the wall stays pinned under the
+   header (cropped to the frames) so every change is visible while scrolling
+   the options below. */
+@media (max-width: 640px) {
+  .hx-stage.editing {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 7;
+    max-height: 62vw;
+    overflow: hidden;
+    box-shadow: 0 10px 18px -12px rgba(40, 30, 15, 0.45);
+  }
+}
+@media (max-width: 640px) {
+  /* clip (not hidden) so the pinned preview can stick to the viewport */
+  .sf-hero.gh {
+    overflow: clip;
+  }
+}

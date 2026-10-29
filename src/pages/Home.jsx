@@ -327,7 +327,7 @@ function Hero({ products }) {
         <div className="hs-head hx-head wrap">
           <h2 className="hs-title">Interactive Wall Art Studio</h2>
         </div>
-        <div className="hx-stage">
+        <div className={`hx-stage ${cur ? 'editing' : ''}`}>
           <div className="gh-room-inner" ref={room}>
             <RoomScene photo="/rooms/hero-living.webp" furniture="sofa" frames={frames} zoom={zoom} furnitureWidth={SOFA_W} tone="gallery" selected={sel} onFrameClick={(k) => setSel((s) => (s === k ? null : k))} className="room-hero" />
           </div>
