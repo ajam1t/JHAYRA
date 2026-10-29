@@ -2,7 +2,7 @@ import { Fragment, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Frame from '../components/Frame';
 import Img from '../components/Img';
-import Icon from '../components/Icon';
+import Icon, { WhatsAppGlyph } from '../components/Icon';
 import Reveal from '../components/Reveal';
 import RoomScene, { WALLS } from '../components/RoomScene';
 import Particles from '../components/Particles';
@@ -899,6 +899,7 @@ function Bestsellers({ products }) {
 }
 
 /* ── FAQ (WAI-ARIA accordion: buttons, regions, arrow keys) ───────── */
+const FAQ_ICONS = ['wall', 'palette', 'camera', 'sofa', 'truck', 'refresh', 'lock'];
 function Faq() {
   const [open, setOpen] = useState(-1);
   const id = useId();
@@ -912,33 +913,44 @@ function Faq() {
   };
   return (
     <section className="section sf-faq">
-      <div className="wrap wrap-narrow">
-        <SectionHead eyebrow="Questions" title="Frequently asked" em="questions." center />
-        <div className="sf-acc">
+      <div className="wrap">
+        <div className="hs-head">
+          <h2 className="hs-title">Frequently Asked Questions</h2>
+          <Link to="/support" className="hs-all">
+            All FAQs <Icon name="arrow" size={14} />
+          </Link>
+        </div>
+        <div className="fq">
           {HOME_FAQ.map(([q, a], i) => {
             const on = open === i;
             return (
-              <div key={q} className={`sf-acc-item ${on ? 'on' : ''}`}>
+              <div key={q} className={`fq-item ${on ? 'on' : ''}`} style={{ '--i': i }}>
                 <h3>
                   <button ref={(el) => (btns.current[i] = el)} type="button" id={`${id}-b${i}`} aria-expanded={on} aria-controls={`${id}-p${i}`} onClick={() => setOpen(on ? -1 : i)} onKeyDown={(e) => onKey(e, i)}>
-                    {q}
-                    <span className="sf-acc-ic" aria-hidden="true" />
+                    <span className="fq-ic" aria-hidden="true">
+                      <Icon name={FAQ_ICONS[i] || 'question'} size={17} />
+                    </span>
+                    <span className="fq-q">{q}</span>
+                    <span className="fq-tog" aria-hidden="true" />
                   </button>
                 </h3>
-                <div id={`${id}-p${i}`} role="region" aria-labelledby={`${id}-b${i}`} className="sf-acc-panel" hidden={!on}>
+                <div id={`${id}-p${i}`} role="region" aria-labelledby={`${id}-b${i}`} className="fq-panel" hidden={!on}>
                   <p>{a}</p>
                 </div>
               </div>
             );
           })}
         </div>
-        <p className="center small muted" style={{ marginTop: 22 }}>
-          More answers on our <Link className="link" to="/support">Help & FAQs</Link> page, or{' '}
-          <a className="link" href={waLink('Hi JHAYRA! I have a question.')} target="_blank" rel="noopener noreferrer">
-            ask us on WhatsApp
-          </a>
-          .
-        </p>
+        <a className="fq-help" href={waLink('Hi JHAYRA! I have a question.')} target="_blank" rel="noopener noreferrer">
+          <span className="fq-help-ic" aria-hidden="true">
+            <WhatsAppGlyph size={18} />
+          </span>
+          <span>
+            <b>Still have a question?</b>
+            <small>Chat with us on WhatsApp — a real person replies.</small>
+          </span>
+          <Icon name="arrow" size={16} />
+        </a>
       </div>
     </section>
   );
