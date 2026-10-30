@@ -175,7 +175,7 @@ function SalonWall({ products }) {
     [31, 4, 26, 1.33],
     [60, 14, 20, 1.3],
     [83, 26, 14, 1.25],
-    [36, 58, 16, 1.25],
+    [76, 62, 16, 1.25],
   ];
   return (
     <div className="sh-salon" aria-label="A few of our bestsellers">
