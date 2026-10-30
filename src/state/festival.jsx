@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { activeFestival, FESTIVAL_MAP, loadFestivals } from '../lib/festivals';
+import { withoutPromo } from '../lib/site';
 
 const FestivalCtx = createContext(null);
 const KEY = 'jhayra_festival_preview';
@@ -37,6 +38,10 @@ export function FestivalProvider({ children }) {
 }
 
 function pick(search) {
+  return withoutPromo(pickFestival(search));
+}
+
+function pickFestival(search) {
   const q = new URLSearchParams(search).get('festival');
   try {
     if (q === 'off') sessionStorage.removeItem(KEY);

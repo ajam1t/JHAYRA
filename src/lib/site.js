@@ -47,3 +47,14 @@ export const safePath = (to) => (typeof to === 'string' && /^\/(?!\/|\\)/.test(t
 
 // Indian mobile as 10 digits: accepts +91 / 91 / 0 prefixes, spaces and dashes.
 export const mobile10 = (v = '') => String(v).replace(/\D/g, '').replace(/^(?:91|0)(?=\d{10}$)/, '');
+
+// Promotional coupons (festival and campaign codes) are paused: the payment
+// function only honours its own codes. While true, festival/campaign offers,
+// banners naming a code and checkout auto-apply are hidden. The manual coupon
+// box in the bag is unaffected.
+export const PROMO_COUPONS_PAUSED = true;
+const MENTIONS_OFFER = /\d+\s*%|\boff\b|\bcode\b|coupon/i;
+export function withoutPromo(x) {
+  if (!x || !PROMO_COUPONS_PAUSED) return x;
+  return { ...x, coupon: null, offer: null, banner: x.banner && MENTIONS_OFFER.test(x.banner) ? null : x.banner };
+}

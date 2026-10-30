@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
+import { withoutPromo } from './site';
 import { COLLECTIONS } from './collections';
 import { EVENT_THEMES, themeFor } from './eventThemes';
 
@@ -210,7 +211,7 @@ export function useActiveCampaign() {
     return () => clearInterval(t);
   }, []);
   const preview = previewCampaign(all);
-  return resolveCampaign(preview ? { ...preview, preview: true } : liveCampaigns(all)[0] || null);
+  return withoutPromo(resolveCampaign(preview ? { ...preview, preview: true } : liveCampaigns(all)[0] || null));
 }
 
 let list = DEFAULT_CAMPAIGNS;
