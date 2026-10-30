@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Icon, { InstagramLogo, WhatsAppGlyph } from './Icon';
 import Frame from './Frame';
@@ -186,39 +186,56 @@ function CountBadge({ count }) {
   );
 }
 
+// Full-screen menu: opens as a circle growing from the menu button, with
+// numbered editorial links, expanding sub-links and a strip of bestsellers.
+const PRIMARY = [
+  ['/', 'Home'],
+  ['/shop', 'Shop', 'Shop'],
+  ['/customize', 'Create', 'Create'],
+  ['/gift-finder', 'Gift Finder'],
+  ['/celebrations', 'Celebrations', 'Celebrations'],
+  ['/signature-experience', 'Signature', null, true],
+  ['/collections', 'Discover', 'Discover'],
+  ['/about', 'About', 'About'],
+];
+const SUB = Object.fromEntries(MENU);
+
 function MenuSheet({ onClose, returnFocus }) {
-  const homeClick = useHomeClick(onClose);
+  const [closing, setClosing] = useState(false);
+  const shut = useCallback(() => {
+    setClosing(true);
+    setTimeout(onClose, matchMedia('(prefers-reduced-motion: reduce)').matches ? 150 : 480);
+  }, [onClose]);
+  const homeClick = useHomeClick(shut);
   const { setSearchOpen } = useShop();
   const panel = useRef(null);
   const { pathname, search } = useLocation();
-  const here = (to) => to === pathname + search || (!to.includes('?') && to !== '/' && to === pathname && !search);
-  // The section holding the current page starts open; Shop otherwise.
-  const [open, setOpen] = useState(() => MENU.find(([, l]) => l.some(([to]) => to === pathname + search))?.[0] || 'Shop');
+  const here = (to) => to === pathname + search || (to !== '/' && !to.includes('?') && pathname.startsWith(to));
+  const [open, setOpen] = useState('');
   const [art, setArt] = useState([]);
   useEffect(() => {
     loadProducts()
-      .then((l) => setArt((l || []).filter((p) => p.thumbnail && p.is_bestseller)))
+      .then((l) => setArt((l || []).filter((p) => p.thumbnail && p.is_bestseller).slice(0, 8)))
       .catch(() => {});
   }, []);
-  const tiles = [
-    ['/shop', 'Shop', 'All wall art', art[0]?.thumbnail],
-    ['/customize', 'Create', 'Design your frame', art[3]?.thumbnail],
-    ['/gift-finder', 'Gift Finder', 'Five questions', art[6]?.thumbnail],
-    ['/signature-experience', 'Signature', 'Founder-curated', null, 'sig'],
-  ];
+  // Circle origin: the menu button.
+  const origin = useMemo(() => {
+    const r = document.querySelector('.header-menu')?.getBoundingClientRect();
+    return r ? `${Math.round(r.left + r.width / 2)}px ${Math.round(r.top + r.height / 2)}px` : '32px 32px';
+  }, []);
   // Focus the panel, trap Tab inside it, close on Escape, restore focus on close.
   useEffect(() => {
     const el = panel.current;
     const opener = document.activeElement;
-    el?.querySelector('a, button')?.focus();
+    el?.querySelector('.m4-close')?.focus();
     const onKey = (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        onClose();
+        shut();
         return;
       }
       if (e.key !== 'Tab' || !el) return;
-      const f = [...el.querySelectorAll('a[href], button:not([disabled])')];
+      const f = [...el.querySelectorAll('a[href], button:not([disabled])')].filter((n) => n.offsetParent !== null && n.tabIndex !== -1);
       if (!f.length) return;
       const first = f[0];
       const last = f[f.length - 1];
@@ -238,79 +255,118 @@ function MenuSheet({ onClose, returnFocus }) {
       document.body.style.overflow = prev;
       (returnFocus?.current || opener)?.focus?.();
     };
-  }, [onClose, returnFocus]);
+  }, [shut, returnFocus]);
+
   return (
-    <>
-      <div className="scrim menu3-scrim" onClick={onClose} />
-      <aside className="sheet sheet-left menu-sheet menu3" id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" ref={panel}>
-        <div className="menu3-glow" aria-hidden="true" />
-        <div className="sheet-head menu3-head">
-          <Logo onNavigate={onClose} />
-          <button className="menu3-close" onClick={onClose} aria-label="Close menu">
-            <Icon name="close" size={20} />
-          </button>
+    <div className={`m4 ${closing ? 'closing' : ''}`} id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" ref={panel} style={{ '--o': origin }}>
+      <div className="m4-bg" aria-hidden="true">
+        <span className="m4-aura a1" />
+        <span className="m4-aura a2" />
+        <span className="m4-aura a3" />
+        <span className="m4-grain" />
+      </div>
+      <div className="m4-top">
+        <Logo onNavigate={shut} />
+        <button type="button" className="m4-close" onClick={shut} aria-label="Close menu">
+          <span />
+          <span />
+        </button>
+      </div>
+      <div className="m4-ticker" aria-hidden="true">
+        <div>
+          {Array.from({ length: 2 }).map((_, k) => (
+            <span key={k}>
+              Crafting Memories Into Art <i>✦</i> Handcrafted to order <i>✦</i> Free delivery across India <i>✦</i> Personalised frames <i>✦</i>{' '}
+            </span>
+          ))}
         </div>
-        <div className="sheet-body menu3-body">
-          <button type="button" className="menu3-search" onClick={() => (onClose(), setSearchOpen(true))}>
-            <Icon name="search" size={18} /> <span>Search art, designs and gifts</span>
-          </button>
-          <div className="menu3-tiles">
-            {tiles.map(([to, label, sub, img, cls], i) => (
-              <Link key={to} to={to} className={`menu3-tile ${cls || ''}`} onClick={to === '/' ? homeClick : onClose} style={{ '--i': i }}>
-                {img ? <img src={optimized(img, 320)} alt="" loading="lazy" decoding="async" /> : <span className="menu3-tile-mark" aria-hidden="true">✦</span>}
-                <span className="menu3-tile-txt">
-                  <b>{label}</b>
-                  <small>{sub}</small>
-                </span>
-              </Link>
-            ))}
-          </div>
-          <Link to="/" className={`menu3-home ${pathname === '/' ? 'on' : ''}`} onClick={homeClick}>
-            <Icon name="home" size={18} /> Home
-          </Link>
-          {MENU.map(([title, items], gi) => {
-            const isOpen = open === title;
-            return (
-              <nav key={title} className={`menu3-group ${isOpen ? 'open' : ''}`} aria-label={title} style={{ '--g': gi }}>
-                <button type="button" className="menu3-group-btn" aria-expanded={isOpen} onClick={() => setOpen(isOpen ? '' : title)}>
-                  <span>{title}</span>
-                  <small>{items.length}</small>
-                  <Icon name="chevronD" size={18} />
-                </button>
-                <div className="menu3-group-body">
-                  <ul>
-                    {items.map(([to, label], i) => (
-                      <li key={to + label} style={{ '--i': i }}>
-                        <Link to={to} onClick={onClose} className={here(to) ? 'on' : ''} tabIndex={isOpen ? undefined : -1}>
+      </div>
+      <div className="m4-scroll">
+        <button type="button" className="m4-search" onClick={() => (shut(), setTimeout(() => setSearchOpen(true), 300))}>
+          <Icon name="search" size={18} /> <span>Search art, designs and gifts</span>
+        </button>
+        <nav className="m4-nav" aria-label="Main">
+          <ol>
+            {PRIMARY.map(([to, label, sub, gold], i) => {
+              const kids = sub ? SUB[sub] : null;
+              const isOpen = open === label;
+              return (
+                <li key={label} className={`m4-item ${isOpen ? 'open' : ''} ${gold ? 'gold' : ''} ${here(to) ? 'here' : ''}`} style={{ '--i': i }}>
+                  <div className="m4-row">
+                    <span className="m4-num">{String(i + 1).padStart(2, '0')}</span>
+                    <Link to={to} className="m4-link" onClick={to === '/' ? homeClick : shut}>
+                      <span className="m4-mask">
+                        <span>
                           {label}
-                          <Icon name="arrow" size={15} />
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </nav>
-            );
-          })}
-        </div>
-        <div className="sheet-foot menu3-foot">
-          <a className="menu3-wa" href={waLink('Hi JHAYRA! I need help choosing a frame.')} target="_blank" rel="noopener noreferrer">
-            <WhatsAppGlyph size={20} /> <span>Chat with us on WhatsApp</span>
+                          {gold && <i aria-hidden="true"> ✦</i>}
+                        </span>
+                      </span>
+                    </Link>
+                    {kids && (
+                      <button type="button" className="m4-plus" aria-expanded={isOpen} aria-label={`${isOpen ? 'Hide' : 'Show'} ${label} links`} onClick={() => setOpen(isOpen ? '' : label)}>
+                        <span />
+                        <span />
+                      </button>
+                    )}
+                  </div>
+                  {kids && (
+                    <div className="m4-sub">
+                      <ul>
+                        {kids.map(([kto, kl], j) => (
+                          <li key={kto + kl} style={{ '--j': j }}>
+                            <Link to={kto} onClick={shut} tabIndex={isOpen ? undefined : -1} className={here(kto) ? 'on' : ''}>
+                              {kl.replace(' ✦', '')}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
+        {art.length > 2 && (
+          <section className="m4-trend" aria-label="Trending now">
+            <div className="m4-trend-head">
+              <span>Trending now</span>
+              <Link to="/shop?sort=bestsellers" onClick={shut}>
+                See all <Icon name="arrow" size={14} />
+              </Link>
+            </div>
+            <div className="m4-trend-row">
+              {art.map((p, i) => (
+                <Link key={p.id} to={`/product/${p.id}`} className="m4-card" onClick={shut} style={{ '--i': i }}>
+                  <span className="m4-card-frame">
+                    <img src={optimized(p.thumbnail, 240)} alt="" loading="lazy" decoding="async" />
+                  </span>
+                  <b>{p.name}</b>
+                  <small>from {money(p.price)}</small>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+      <div className="m4-foot">
+        <a className="m4-wa" href={waLink('Hi JHAYRA! I need help choosing a frame.')} target="_blank" rel="noopener noreferrer">
+          <span className="m4-wa-dot" aria-hidden="true" />
+          <WhatsAppGlyph size={18} /> <span>Chat on WhatsApp</span>
+        </a>
+        <div className="m4-quick">
+          <Link to="/orders" onClick={shut} aria-label="My orders">
+            <Icon name="truck" size={18} />
+          </Link>
+          <Link to="/wishlist" onClick={shut} aria-label="Wishlist">
+            <Icon name="heart" size={18} />
+          </Link>
+          <a href={SITE.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <Icon name="instagram" size={18} />
           </a>
-          <div className="menu3-quick">
-            <Link to="/orders" onClick={onClose}>
-              <Icon name="truck" size={17} /> Orders
-            </Link>
-            <Link to="/wishlist" onClick={onClose}>
-              <Icon name="heart" size={17} /> Wishlist
-            </Link>
-            <a href={SITE.instagram} target="_blank" rel="noopener noreferrer">
-              <Icon name="instagram" size={17} /> Instagram
-            </a>
-          </div>
         </div>
-      </aside>
-    </>
+      </div>
+    </div>
   );
 }
 
