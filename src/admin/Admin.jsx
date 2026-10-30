@@ -13,6 +13,7 @@ import Campaigns from './Campaigns';
 import Dashboard from './Dashboard';
 import SignatureManager from './Signature';
 import { supabase } from '../lib/supabase';
+import { mobile10 } from '../lib/site';
 import Gate, { GATE_KEY } from './Gate';
 import { FESTIVALS, FESTIVALS_PATH, saveFestivals } from '../lib/festivals';
 import { CAMPAIGNS_PATH, DEFAULT_CAMPAIGNS, saveCampaigns } from '../lib/campaigns';
@@ -73,9 +74,16 @@ function Login() {
             setErr('');
             setBusy(true);
             try {
-              await signIn(email, password);
+              // A mobile number signs in to the admin account it's linked to.
+              let id = email.trim();
+              if (!id.includes('@')) {
+                const { data } = await supabase.rpc('admin_login_email', { p_phone: mobile10(id) });
+                if (!data) throw new Error('Incorrect mobile number or password');
+                id = data;
+              }
+              await signIn(id, password);
             } catch (x) {
-              setErr(x.message || 'Sign in failed');
+              setErr(/invalid login|incorrect/i.test(x.message || '') ? 'Incorrect mobile number or password' : x.message || 'Sign in failed');
             } finally {
               setBusy(false);
             }
@@ -89,8 +97,8 @@ function Login() {
             </div>
           </div>
           <label className="gt-field">
-            <span>Email</span>
-            <input type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
+            <span>Mobile number or email</span>
+            <input type="text" inputMode="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="98765 43210" autoFocus />
           </label>
           <label className="gt-field">
             <span>Password</span>
