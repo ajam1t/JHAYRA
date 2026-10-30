@@ -24,10 +24,22 @@ export const DEFAULT_SIGNATURE = {
     title: 'The Jhayra Signature Experience',
     subtitle: 'Artistry · Exclusivity · Personal Service',
     lead: 'A small collection our founder considers our finest work — framed to order, presented beautifully, and delivered with personal care.',
-    productId: '',
+    productId: 'p048',
   },
-  // { productId, enabled, featured, note }
-  items: [],
+  // { productId, enabled, featured, note, prices? } — a starting selection the
+  // admin can replace; publishing from Admin → Signature takes over from here.
+  items: [
+    { productId: 'p048', enabled: true, featured: true, note: 'Our most-loved devotional piece.' },
+    { productId: 'p018', enabled: true, featured: false, note: '' },
+    { productId: 'p003', enabled: true, featured: false, note: '' },
+    { productId: 'p005', enabled: true, featured: true, note: '' },
+    { productId: 'p016', enabled: true, featured: false, note: '' },
+    { productId: 'p002', enabled: true, featured: false, note: '' },
+    { productId: 'p007', enabled: true, featured: false, note: '' },
+    { productId: 'p004', enabled: true, featured: false, note: '' },
+    { productId: 'p006', enabled: true, featured: false, note: '' },
+    { productId: 'p009', enabled: true, featured: false, note: '' },
+  ],
   packaging: {
     enabled: true,
     title: 'Presented, not just packed',
