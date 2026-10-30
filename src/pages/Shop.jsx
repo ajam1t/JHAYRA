@@ -170,20 +170,24 @@ function RoomBubbles({ current, onPick }) {
 function SalonWall({ products }) {
   const art = (products || []).filter((p) => p.thumbnail && p.is_bestseller).slice(0, 5);
   if (art.length < 5) return <div className="sh-salon" aria-hidden="true" />;
+  // Balanced hang: one centre line, largest in the middle, even gaps.
   const spots = [
-    [6, 18, 22, 1.3],
-    [31, 4, 26, 1.33],
-    [60, 14, 20, 1.3],
-    [83, 26, 14, 1.25],
-    [76, 62, 16, 1.25],
+    [14, 1.3, 1],
+    [18, 1.32, 0],
+    [24, 1.33, 2],
+    [18, 1.32, 3],
+    [14, 1.3, 4],
   ];
   return (
     <div className="sh-salon" aria-label="A few of our bestsellers">
-      {art.map((p, i) => (
-        <Link key={p.id} to={`/product/${p.id}`} className="sh-salon-f m-float" style={{ left: `${spots[i][0]}%`, top: `${spots[i][1]}%`, width: `${spots[i][2]}%`, animationDelay: `${i * -1.3}s`, '--i': i }} aria-label={p.name}>
-          <Frame src={p.thumbnail} alt="" ratio={{ w: 12, h: 12 * spots[i][3] }} colour={i === 1 ? '#b08a45' : i === 3 ? '#6b4a2b' : '#1C1C1C'} glare={false} sizes="(max-width: 760px) 26vw, 180px" priority={i < 2} />
-        </Link>
-      ))}
+      {spots.map(([w, r, j], i) => {
+        const p = art[j];
+        return (
+          <Link key={p.id} to={`/product/${p.id}`} className="sh-salon-f m-float" style={{ width: `${w}%`, animationDelay: `${i * -1.3}s`, '--i': i }} aria-label={p.name}>
+            <Frame src={p.thumbnail} alt="" ratio={{ w: 12, h: 12 * r }} colour={i === 2 ? '#b08a45' : i === 1 || i === 3 ? '#1C1C1C' : '#6b4a2b'} glare={false} sizes="(max-width: 760px) 26vw, 180px" priority={i === 2} />
+          </Link>
+        );
+      })}
     </div>
   );
 }

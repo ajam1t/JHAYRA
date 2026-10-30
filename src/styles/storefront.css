@@ -6590,3 +6590,15 @@
   .sh-salon-f, .sh-bubble, .sh-grid > * { animation: none; }
 }
 .sh-bar-chip, .sh-bar-btn { white-space: nowrap; }
+/* Salon wall v2: one row on a shared centre line */
+.sh-salon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.4%;
+  height: auto;
+  min-height: 150px;
+  padding: 14px 0 18px;
+}
+.sh-salon-f { position: relative; flex: none; }
+@media (min-width: 900px) { .sh-salon { height: auto; min-height: 300px; } }
