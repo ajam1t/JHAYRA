@@ -81,6 +81,21 @@ export default function Campaigns() {
     setDirty(true);
     setNewTheme('');
   };
+  // Make one event the homepage event: switch it on, put it first, start it
+  // now if it hasn't started, and pause any other event that is live now.
+  const showNow = (id) => {
+    setAll((l) =>
+      l.map((x) => {
+        if (x.id === id) {
+          const start = x.start && campaignStatus({ ...x, enabled: true }, now) === 'scheduled' ? `${now.slice(0, 10)}T00:00` : x.start;
+          return { ...x, enabled: true, priority: 1, start };
+        }
+        return campaignStatus(x, now) === 'live' ? { ...x, enabled: false } : x;
+      }),
+    );
+    setDirty(true);
+    setMsg('Done — press “Save changes” to publish. The site updates within a minute.');
+  };
   const duplicate = () => {
     const n = { ...c, id: `${c.theme}-${Date.now().toString(36)}`, title: `${c.title} (copy)`, enabled: false };
     setAll((l) => [...l, n]);
@@ -235,8 +250,15 @@ export default function Campaigns() {
                   <button className={`ad-btn ${c.enabled === false ? 'ad-btn-primary' : ''}`} onClick={() => up({ enabled: c.enabled === false })}>
                     {c.enabled === false ? 'Activate' : 'Pause'}
                   </button>
+                  {featured?.id !== c.id && (
+                    <button className="ad-btn ad-btn-primary" onClick={() => showNow(c.id)}>
+                      Show this on the homepage now
+                    </button>
+                  )}
                 </div>
               </div>
+              {c.enabled === false && <div className="ad-err cm-paused">This event is paused, so it won’t appear on the site. Press “Show this on the homepage now” (or Activate), then Save changes.</div>}
+              {c.enabled !== false && featured && featured.id !== c.id && status === 'live' && <div className="ad-err cm-paused">“{featured.title}” is showing instead — it has a lower priority number. Use “Show this on the homepage now” to switch.</div>}
               <div className="cm-preview" aria-label="Live preview">
                 {r.showStrip && <EventStrip c={r} />}
                 {r.showBanner ? <EventBanner c={r} products={products} as="div" /> : <p className="ad-muted">The banner is turned off for this campaign.</p>}

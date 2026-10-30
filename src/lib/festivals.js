@@ -211,7 +211,7 @@ let loading = null;
 export function loadFestivals(force = false) {
   if (loading && !force) return loading;
   const { data } = supabase.storage.from('product-images').getPublicUrl(FESTIVALS_PATH);
-  loading = fetch(`${data.publicUrl}?v=${force ? Date.now() : Math.floor(Date.now() / 300000)}`)
+  loading = fetch(`${data.publicUrl}?v=${force ? Date.now() : Math.floor(Date.now() / 60000)}`)
     .then((r) => (r.ok ? r.json() : null))
     .then((json) => {
       if (json && Array.isArray(json.festivals)) setList(json.festivals);

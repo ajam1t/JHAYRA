@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { money } from '../lib/site';
+import Icon from '../components/Icon';
 
 const STATUSES = ['pending', 'confirmed', 'personalization', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -70,10 +71,25 @@ export default function Orders() {
     setUrls((u) => ({ ...u, ...Object.fromEntries(signed.filter(([, s]) => s)) }));
   }
 
-  async function download(path) {
-    const { data, error } = await supabase.storage.from('customer-artwork').createSignedUrl(path, 3600, { download: path.split('/').pop() });
+  // Files are named after the order so every print can be traced back to it:
+  // JHY-20260816-295002_item1_photo1.jpg
+  const fileName = (o, itemNo, photoNo, path) => `${o.order_number || `order-${o.id.slice(0, 8)}`}_item${itemNo}_photo${photoNo}.${(path.split('.').pop() || 'jpg').toLowerCase()}`;
+  async function download(path, name) {
+    const { data, error } = await supabase.storage.from('customer-artwork').createSignedUrl(path, 3600, { download: name || path.split('/').pop() });
     if (error || !data?.signedUrl) return setErr(`Could not download: ${error?.message || 'not found'}`);
-    window.location.href = data.signedUrl;
+    const a = document.createElement('a');
+    a.href = data.signedUrl;
+    a.download = name || '';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+  async function downloadAll(o) {
+    const list = (items[o.id] || []).flatMap((it, i) => (Array.isArray(it.artwork_paths) ? it.artwork_paths.map((p, k) => [p, fileName(o, i + 1, k + 1, p)]) : []));
+    for (const [p, n] of list) {
+      await download(p, n);
+      await new Promise((r) => setTimeout(r, 700));
+    }
   }
 
   async function setStatus(id, status) {
@@ -170,7 +186,12 @@ export default function Orders() {
                         <div>
                           <h3>Items</h3>
                           {!items[o.id] && <p className="ad-muted">Loading…</p>}
-                          {(items[o.id] || []).map((it) => (
+                          {(items[o.id] || []).some((it) => it.artwork_paths?.length) && (
+                            <button className="ad-btn ad-btn-primary ad-dl-all" onClick={() => downloadAll(o)}>
+                              <Icon name="download" size={16} /> Download all photos for {o.order_number || 'this order'}
+                            </button>
+                          )}
+                          {(items[o.id] || []).map((it, itemIdx) => (
                             <div key={it.id} className="ad-item">
                               <b>
                                 {it.name || it.product_name} × {it.quantity}
@@ -181,12 +202,12 @@ export default function Orders() {
                               <Customization c={it.customization} />
                               {Array.isArray(it.artwork_paths) && it.artwork_paths.length > 0 && (
                                 <div className="ad-art">
-                                  {it.artwork_paths.map((p) => (
+                                  {it.artwork_paths.map((p, k) => (
                                     <div key={p}>
                                       {urls[p] ? <img src={urls[p]} alt="" /> : <span className="ad-muted">…</span>}
                                       {it.customization?.artworkMeta?.find((m) => m.path === p)?.role && <small className="ad-muted">{it.customization.artworkMeta.find((m) => m.path === p).role}</small>}
-                                      <button className="ad-btn" onClick={() => download(p)}>
-                                        Download original
+                                      <button className="ad-btn" onClick={() => download(p, fileName(o, itemIdx + 1, k + 1, p))}>
+                                        Download {k === 0 && it.customization?.printReady ? 'print file' : `photo ${k + 1}`}
                                       </button>
                                     </div>
                                   ))}

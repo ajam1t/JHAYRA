@@ -27,7 +27,7 @@ function normalise(data) {
 export function loadTemplates(force = false) {
   if (loading && !force) return loading;
   const { data } = supabase.storage.from(CONFIG_BUCKET).getPublicUrl(TEMPLATES_PATH);
-  loading = fetch(`${data.publicUrl}?v=${force ? Date.now() : Math.floor(Date.now() / 300000)}`)
+  loading = fetch(`${data.publicUrl}?v=${force ? Date.now() : Math.floor(Date.now() / 60000)}`)
     .then((r) => (r.ok ? r.json() : null))
     .then((json) => {
       if (json && Array.isArray(json.templates) && json.templates.length) {

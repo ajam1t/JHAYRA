@@ -1802,3 +1802,5 @@
   .ad-top-link { order: 2; margin: 0; }
   .ad-top-me { order: 3; flex: none; }
 }
+.ad-dl-all { margin: 0 0 12px; gap: 8px; }
+.cm-paused { margin: 0 0 12px; }
