@@ -17,6 +17,8 @@ import { useTemplates } from '../lib/templates';
 import { ROOMS } from '../lib/rooms';
 import { HOME_FAQ } from '../lib/faq';
 import { useFestival } from '../state/festival';
+import { useActiveCampaign } from '../lib/campaigns';
+import { EventBanner, EventHeroAccent, EventPicks } from '../components/EventExperience';
 import { useToast } from '../state/store';
 import { daysUntil, orderBy } from '../lib/festivals';
 import { money, SITE, waLink } from '../lib/site';
@@ -211,7 +213,7 @@ const HERO_FACTS = [
   ['lock', 'Secure', 'payments'],
 ];
 
-function Hero({ products }) {
+function Hero({ products, campaign }) {
   const navigate = useNavigate();
   const toast = useToast();
   const art = useMemo(() => (products || []).filter((p) => p.thumbnail && ART_CATS.includes(p.category)).sort((a, b) => b.is_bestseller - a.is_bestseller), [products]);
@@ -400,6 +402,7 @@ function Hero({ products }) {
           <div className="gh-room-inner" ref={room}>
             <RoomScene photo="/rooms/hero-living.webp" furniture="sofa" frames={frames} zoom={zoom} furnitureWidth={SOFA_W} tone="gallery" selected={sel} onFrameClick={(k) => setSel((s) => (s === k ? null : k))} className="room-hero" />
           </div>
+          {campaign && <EventHeroAccent c={campaign} />}
           <div className="gh-hud">
             <span className="gh-hint glass">{cur ? 'Style this frame' : 'Tap any artwork on the wall'}</span>
           </div>
@@ -515,7 +518,7 @@ function CategoryCard({ c, colours, i }) {
   );
 }
 
-function ShopByCategory({ products, categories }) {
+export function ShopByCategory({ products, categories }) {
   const { data: opts } = useOptionSummary();
   const { data: tables } = useFrameTables();
   const art = (products || []).filter((p) => p.thumbnail);
@@ -597,7 +600,7 @@ const FEATURED = [
   ['abstract-forms', 'Abstract', 'Forms'],
   ['divine', 'Spiritual', '& Divine'],
 ];
-function FeaturedCollections({ products }) {
+export function FeaturedCollections({ products }) {
   const list = products || [];
   const cards = FEATURED.map(([id, a, b]) => {
     if (id === 'divine') {
@@ -1027,6 +1030,7 @@ function Faq() {
 /* ── Final call to action ─────────────────────────────────────────── */
 export default function Home() {
   const festival = useFestival();
+  const campaign = useActiveCampaign();
   const { data: products, loading } = useProducts();
   const { data: categories } = useCategories();
 
@@ -1053,8 +1057,10 @@ export default function Home() {
           ],
         }}
       />
-      {festival ? <FestivalHero festival={festival} /> : <Hero products={products} />}
+      {festival ? <FestivalHero festival={festival} /> : <Hero products={products} campaign={campaign} />}
       {festival && <FestivalPicks festival={festival} products={products} categories={categories} />}
+      {!festival && campaign?.showBanner && <EventBanner c={campaign} products={products} />}
+      {!festival && campaign && <EventPicks c={campaign} products={products} categories={categories} />}
       <ShopByCategory products={products} categories={categories} />
       <LazyMount minHeight={420}>
         <ShopByRoom />

@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import Icon from '../components/Icon';
 import Reveal from '../components/Reveal';
-import { CampaignSlide } from '../components/CampaignBanner';
+import { EventBanner } from '../components/EventExperience';
 import { Seo } from '../lib/seo';
 import { useProducts } from '../lib/catalog';
-import { liveCampaigns, useCampaigns } from '../lib/campaigns';
+import { liveCampaigns, resolveCampaign, useCampaigns } from '../lib/campaigns';
 
 // Every occasion links to an existing collection, category, world or set of
 // personalised designs.
@@ -34,11 +34,9 @@ export default function Celebrations() {
         </p>
       </section>
       {live.length > 0 && (
-        <section className="wrap cel-live">
+        <section className="cel-live">
           {live.map((c) => (
-            <Reveal key={c.id} className="cb cel-card">
-              <CampaignSlide c={c} products={products} />
-            </Reveal>
+            <EventBanner key={c.id} c={resolveCampaign(c)} products={products} as="div" />
           ))}
         </section>
       )}

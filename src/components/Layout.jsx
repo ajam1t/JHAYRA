@@ -11,7 +11,9 @@ import { BRAND } from '../lib/brand';
 import { loadProducts, searchProducts } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
 import { useFestival } from '../state/festival';
-import { liveCampaigns, targetFor, useCampaigns } from '../lib/campaigns';
+import { useActiveCampaign } from '../lib/campaigns';
+import { useSignature } from '../lib/signature';
+import { EventStrip } from './EventExperience';
 
 // Desktop header. Visualise stays one tap away from product pages, Create
 // and the menu rather than taking a permanent slot here.
@@ -130,66 +132,42 @@ function Header({ onMenu, menuOpen }) {
 // Signature Experience.
 function TopStrip() {
   const { pathname } = useLocation();
-  const live = liveCampaigns(useCampaigns());
+  const c = useActiveCampaign();
+  const sig = useSignature();
   if (pathname === '/') {
-    const c = live[0];
+    if (c?.showStrip) return <EventStrip c={c} />;
     // No festival running: feature the Mithila (Madhubani) heritage collection.
-    if (!c)
-      return (
-        <Link to="/worlds/heritage" className="fest-strip mith-strip">
-          <span className="mith-motif" aria-hidden="true">
-            ❁
-          </span>
-          <span className="fest-text">
-            <span className="fest-kicker">Heritage of Bihar</span>
-            <em>Mithila Art</em>
-          </span>
-          <span className="mith-motif" aria-hidden="true">
-            ❁
-          </span>
-          <span className="fest-cta">
-            Explore <Icon name="arrow" size={13} stroke={2} />
-          </span>
-        </Link>
-      );
     return (
-      <Link to={targetFor(c.target).to} className="fest-strip">
-        <span className="fest-garland" aria-hidden="true" />
-        <span className="fest-sparks" aria-hidden="true">
-          {Array.from({ length: 8 }, (_, i) => (
-            <i key={i} style={{ '--i': i }} />
-          ))}
-        </span>
-        <span className="fest-diya" aria-hidden="true">
-          <span className="fest-flame" />
+      <Link to="/worlds/heritage" className="fest-strip mith-strip">
+        <span className="mith-motif" aria-hidden="true">
+          ❁
         </span>
         <span className="fest-text">
-          <span className="fest-kicker">{c.kicker}</span>
-          <em>{c.title}</em>
+          <span className="fest-kicker">Heritage of Bihar</span>
+          <em>Mithila Art</em>
         </span>
-        <span className="fest-diya" aria-hidden="true">
-          <span className="fest-flame" />
+        <span className="mith-motif" aria-hidden="true">
+          ❁
         </span>
         <span className="fest-cta">
-          Shop <Icon name="arrow" size={13} stroke={2} />
+          Explore <Icon name="arrow" size={13} stroke={2} />
         </span>
       </Link>
     );
   }
   return (
-    <Link to="/signature-experience" className="sig-strip">
-      <span className="sig-rule" aria-hidden="true" />
-      <span className="sig-text">
-        <span className="sig-star" aria-hidden="true">
-          ✦
+    sig.enabled !== false && (
+      <Link to="/signature-experience" className="sg-strip" aria-label="The Jhayra Signature Experience — discover the experience">
+        <span className="sg-strip-title">
+          <b>The Jhayra</b>
+          <em>Signature Experience</em>
         </span>
-        <span className="sig-kicker">The Jhayra</span> <em>Signature Experience</em>
-        <span className="sig-arrow" aria-hidden="true">
-          <Icon name="arrow" size={12} stroke={2} />
+        <span className="sg-strip-sub">Artistry · Exclusivity · Personal Service</span>
+        <span className="sg-strip-cta">
+          <span>Discover the Experience</span> <Icon name="arrow" size={13} stroke={2} />
         </span>
-      </span>
-      <span className="sig-rule" aria-hidden="true" />
-    </Link>
+      </Link>
+    )
   );
 }
 

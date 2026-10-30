@@ -10,6 +10,8 @@ import { supabase } from '../lib/supabase';
 import { useCart } from '../state/cart';
 import { useToast, saveLocalOrder } from '../state/store';
 import { useFestival } from '../state/festival';
+import { useActiveCampaign } from '../lib/campaigns';
+import { founderEligible, useSignature } from '../lib/signature';
 import { money, waLink, deliveryWindow, SITE } from '../lib/site';
 import { BRAND } from '../lib/brand';
 
@@ -119,7 +121,10 @@ function GiftCard({ gift }) {
 export default function Checkout() {
   const cart = useCart();
   const toast = useToast();
-  const festival = useFestival();
+  const fest = useFestival();
+  const campaign = useActiveCampaign();
+  // A live campaign's coupon applies automatically, like a festival offer.
+  const festival = fest?.coupon ? fest : campaign?.coupon && !campaign.preview ? { name: campaign.title, coupon: campaign.coupon } : fest;
   const navigate = useNavigate();
   const [d, setD] = useState(() => {
     try {
@@ -138,6 +143,15 @@ export default function Checkout() {
   const [order, setOrder] = useState(null);
   const lock = useRef(false);
   const tried = useRef(false);
+  // Signature items: concierge confirmation (until the payment function prices
+  // Signature on the server) and optional founder delivery.
+  const sig = useSignature();
+  const hasSig = cart.items.some((i) => i.signature);
+  const [founder, setFounder] = useState({ on: false, slot: '' });
+  const founderOk = hasSig && founderEligible(d.pin, sig);
+  const founderFee = founder.on && founderOk ? Number(sig.founder.fee) || 0 : 0;
+  const grand = cart.total + founderFee;
+  const concierge = hasSig && !sig.checkout?.online;
 
   useEffect(() => {
     if (cart.items.length === 0 && !order) navigate('/cart', { replace: true });
@@ -195,6 +209,34 @@ export default function Checkout() {
 
   const pay = async () => {
     if (lock.current || !validate()) return;
+    if (founder.on && founderOk && !founder.slot) {
+      toast('Please choose a founder-delivery slot.', 'warn');
+      document.getElementById('ck-slot')?.focus();
+      return;
+    }
+    if (concierge) {
+      try {
+        localStorage.setItem(SAVED, JSON.stringify(d));
+      } catch {}
+      const lines = cart.items.map((i) => `• ${i.name} — ${i.option.size}, ${i.option.colour} frame × ${i.qty} = ${money(i.price * i.qty)}`);
+      const msg = [
+        'Hi JHAYRA! I would like to confirm my Signature order:',
+        ...lines,
+        cart.discount > 0 ? `Discount (${cart.coupon.code}): −${money(cart.discount)}` : '',
+        founderFee ? `Founder delivery: ${money(founderFee)} · preferred slot: ${founder.slot}` : '',
+        `Total: ${money(grand)}`,
+        '',
+        `Name: ${d.name}`,
+        `Mobile: ${d.mobile}`,
+        `Address: ${d.address}, ${d.city}${d.state ? `, ${d.state}` : ''} – ${d.pin}`,
+        giftInfo ? `Gift card — to: ${giftInfo.to || '—'}, from: ${giftInfo.from || '—'}, message: ${giftInfo.note || '—'}${giftInfo.hidePrice ? ' (hide prices)' : ''}` : '',
+      ]
+        .filter(Boolean)
+        .join('\n');
+      window.open(waLink(msg), '_blank', 'noopener');
+      toast('Opening WhatsApp — our concierge will confirm your Signature order and send a secure payment link.', 'ok');
+      return;
+    }
     try {
       localStorage.setItem(SAVED, JSON.stringify(d));
     } catch {}
@@ -218,6 +260,7 @@ export default function Checkout() {
         category: i.category || null,
         artworkPaths: i.artworkPaths?.length ? i.artworkPaths : null,
         customization: giftInfo ? { ...(i.customization || {}), gift: giftInfo } : i.customization || null,
+        ...(i.signature ? { signature: true } : {}),
       }));
       const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
         body: {
@@ -232,6 +275,7 @@ export default function Checkout() {
             pin: d.pin.trim(),
             coupon: cart.coupon?.code || null,
           },
+          ...(founderFee ? { founderDelivery: { fee: founderFee, slot: founder.slot } } : {}),
         },
       });
       if (error || data?.error) {
@@ -392,6 +436,40 @@ export default function Checkout() {
             </div>
           </fieldset>
 
+          {hasSig && sig.founder.enabled && (
+            <fieldset className="ck-sec ck-founder">
+              <legend>
+                <span>✦</span> Signature founder delivery
+              </legend>
+              {founderOk ? (
+                <>
+                  <label className="toggle" style={{ marginBottom: founder.on ? 14 : 0 }}>
+                    <input type="checkbox" checked={founder.on} onChange={(e) => setFounder((f) => ({ ...f, on: e.target.checked }))} />
+                    <span />
+                    Delivered personally by the founder — {money(sig.founder.fee)}
+                  </label>
+                  {founder.on && (
+                    <div className="field">
+                      <label htmlFor="ck-slot">Preferred slot (confirmed with you on WhatsApp)</label>
+                      <select id="ck-slot" className="input" value={founder.slot} onChange={(e) => setFounder((f) => ({ ...f, slot: e.target.value }))}>
+                        <option value="">Choose a slot…</option>
+                        {sig.founder.slots.map((x) => (
+                          <option key={x} value={x}>
+                            {x}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="muted small" style={{ margin: 0 }}>
+                  Available in {sig.founder.areas.join(', ')}. {/^\d{6}$/.test(d.pin) ? 'Not available at this pincode — your order ships with our standard free delivery.' : 'Enter your pincode above to check.'}
+                </p>
+              )}
+            </fieldset>
+          )}
+
           <fieldset className="ck-sec">
             <legend>
               <span>3</span> Is it a gift?
@@ -469,9 +547,21 @@ export default function Checkout() {
                 <span>Free</span>
               </div>
             )}
+            {hasSig && (
+              <div className="sum-row">
+                <span>Premium packaging</span>
+                <span>Included</span>
+              </div>
+            )}
+            {founderFee > 0 && (
+              <div className="sum-row">
+                <span>Founder delivery</span>
+                <span>{money(founderFee)}</span>
+              </div>
+            )}
             <div className="sum-row total">
               <span>Total</span>
-              <span>{money(cart.total)}</span>
+              <span>{money(grand)}</span>
             </div>
             {failure && (
               <div className="ck-fail" role="alert">
@@ -482,7 +572,7 @@ export default function Checkout() {
               </div>
             )}
             <button className="btn btn-gold btn-lg btn-block ck-pay" disabled={busy || !cart.items.length} onClick={pay}>
-              <Icon name="lock" size={18} /> {status === 'creating' ? 'Preparing secure payment…' : status === 'verifying' ? 'Confirming payment…' : `Pay ${money(cart.total)}`}
+              <Icon name="lock" size={18} /> {concierge ? `Confirm with Signature concierge · ${money(grand)}` : status === 'creating' ? 'Preparing secure payment…' : status === 'verifying' ? 'Confirming payment…' : `Pay ${money(grand)}`}
             </button>
             <div className="ck-methods" aria-label="Payment methods">
               <span>UPI</span>

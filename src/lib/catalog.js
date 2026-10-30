@@ -146,8 +146,11 @@ function fallbackConfig() {
 function summarise(rows) {
   const out = {};
   for (const o of rows || []) {
-    const x = (out[o.product_id] ||= { sizes: 0, colours: 0, colourSlugs: [] });
-    if (o.option_type === 'size') x.sizes++;
+    const x = (out[o.product_id] ||= { sizes: 0, colours: 0, colourSlugs: [], sizeSlugs: [] });
+    if (o.option_type === 'size') {
+      x.sizes++;
+      x.sizeSlugs.push(o.option_slug);
+    }
     else if (o.option_type === 'colour') {
       x.colours++;
       x.colourSlugs.push(o.option_slug);

@@ -11,6 +11,7 @@ import Festivals from './Festivals';
 import Worlds from './Worlds';
 import Campaigns from './Campaigns';
 import Dashboard from './Dashboard';
+import SignatureManager from './Signature';
 import { supabase } from '../lib/supabase';
 import { FESTIVALS, FESTIVALS_PATH, saveFestivals } from '../lib/festivals';
 import { CAMPAIGNS_PATH, DEFAULT_CAMPAIGNS, saveCampaigns } from '../lib/campaigns';
@@ -96,12 +97,13 @@ const NAV = [
       ['/admin/orders', 'Orders', 'box'],
       ['/admin/products', 'Products', 'image'],
       ['/admin/templates', 'Personalised templates', 'sparkle'],
+      ['/admin/signature', 'Signature collection', 'star'],
     ],
   ],
   [
     'Marketing',
     [
-      ['/admin/campaigns', 'Campaigns', 'calendar'],
+      ['/admin/campaigns', 'Events & Campaigns', 'calendar'],
       ['/admin/festivals', 'Festivals & offers', 'gift'],
       ['/admin/homepage', 'Homepage collections', 'home'],
     ],
@@ -116,7 +118,7 @@ const NAV = [
   ],
 ];
 const FLAT = NAV.flatMap(([, l]) => l);
-const TABS = [FLAT[0], FLAT[1], FLAT[2], FLAT[4]];
+const TABS = [FLAT[0], FLAT[1], FLAT[2], ['/admin/campaigns', 'Events', 'calendar']];
 
 function SideNav({ onPick }) {
   return (
@@ -192,6 +194,7 @@ export default function Admin() {
                     <Route path="homepage" element={<HomepageCollections />} />
                     <Route path="worlds" element={<Worlds />} />
                     <Route path="campaigns" element={<Campaigns />} />
+                    <Route path="signature" element={<SignatureManager />} />
                     <Route path="categories" element={<Categories />} />
                     <Route path="catalog" element={<FrameOptions />} />
                     <Route path="*" element={<Navigate to="/admin" replace />} />

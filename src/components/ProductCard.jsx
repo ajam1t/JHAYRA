@@ -29,10 +29,11 @@ export function categoryLabel(slug, categories) {
 }
 
 // `options` (optional): { sizes, colours } counts from loadOptionSummary.
-export default function ProductCard({ product, categories, priority = false, index = 0, room = false, options, query = '' }) {
+export default function ProductCard({ product, categories, priority = false, index = 0, room = false, options, query = '', frame, price, priceNote }) {
   const href = `/product/${product.id}${query}`;
   const { wish, toggleWish } = useShop();
   const [quick, setQuick] = useState(false);
+  const [pop, setPop] = useState(0);
   const on = wish.includes(product.id);
   const alt = product.images[1]?.url;
   const a4 = SIZES[0];
@@ -41,7 +42,7 @@ export default function ProductCard({ product, categories, priority = false, ind
     <article className={`pcard ${room ? 'pcard-room' : ''}`} style={{ '--i': index }}>
       <div className="pcard-media">
         <Link to={href} className="pcard-stage" aria-label={product.name}>
-          <Frame src={product.thumbnail} alt={product.name} sizes="(max-width: 760px) 40vw, (max-width: 1120px) 22vw, 16vw" priority={priority} glare={false} thickness={3.6} />
+          <Frame src={product.thumbnail} alt={product.name} sizes="(max-width: 760px) 40vw, (max-width: 1120px) 22vw, 16vw" priority={priority} glare={false} thickness={3.6} colour={frame?.hex} />
           {alt && (
             <div className="pcard-alt" aria-hidden="true">
               <Img src={alt} sizes="(max-width: 760px) 50vw, 25vw" />
@@ -53,8 +54,8 @@ export default function ProductCard({ product, categories, priority = false, ind
             {product.customer_photo_eligible && <span className="pill">Add your photo</span>}
           </div>
         </Link>
-        <button type="button" className={`pcard-wish ${on ? 'on' : ''}`} aria-pressed={on} aria-label={on ? 'Remove from wishlist' : 'Save to wishlist'} onClick={() => toggleWish(product.id)}>
-          <Icon name="heart" size={19} />
+        <button type="button" className={`pcard-wish ${on ? 'on' : ''}`} aria-pressed={on} aria-label={on ? 'Remove from wishlist' : 'Save to wishlist'} onClick={() => (toggleWish(product.id), setPop((n) => n + 1))}>
+          <Icon name="heart" size={19} className={pop ? 'm-pop' : ''} key={pop} />
         </button>
         <button type="button" className="pcard-qv" aria-label={`Quick view: ${product.name}`} onClick={() => setQuick(true)}>
           <Icon name="plus" size={18} />
@@ -66,13 +67,27 @@ export default function ProductCard({ product, categories, priority = false, ind
         <h3 className="pcard-name">{product.name}</h3>
         <Stars rating={product.rating} count={product.review_count} small />
         <span className="pcard-price">
-          from <b>{money(product.price || a4.price)}</b>
+          {price ? (
+            <>
+              <b>{money(price)}</b> {priceNote}
+            </>
+          ) : (
+            <>
+              from <b>{money(product.price || a4.price)}</b>
+            </>
+          )}
           {product.compare_price ? <s className="muted"> {money(product.compare_price)}</s> : null}
         </span>
         {options?.sizes > 0 && (
           <span className="pcard-opts">
             {options.sizes} {options.sizes === 1 ? 'size' : 'sizes'}
-            {options.colours > 0 && ` · ${options.colours} ${options.colours === 1 ? 'frame finish' : 'frame finishes'}`}
+            {options.colourSlugs?.length > 0 && (
+              <span className="pcard-finishes" aria-label={`Frames: ${options.colourSlugs.join(', ')}`}>
+                {options.colourSlugs.map((c) => (
+                  <i key={c} className={`fin-${c}`} />
+                ))}
+              </span>
+            )}
           </span>
         )}
       </Link>

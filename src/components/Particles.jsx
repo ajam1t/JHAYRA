@@ -1,16 +1,18 @@
 import { useEffect, useRef } from 'react';
 
 // Lightweight canvas particles for festival worlds. Pauses off-screen and
-// respects reduced-motion. Kinds: diya (rising embers), sparkle, snow, petals, colour.
+// respects reduced-motion. Kinds: diya (rising embers), sparkle, snow, petals,
+// colour, confetti. `seconds` > 0 stops new particles after that long.
 const PALETTES = {
   diya: ['#ffcf7a', '#ffb347', '#ff9a3c', '#ffe3a8'],
   sparkle: ['#ffe9a8', '#ffd36e', '#fff6dc', '#ffb84a'],
   snow: ['#ffffff', '#eef6ff'],
   petals: ['#f6a5b8', '#f28aa2', '#ffd1dc', '#e86c8a'],
   colour: ['#ff4fa3', '#ffcc33', '#33ccff', '#7cff6b', '#b066ff', '#ff7a33'],
+  confetti: ['#e2c06f', '#f6e3a8', '#c9a55c', '#fff4d6', '#b08a45'],
 };
 
-export default function Particles({ kind = 'diya', density = 1 }) {
+export default function Particles({ kind = 'diya', density = 1, colours: custom, seconds = 0 }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -18,7 +20,9 @@ export default function Particles({ kind = 'diya', density = 1 }) {
     if (!canvas) return;
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const ctx = canvas.getContext('2d');
-    const colours = PALETTES[kind] || PALETTES.sparkle;
+    const colours = custom?.length ? custom : PALETTES[kind] || PALETTES.sparkle;
+    const started = performance.now();
+    let stopped = false;
     let w = 0;
     let h = 0;
     let raf = 0;
@@ -45,6 +49,8 @@ export default function Particles({ kind = 'diya', density = 1 }) {
         return { ...base, x: Math.random() * w, y: initial ? Math.random() * h : -10, r: 0.8 + Math.random() * 2.4, vx: (Math.random() - 0.5) * 0.3, vy: 0.3 + Math.random() * 0.8, a: 0.5 + Math.random() * 0.5 };
       if (kind === 'petals')
         return { ...base, x: Math.random() * w, y: initial ? Math.random() * h : -14, r: 4 + Math.random() * 5, vx: 0.2 + Math.random() * 0.5, vy: 0.4 + Math.random() * 0.8, a: 0.55 + Math.random() * 0.4, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.04 };
+      if (kind === 'confetti')
+        return { ...base, x: Math.random() * w, y: initial ? Math.random() * h : -10, r: 2 + Math.random() * 2.5, vx: (Math.random() - 0.5) * 0.4, vy: 0.35 + Math.random() * 0.6, a: 0.55 + Math.random() * 0.4, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.08 };
       if (kind === 'colour')
         return { ...base, x: Math.random() * w, y: Math.random() * h, r: 20 + Math.random() * 60, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4, a: 0.08 + Math.random() * 0.12 };
       return { ...base, x: Math.random() * w, y: Math.random() * h, r: 0.6 + Math.random() * 1.8, vx: 0, vy: -0.05, a: Math.random(), tw: 0.01 + Math.random() * 0.03 };
@@ -54,7 +60,9 @@ export default function Particles({ kind = 'diya', density = 1 }) {
       raf = requestAnimationFrame(tick);
       if (!visible) return;
       ctx.clearRect(0, 0, w, h);
-      while (parts.length < count()) parts.push(spawn(parts.length < count() * 0.9));
+      if (seconds > 0 && !stopped && performance.now() - started > seconds * 1000) stopped = true;
+      if (!stopped) while (parts.length < count()) parts.push(spawn(parts.length < count() * 0.9));
+      else if (!parts.length) return cancelAnimationFrame(raf);
       for (let i = parts.length - 1; i >= 0; i--) {
         const p = parts[i];
         p.life++;
@@ -79,6 +87,14 @@ export default function Particles({ kind = 'diya', density = 1 }) {
           ctx.beginPath();
           ctx.ellipse(0, 0, p.r, p.r * 0.55, 0, 0, 6.283);
           ctx.fill();
+          ctx.restore();
+        } else if (kind === 'confetti') {
+          p.rot += p.vr;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.c;
+          ctx.fillRect(-p.r, -p.r * 0.35, p.r * 2, p.r * 0.7);
           ctx.restore();
         } else if (kind === 'colour') {
           const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
@@ -112,6 +128,7 @@ export default function Particles({ kind = 'diya', density = 1 }) {
         }
         const out = p.y < -30 || p.y > h + 30 || p.x < -80 || p.x > w + 80 || p.a < 0.03;
         if (out && kind !== 'sparkle' && kind !== 'colour') parts.splice(i, 1);
+        else if (stopped && (kind === 'sparkle' || kind === 'colour') && Math.random() < 0.02) parts.splice(i, 1);
         if (kind === 'colour') {
           if (p.x < -p.r) p.x = w + p.r;
           if (p.x > w + p.r) p.x = -p.r;
@@ -133,7 +150,7 @@ export default function Particles({ kind = 'diya', density = 1 }) {
       ro.disconnect();
       io.disconnect();
     };
-  }, [kind, density]);
+  }, [kind, density, seconds, custom?.join()]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <canvas ref={ref} className="particles" aria-hidden="true" />;
 }

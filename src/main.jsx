@@ -11,6 +11,8 @@ import './styles/pages.css';
 import './styles/v2050.css';
 import './styles/worlds.css';
 import './styles/storefront.css';
+import './styles/motion.css';
+import './styles/signature.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

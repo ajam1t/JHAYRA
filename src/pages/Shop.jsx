@@ -1,15 +1,22 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useSearchParams } from 'react-router-dom';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard';
 import Icon from '../components/Icon';
 import Frame from '../components/Frame';
+import Img from '../components/Img';
 import TemplateCanvas from '../components/TemplateCanvas';
+import LazyMount from '../components/LazyMount';
+import { Magnetic, Motion, SmoothTabs, Story, Tilt, morph, ripple, useParallax } from '../components/Motion';
 import { Seo } from '../lib/seo';
-import { searchProducts, useCategories, useProducts } from '../lib/catalog';
+import { searchProducts, useCategories, useFrameTables, useOptionSummary, useProducts } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
 import { BRAND } from '../lib/brand';
-import { waLink } from '../lib/site';
+import { money, waLink } from '../lib/site';
+import { SIZES, COLOURS } from '../lib/frames';
 import { ROOMS, ROOM_MAP } from '../lib/rooms';
+import { useShop } from '../state/store';
+import { FeaturedCollections, ShopByCategory } from './Home';
 
 const SORTS = [
   ['featured', 'Featured'],
@@ -18,151 +25,568 @@ const SORTS = [
   ['rating', 'Top rated'],
   ['az', 'A → Z'],
 ];
+// Styles and moods group the shop's existing categories (and name words).
+const STYLES = [
+  ['spiritual', 'Spiritual', ['religious', 'home-vastu']],
+  ['modern', 'Modern & abstract', ['modern-art', 'art-abstract', 'canvas']],
+  ['nature', 'Nature & calm', ['nature', 'photography']],
+  ['love', 'Love & family', ['love-romance', 'wedding', 'family', 'baby-kids', 'occasions']],
+  ['spirited', 'Bold & spirited', ['running-horses', 'animals-pets']],
+  ['words', 'Words & quotes', ['quotes']],
+];
+const MOODS = [
+  ['calm', 'Calm', '🌿', ['nature', 'photography', 'canvas'], ['sea', 'sunrise', 'mountain', 'lotus']],
+  ['joyful', 'Joyful', '☀', ['occasions', 'baby-kids', 'animals-pets', 'family'], []],
+  ['devotional', 'Devotional', '🪔', ['religious', 'home-vastu'], []],
+  ['romantic', 'Romantic', '❤', ['love-romance', 'wedding'], []],
+  ['bold', 'Bold', '⚡', ['running-horses', 'modern-art', 'art-abstract'], []],
+  ['thoughtful', 'Thoughtful', '✎', ['quotes'], []],
+];
+// Price follows size (every design starts at the same price), so a budget
+// selects the sizes that fit it.
+const PRICES = [
+  ['u1000', 'Under ₹1,000', (p) => p < 1000],
+  ['1000-2000', '₹1,000 – ₹2,000', (p) => p >= 1000 && p <= 2000],
+  ['2000', '₹2,000 and above', (p) => p > 2000],
+];
+const ROOM_PHOTOS = { living: 'living', bedroom: 'bedroom', dining: 'dining', office: 'office', entryway: 'entryway' };
+const FILTER_KEYS = ['room', 'category', 'style', 'mood', 'size', 'price', 'finish', 'orient', 'photo', 'q'];
+const words = (p) => p.name.toLowerCase().split(/[^a-z]+/);
 
-function PersonaliseCard() {
-  const { active } = useTemplates();
-  const t = active.find((x) => x.group === 'couple-frame') || active[0];
-  return (
-    <Link to="/customize" className="promo-card">
-      <div className="promo-art">
-        {t && (
-          <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false}>
-            <TemplateCanvas template={t} mini />
-          </Frame>
-        )}
+/* ── Filters ─────────────────────────────────────────────────────────────── */
+function useFilters(params, products, opts, tables) {
+  const f = Object.fromEntries(FILTER_KEYS.map((k) => [k, params.get(k) || '']));
+  const sort = params.get('sort') || 'featured';
+  const sizes = tables?.sizes?.length ? tables.sizes.map((s) => ({ slug: s.slug, name: s.name, price: +s.base_price })) : SIZES.map((s) => ({ slug: s.slug, name: s.name, price: s.price }));
+  const priceFn = PRICES.find(([k]) => k === f.price)?.[2];
+  // Sizes a product may be shown in, given the size and budget filters.
+  const okSizes = sizes.filter((s) => (!f.size || s.slug === f.size) && (!priceFn || priceFn(s.price)));
+  const list = useMemo(() => {
+    let l = (products || []).filter((p) => p.thumbnail);
+    const room = ROOM_MAP[f.room];
+    const style = STYLES.find(([k]) => k === f.style);
+    const mood = MOODS.find(([k]) => k === f.mood);
+    if (f.category) l = l.filter((p) => p.category === f.category);
+    if (room) l = l.filter((p) => room.cats.includes(p.category));
+    if (style) l = l.filter((p) => style[2].includes(p.category));
+    if (mood) l = l.filter((p) => mood[3].includes(p.category) || mood[4].some((k) => words(p).includes(k)));
+    if (f.photo === '1' || f.orient === 'landscape') l = l.filter((p) => p.customer_photo_eligible);
+    if (f.finish) l = l.filter((p) => !opts?.[p.dbId]?.colourSlugs?.length || opts[p.dbId].colourSlugs.includes(f.finish));
+    if (f.size || f.price) l = l.filter((p) => okSizes.some((s) => !opts?.[p.dbId]?.sizeSlugs?.length || opts[p.dbId].sizeSlugs.includes(s.slug)));
+    if (f.q) l = searchProducts(l, f.q);
+    else if (sort === 'bestsellers') l = [...l].sort((a, b) => b.is_bestseller - a.is_bestseller || (b.review_count || 0) - (a.review_count || 0));
+    else if (sort === 'new') l = [...l].sort((a, b) => b.is_new_arrival - a.is_new_arrival);
+    else if (sort === 'rating') l = [...l].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    else if (sort === 'az') l = [...l].sort((a, b) => a.name.localeCompare(b.name));
+    return l;
+  }, [products, opts, params]); // eslint-disable-line react-hooks/exhaustive-deps
+  const active = FILTER_KEYS.filter((k) => f[k]);
+  return { f, sort, sizes, okSizes, list, active };
+}
+
+function FilterSheet({ f, set, clear, count, categories, usedCats, sizes, finishes, onClose }) {
+  const panel = useRef(null);
+  useEffect(() => {
+    panel.current?.focus();
+    const key = (e) => e.key === 'Escape' && onClose();
+    addEventListener('keydown', key);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      removeEventListener('keydown', key);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+  const group = (title, key, items) => (
+    <fieldset className="fs-group">
+      <legend>{title}</legend>
+      <div className="fs-chips">
+        {items.map(([v, l, n]) => (
+          <button key={v} type="button" className={`fs-chip m-ripple ${f[key] === v ? 'on' : ''}`} aria-pressed={f[key] === v} onClick={(e) => (ripple(e), set(key, f[key] === v ? '' : v))}>
+            {l}
+            {n ? <small>{n}</small> : null}
+          </button>
+        ))}
       </div>
-      <span className="eyebrow">Make it yours</span>
-      <b>Your photos, names & dates — designed live.</b>
-      <span className="link">
-        Personalise <Icon name="arrow" size={16} />
-      </span>
-    </Link>
+    </fieldset>
+  );
+  return createPortal(
+    <div className="fs" role="dialog" aria-modal="true" aria-label="Filter and sort">
+      <div className="scrim" onClick={onClose} />
+      <div className="fs-panel m-morph" ref={panel} tabIndex={-1}>
+        <div className="fs-head">
+          <h2>Filter</h2>
+          <button className="icon-btn" onClick={onClose} aria-label="Close filters">
+            <Icon name="close" />
+          </button>
+        </div>
+        <div className="fs-body">
+          <label className="toggle fs-photo">
+            <input type="checkbox" checked={f.photo === '1'} onChange={(e) => set('photo', e.target.checked ? '1' : '')} />
+            <span />
+            Personalise with my photo
+          </label>
+          {group('Room', 'room', ROOMS.map((r) => [r.id, r.label]))}
+          {group('Category', 'category', usedCats.map((c) => [c.slug, c.name, c.count]))}
+          {group('Style', 'style', STYLES.map(([v, l]) => [v, l]))}
+          {group('Mood', 'mood', MOODS.map(([v, l, e]) => [v, `${e} ${l}`]))}
+          {group('Price', 'price', PRICES.map(([v, l]) => [v, l]))}
+          {group('Size', 'size', sizes.map((s) => [s.slug, `${s.name} · ${money(s.price)}`]))}
+          {group('Frame finish', 'finish', finishes.map((c) => [c.slug, c.name]))}
+          {group('Orientation', 'orient', [
+            ['portrait', 'Portrait'],
+            ['landscape', 'Landscape (with your photo)'],
+          ])}
+        </div>
+        <div className="fs-foot">
+          <button type="button" className="btn btn-ghost" onClick={clear}>
+            Clear all
+          </button>
+          <button type="button" className="btn m-ripple" onClick={(e) => (ripple(e), onClose())}>
+            Show {count} design{count === 1 ? '' : 's'}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 
+/* ── Sections ────────────────────────────────────────────────────────────── */
+function RoomRail() {
+  return (
+    <section className="hs sh-rooms">
+      <div className="wrap">
+        <div className="hs-head">
+          <h2 className="hs-title">Shop by Room</h2>
+          <Link to="/room-inspiration" className="hs-all">
+            Room ideas <Icon name="arrow" size={14} />
+          </Link>
+        </div>
+        <Motion type="left" stagger className="hs-scroll sh-room-row">
+          {ROOMS.map((r, i) => (
+            <Link key={r.id} to={`/shop?room=${r.id}#catalogue`} className="sh-room m-zoom m-glow" style={{ '--i': i }}>
+              {ROOM_PHOTOS[r.id] ? <img src={`/rooms/${ROOM_PHOTOS[r.id]}.webp`} alt="" loading="lazy" decoding="async" width="600" height="400" /> : <span className="sh-room-ph" aria-hidden="true" />}
+              <span className="sh-room-t">
+                <b>{r.label}</b>
+                <small>{r.blurb}</small>
+              </span>
+            </Link>
+          ))}
+        </Motion>
+      </div>
+    </section>
+  );
+}
+
+function StyleExplorer({ products }) {
+  const [st, setSt] = useState(STYLES[0][0]);
+  const style = STYLES.find(([k]) => k === st);
+  const items = (products || []).filter((p) => p.thumbnail && style[2].includes(p.category)).slice(0, 4);
+  return (
+    <section className="hs sh-styles">
+      <div className="wrap">
+        <div className="hs-head">
+          <h2 className="hs-title">Shop by Style</h2>
+          <Link to={`/shop?style=${st}#catalogue`} className="hs-all">
+            Shop {style[1].toLowerCase()} <Icon name="arrow" size={14} />
+          </Link>
+        </div>
+        <SmoothTabs tabs={STYLES.map(([v, l]) => [v, l])} value={st} onChange={(v) => morph(() => setSt(v))} label="Art styles" />
+        <div className="sh-style-grid" key={st}>
+          {items.map((p, i) => (
+            <Link key={p.id} to={`/product/${p.id}`} className="sh-style-item m-glow" style={{ '--i': i }}>
+              <Frame src={p.thumbnail} alt={p.name} ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false} sizes="(max-width: 760px) 22vw, 140px" />
+              <small>{p.name}</small>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Moods({ current, onPick }) {
+  return (
+    <section className="hs sh-moods">
+      <div className="wrap">
+        <div className="hs-head">
+          <h2 className="hs-title">Find Art by Mood</h2>
+        </div>
+        <Motion type="up" stagger className="sh-mood-row">
+          {MOODS.map(([v, l, e], i) => (
+            <button key={v} type="button" className={`sh-mood m-ripple ${current === v ? 'on' : ''}`} style={{ '--i': i }} aria-pressed={current === v} onClick={(ev) => (ripple(ev), onPick(v))}>
+              <span aria-hidden="true">{e}</span>
+              {l}
+            </button>
+          ))}
+        </Motion>
+      </div>
+    </section>
+  );
+}
+
+function Trending({ products, categories, opts }) {
+  const [tab, setTab] = useState('best');
+  const all = (products || []).filter((p) => p.thumbnail);
+  const lists = {
+    best: all.filter((p) => p.is_bestseller).sort((a, b) => (b.review_count || 0) - (a.review_count || 0)),
+    new: all.filter((p) => p.is_new_arrival),
+    rated: [...all].filter((p) => p.rating).sort((a, b) => b.rating - a.rating || (b.review_count || 0) - (a.review_count || 0)),
+  };
+  const tabs = [
+    ['best', 'Bestsellers'],
+    ['new', 'New arrivals'],
+    ['rated', 'Top rated'],
+  ].filter(([k]) => lists[k].length);
+  const items = (lists[tab] || []).slice(0, 8);
+  if (!tabs.length) return null;
+  return (
+    <section className="hs sh-trend">
+      <div className="wrap">
+        <div className="hs-head">
+          <h2 className="hs-title">Bestsellers & Trending</h2>
+          <Link to={`/shop?sort=${tab === 'best' ? 'bestsellers' : tab === 'new' ? 'new' : 'rating'}#catalogue`} className="hs-all">
+            View all <Icon name="arrow" size={14} />
+          </Link>
+        </div>
+        <SmoothTabs tabs={tabs} value={tab} onChange={(v) => morph(() => setTab(v))} label="Trending" />
+        <div className="hs-scroll sh-rail" key={tab}>
+          {items.map((p, i) => (
+            <ProductCard key={p.id} product={p} categories={categories} index={i} options={opts?.[p.dbId]} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Three bestsellers hung together on a real room photo.
+function ShopTheLook({ products }) {
+  const wall = useRef(null);
+  useParallax(wall, 0.05);
+  const art = (products || []).filter((p) => p.thumbnail);
+  // One piece from each group, bestsellers first.
+  const best = (cats) => art.filter((p) => cats.includes(p.category)).sort((a, b) => b.is_bestseller - a.is_bestseller || (b.review_count || 0) - (a.review_count || 0))[0];
+  const look = [best(['nature', 'photography']), best(['religious', 'home-vastu']), best(['art-abstract', 'modern-art', 'canvas'])].filter(Boolean);
+  if (look.length < 3) return null;
+  const spots = [
+    [31, 22, 13],
+    [50, 15, 17],
+    [69, 22, 13],
+  ];
+  return (
+    <section className="hs sh-look">
+      <div className="wrap">
+        <div className="hs-head">
+          <h2 className="hs-title">Shop the Look</h2>
+          <Link to={`/visualise?p=${look[1].id}`} className="hs-all">
+            Try on my wall <Icon name="arrow" size={14} />
+          </Link>
+        </div>
+        <div className="sh-look-box">
+          <div className="sh-look-room" ref={wall}>
+            <img src="/rooms/hero-living.webp" alt="A living room styled with three JHAYRA frames above the sofa" loading="lazy" decoding="async" width="1024" height="922" className="m-parallax" />
+            {look.map((p, i) => (
+              <Link key={p.id} to={`/product/${p.id}`} className="sh-look-frame m-float" style={{ left: `${spots[i][0]}%`, top: `${spots[i][1]}%`, width: `${spots[i][2]}%`, animationDelay: `${i * -2}s` }} aria-label={p.name}>
+                <Tilt max={10}>
+                  <Frame src={p.thumbnail} alt="" ratio={{ w: 12, h: 18 }} colour="#1C1C1C" glare={false} sizes="(max-width: 760px) 20vw, 140px" />
+                </Tilt>
+                <span className="sh-look-dot">{i + 1}</span>
+              </Link>
+            ))}
+          </div>
+          <ol className="sh-look-list">
+            {look.map((p, i) => (
+              <li key={p.id}>
+                <span className="sh-look-n">{i + 1}</span>
+                <Link to={`/product/${p.id}`} className="sh-look-thumb">
+                  <Img src={p.thumbnail} alt="" sizes="56px" width={160} />
+                </Link>
+                <span className="sh-look-info">
+                  <Link to={`/product/${p.id}`}>
+                    <b>{p.name}</b>
+                  </Link>
+                  <small>
+                    from {money(p.price)} ·{' '}
+                    <Link to={`/visualise?p=${p.id}`} className="link">
+                      See it on my wall
+                    </Link>
+                  </small>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RecentlyViewed({ products, categories, opts }) {
+  const { recent } = useShop();
+  const items = recent.map((id) => (products || []).find((p) => p.id === id)).filter((p) => p?.thumbnail).slice(0, 8);
+  if (items.length < 2) return null;
+  return (
+    <section className="hs sh-recent">
+      <div className="wrap">
+        <div className="hs-head">
+          <h2 className="hs-title">Recently Viewed</h2>
+        </div>
+        <div className="hs-scroll sh-rail">
+          {items.map((p, i) => (
+            <ProductCard key={p.id} product={p} categories={categories} index={i} options={opts?.[p.dbId]} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PersonalisePromo() {
+  const { active } = useTemplates();
+  const t = active.find((x) => x.group === 'couple-frame') || active[0];
+  return (
+    <section className="hs sh-promo">
+      <div className="wrap">
+        <Motion type="scale" className="sh-promo-box">
+          <div className="sh-promo-art m-float">
+            {t && (
+              <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false}>
+                <TemplateCanvas template={t} mini />
+              </Frame>
+            )}
+          </div>
+          <div className="sh-promo-copy">
+            <span className="ev-kick" style={{ color: '#7e5f26' }}>
+              Personalised art
+            </span>
+            <h2 className="hs-title">
+              Your photo, <em>beautifully framed.</em>
+            </h2>
+            <Story
+              steps={[
+                ['Upload a photo', 'Any phone photo — we check it will print sharp.'],
+                ['Choose a design', '150+ layouts for names, dates and moments.'],
+                ['We frame & deliver', 'Handcrafted to order, delivered free across India.'],
+              ]}
+            />
+            <div className="row" style={{ gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
+              <Magnetic>
+                <Link to="/customize/photo" className="btn btn-gold sheen">
+                  Frame my photo <Icon name="arrow" size={16} />
+                </Link>
+              </Magnetic>
+              <Link to="/customize" className="btn btn-ghost">
+                Browse designs
+              </Link>
+            </div>
+          </div>
+        </Motion>
+      </div>
+    </section>
+  );
+}
+
+/* ── Page ────────────────────────────────────────────────────────────────── */
 export default function Shop() {
   const [params, setParams] = useSearchParams();
   const { data: products, loading } = useProducts();
   const { data: categories } = useCategories();
-  const category = params.get('category') || '';
-  const sort = params.get('sort') || 'featured';
-  const q = params.get('q') || '';
-  const photo = params.get('photo') === '1';
-  const room = ROOM_MAP[params.get('room')];
+  const { data: opts } = useOptionSummary();
+  const { data: tables } = useFrameTables();
+  const { f, sort, sizes, okSizes, list, active } = useFilters(params, products, opts, tables);
+  const [sheet, setSheet] = useState(false);
+  const [shown, setShown] = useState(24);
+  const catRef = useRef(null);
+  const landing = !active.length;
 
   const set = (k, v) => {
     const n = new URLSearchParams(params);
     if (v) n.set(k, v);
     else n.delete(k);
-    setParams(n, { replace: true });
+    morph(() => setParams(n, { replace: true }));
   };
+  const clear = () => {
+    const n = new URLSearchParams();
+    if (params.get('sort')) n.set('sort', params.get('sort'));
+    morph(() => setParams(n, { replace: true }));
+  };
+  const toCatalogue = () => catRef.current?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  useEffect(() => setShown(24), [params]);
+  // Links like /shop?room=living#catalogue land on the results.
+  useEffect(() => {
+    if (location.hash === '#catalogue' && !loading) setTimeout(toCatalogue, 60);
+  }, [loading, params]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const usedCats = useMemo(() => {
     const counts = {};
     (products || []).forEach((p) => p.category && (counts[p.category] = (counts[p.category] || 0) + 1));
     return (categories || []).filter((c) => counts[c.slug]).map((c) => ({ ...c, count: counts[c.slug] }));
   }, [products, categories]);
+  const finishes = useMemo(() => {
+    const slugs = new Set(Object.values(opts || {}).flatMap((o) => o.colourSlugs || []));
+    const rows = (tables?.colours || []).filter((c) => !slugs.size || slugs.has(c.slug));
+    return rows.length ? rows.map((c) => ({ slug: c.slug, name: c.name, hex: c.hex })) : Object.entries(COLOURS).map(([n, c]) => ({ slug: c.slug, name: n, hex: c.hex }));
+  }, [opts, tables]);
 
-  const list = useMemo(() => {
-    let l = products || [];
-    if (category) l = l.filter((p) => p.category === category);
-    if (room) l = l.filter((p) => room.cats.includes(p.category));
-    if (photo) l = l.filter((p) => p.customer_photo_eligible);
-    if (q) l = searchProducts(l, q);
-    else if (sort === 'bestsellers') l = [...l].sort((a, b) => b.is_bestseller - a.is_bestseller || (b.review_count || 0) - (a.review_count || 0));
-    else if (sort === 'new') l = [...l].sort((a, b) => b.is_new_arrival - a.is_new_arrival);
-    else if (sort === 'rating') l = [...l].sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    else if (sort === 'az') l = [...l].sort((a, b) => a.name.localeCompare(b.name));
-    return l;
-  }, [products, category, photo, q, sort, room]);
-
-  const cat = categories?.find((c) => c.slug === category);
-  const title = q ? `Results for “${q}”` : cat ? cat.name : room ? `Wall art for your ${room.label.toLowerCase()}` : 'All frames & wall art';
+  const cat = categories?.find((c) => c.slug === f.category);
+  const room = ROOM_MAP[f.room];
+  const label = (k) => {
+    const v = f[k];
+    if (k === 'category') return cat?.name || v;
+    if (k === 'room') return room?.label || v;
+    if (k === 'style') return STYLES.find(([s]) => s === v)?.[1];
+    if (k === 'mood') return MOODS.find(([s]) => s === v)?.[1];
+    if (k === 'price') return PRICES.find(([s]) => s === v)?.[1];
+    if (k === 'size') return sizes.find((s) => s.slug === v)?.name;
+    if (k === 'finish') return `${finishes.find((c) => c.slug === v)?.name || v} frame`;
+    if (k === 'orient') return v === 'landscape' ? 'Landscape' : 'Portrait';
+    if (k === 'photo') return 'With my photo';
+    if (k === 'q') return `“${v}”`;
+    return v;
+  };
+  const frame = finishes.find((c) => c.slug === f.finish);
+  const showSize = f.size || f.price ? okSizes[0] : null;
+  const title = f.q ? `Results for “${f.q}”` : cat ? cat.name : room ? `Wall art for your ${room.label.toLowerCase()}` : null;
 
   return (
     <>
       <Seo
-        title={cat ? `${cat.name} Frames & Wall Art` : 'Shop Personalised Photo Frames & Wall Art'}
-        description={cat?.description || `Shop handcrafted frames — spiritual, modern, nature, couple and family wall art. Free delivery across India. Since ${BRAND.since}.`}
-        path={category ? `/shop?category=${category}` : room ? `/shop?room=${room.id}` : '/shop'}
-        noindex={!!q}
+        title={cat ? `${cat.name} Frames & Wall Art` : 'Shop Wall Art & Personalised Frames'}
+        description={cat?.description || `Find art that feels like you — shop handcrafted wall art by room, style and mood, in four sizes and three frame finishes. Free delivery across India. Since ${BRAND.since}.`}
+        path={f.category ? `/shop?category=${f.category}` : room ? `/shop?room=${room.id}` : '/shop'}
+        noindex={!!f.q}
       />
-      <section className="page-hero shop-hero">
+      <section className="sh-intro">
         <div className="wrap">
-          <span className="eyebrow">Shop</span>
-          <h1 className="h1">{title}</h1>
-          <p className="lead">{cat?.description || room?.blurb || 'Handcrafted to order in India. Every design comes in four sizes and a choice of frame finishes — all delivered free.'}</p>
+          <Motion as="h1" type="blur" className="sh-title">
+            {title || (
+              <>
+                Find Art That <em>Feels Like You.</em>
+              </>
+            )}
+          </Motion>
+          <Motion as="p" type="fade" delay={0.1} className="sh-lead">
+            {cat?.description || room?.blurb || `${products?.length || 'Our'} handcrafted designs · 4 sizes · black, gold & wood frames · free delivery across India.`}
+          </Motion>
+          {landing && (
+            <div className="sh-quick">
+              <button type="button" className="sh-quick-btn m-ripple" onClick={(e) => (ripple(e), toCatalogue())}>
+                <Icon name="grid" size={16} /> Browse all
+              </button>
+              <button type="button" className="sh-quick-btn m-ripple" onClick={(e) => (ripple(e), set('photo', '1'), setTimeout(toCatalogue, 80))}>
+                <Icon name="camera" size={16} /> With my photo
+              </button>
+              <Link to="/visualise" className="sh-quick-btn">
+                <Icon name="sofa" size={16} /> See it on my wall
+              </Link>
+              <Link to="/gift-finder" className="sh-quick-btn">
+                <Icon name="gift" size={16} /> Gift finder
+              </Link>
+            </div>
+          )}
         </div>
       </section>
-      <div className="filterbar">
-        <div className="wrap">
-          <div className="chips scroll" role="toolbar" aria-label="Filter by category">
-            {ROOMS.map((r) => (
-              <button key={r.id} className="chip chip-room" aria-pressed={room?.id === r.id} onClick={() => set('room', room?.id === r.id ? '' : r.id)}>
-                {r.label}
-              </button>
-            ))}
-            <span className="chip-sep" aria-hidden="true" />
-            <button className="chip" aria-pressed={!category && !room} onClick={() => setParams({}, { replace: true })}>
-              All <span className="chip-n">{products?.length || ''}</span>
+
+      {landing && (
+        <>
+          <RoomRail />
+          <ShopByCategory products={products} categories={categories} />
+          <LazyMount minHeight={320}>
+            <StyleExplorer products={products} />
+          </LazyMount>
+          <LazyMount minHeight={360}>
+            <FeaturedCollections products={products} />
+          </LazyMount>
+          <LazyMount minHeight={460}>
+            <Trending products={products} categories={categories} opts={opts} />
+          </LazyMount>
+          <LazyMount minHeight={180}>
+            <Moods current={f.mood} onPick={(v) => (set('mood', v), setTimeout(toCatalogue, 80))} />
+          </LazyMount>
+          <LazyMount minHeight={420}>
+            <ShopTheLook products={products} />
+          </LazyMount>
+        </>
+      )}
+      <RecentlyViewed products={products} categories={categories} opts={opts} />
+
+      <section className="sh-cat" id="catalogue" ref={catRef}>
+        <div className="sh-bar">
+          <div className="wrap sh-bar-in">
+            <button type="button" className="sh-bar-btn m-ripple" onClick={(e) => (ripple(e), setSheet(true))} aria-haspopup="dialog">
+              <Icon name="filter" size={17} /> Filter{active.filter((k) => k !== 'q').length ? <span className="sh-badge">{active.filter((k) => k !== 'q').length}</span> : null}
             </button>
-            {usedCats.map((c) => (
-              <button key={c.slug} className="chip" aria-pressed={category === c.slug} onClick={() => set('category', category === c.slug ? '' : c.slug)}>
-                {c.name} <span className="chip-n">{c.count}</span>
-              </button>
-            ))}
-          </div>
-          <div className="filter-row">
-            <label className="toggle">
-              <input type="checkbox" checked={photo} onChange={(e) => set('photo', e.target.checked ? '1' : '')} />
-              <span />
-              Can add my photo
+            <label className="sh-bar-sort">
+              <span className="sr-only">Sort</span>
+              <Icon name="chevronD" size={15} />
+              <select value={sort} onChange={(e) => set('sort', e.target.value === 'featured' ? '' : e.target.value)}>
+                {SORTS.map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
             </label>
-            <div className="row">
-              {q && (
-                <button className="chip on" onClick={() => set('q', '')}>
-                  “{q}” <Icon name="close" size={14} />
-                </button>
-              )}
-              <label className="sort">
-                <span className="sr-only">Sort</span>
-                <select className="select" value={sort} onChange={(e) => set('sort', e.target.value === 'featured' ? '' : e.target.value)}>
-                  {SORTS.map(([v, l]) => (
-                    <option key={v} value={v}>
-                      {l}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+            <button type="button" className={`sh-bar-chip m-ripple ${f.photo === '1' ? 'on' : ''}`} aria-pressed={f.photo === '1'} onClick={(e) => (ripple(e), set('photo', f.photo === '1' ? '' : '1'))}>
+              <Icon name="camera" size={15} /> My photo
+            </button>
+            <span className="sh-count" aria-live="polite">
+              {loading ? 'Loading…' : `${list.length} design${list.length === 1 ? '' : 's'}`}
+            </span>
           </div>
         </div>
-      </div>
-      <section className="section-sm">
         <div className="wrap">
-          <p className="muted small" style={{ marginBottom: 18 }}>
-            {loading ? 'Loading designs…' : `${list.length} design${list.length === 1 ? '' : 's'}`}
-          </p>
+          {!landing && (
+            <div className="sh-active">
+              {active.map((k) => (
+                <button key={k} type="button" className="sh-active-chip" onClick={() => set(k, '')} aria-label={`Remove filter ${label(k)}`}>
+                  {label(k)} <Icon name="close" size={13} />
+                </button>
+              ))}
+              <button type="button" className="link small" onClick={clear}>
+                Clear all
+              </button>
+            </div>
+          )}
+          {landing && <h2 className="hs-title sh-all-title">All Wall Art</h2>}
           <div className="grid-products">
             {loading && Array.from({ length: 8 }, (_, i) => <ProductCardSkeleton key={i} />)}
             {!loading &&
-              list.map((p, i) => (
-                <FragmentWithPromo key={p.id} show={i === 5 && !q}>
-                  <ProductCard product={p} categories={categories} priority={i < 4} index={i} />
-                </FragmentWithPromo>
+              list.slice(0, shown).map((p, i) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  categories={categories}
+                  priority={!landing && i < 4}
+                  index={i}
+                  options={opts?.[p.dbId]}
+                  frame={frame}
+                  price={showSize?.price}
+                  priceNote={showSize ? `· ${showSize.name}` : null}
+                  query={showSize ? `?size=${showSize.slug}` : ''}
+                />
               ))}
           </div>
+          {!loading && list.length > shown && (
+            <div className="center" style={{ marginTop: 24 }}>
+              <button type="button" className="btn btn-ghost m-ripple" onClick={(e) => (ripple(e), setShown((n) => n + 24))}>
+                Show more <span className="muted small">({list.length - shown} more)</span>
+              </button>
+            </div>
+          )}
           {!loading && list.length === 0 && (
             <div className="empty">
-              <h2 className="h3">Nothing here yet</h2>
+              <h2 className="h3">Nothing matches — yet</h2>
               <p className="muted" style={{ margin: '10px 0 22px' }}>
-                Tell us what you're looking for — we can often make it.
+                Try fewer filters, or tell us what you're looking for — we can often make it.
               </p>
               <div className="row" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
-                <button className="btn btn-sm" onClick={() => setParams({})}>
+                <button className="btn btn-sm" onClick={clear}>
                   Clear filters
                 </button>
-                <a className="btn btn-wa btn-sm" href={waLink(`Hi JHAYRA! I'm looking for: ${q || cat?.name || ''}`)} target="_blank" rel="noopener noreferrer">
+                <a className="btn btn-wa btn-sm" href={waLink(`Hi JHAYRA! I'm looking for: ${f.q || cat?.name || ''}`)} target="_blank" rel="noopener noreferrer">
                   Ask on WhatsApp
                 </a>
               </div>
@@ -170,15 +594,12 @@ export default function Shop() {
           )}
         </div>
       </section>
-    </>
-  );
-}
 
-function FragmentWithPromo({ show, children }) {
-  return (
-    <>
-      {children}
-      {show && <PersonaliseCard />}
+      <LazyMount minHeight={360}>
+        <PersonalisePromo />
+      </LazyMount>
+
+      {sheet && <FilterSheet f={f} set={set} clear={clear} count={list.length} categories={categories} usedCats={usedCats} sizes={sizes} finishes={finishes} onClose={() => setSheet(false)} />}
     </>
   );
 }

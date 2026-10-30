@@ -1,0 +1,166 @@
+/* ═══════════════ JHAYRA motion library (see src/components/Motion.jsx) ═══════
+   Transform/opacity only; one-shot reveals; champagne-gold accents. */
+:root {
+  --m-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --m-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --m-gold: #c9a55c;
+  --m-gold-soft: rgba(201, 165, 92, 0.35);
+}
+
+/* Reveal on scroll — Fade In, Slide Up, Slide Left, Scale, Blur, Frame Draw */
+.m-in {
+  transition: opacity 0.7s var(--m-ease), transform 0.7s var(--m-ease), filter 0.7s var(--m-ease);
+  transition-delay: var(--d, 0s);
+}
+.m-in:not(.in) {
+  opacity: 0;
+}
+.m-up:not(.in) { transform: translateY(22px); }
+.m-left:not(.in) { transform: translateX(28px); }
+.m-scale:not(.in) { transform: scale(0.94); }
+.m-blur:not(.in) { filter: blur(8px); transform: translateY(8px); }
+/* Stagger Reveal: children follow one another */
+.m-stagger > * {
+  transition: opacity 0.6s var(--m-ease), transform 0.6s var(--m-ease);
+  transition-delay: calc(var(--d, 0s) + min(var(--i, 0), 10) * 0.06s);
+}
+.m-stagger.m-in:not(.in) { opacity: 1; transform: none; filter: none; }
+.m-stagger:not(.in) > * { opacity: 0; transform: translateY(16px); }
+/* Frame Draw: a gold hairline traces the box once */
+.m-draw { position: relative; }
+.m-draw.m-in:not(.in) { opacity: 1; }
+.m-draw::before,
+.m-draw::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid var(--m-gold);
+  transition: clip-path 1.1s var(--m-ease);
+  transition-delay: var(--d, 0s);
+  clip-path: inset(0 100% 100% 0);
+}
+.m-draw::after { clip-path: inset(100% 0 0 100%); }
+.m-draw.in::before,
+.m-draw.in::after { clip-path: inset(0 0 0 0); }
+.m-draw.in::after { opacity: 0; transition: clip-path 1.1s var(--m-ease), opacity 0.6s 1.2s; }
+
+/* 3D Tilt */
+.m-tilt {
+  transform: perspective(900px) rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg));
+  transition: transform 0.35s var(--m-ease);
+  will-change: transform;
+}
+/* Floating Frame: a slow, small bob (small elements only) */
+.m-float { animation: m-float 6s ease-in-out infinite alternate; }
+@keyframes m-float { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+/* Image Zoom on hover/focus */
+.m-zoom { overflow: hidden; }
+.m-zoom img { transition: transform 0.8s var(--m-ease); }
+.m-zoom:hover img,
+.m-zoom:focus-visible img { transform: scale(1.06); }
+/* Parallax: useParallax sets --py */
+.m-parallax { transform: translate3d(0, var(--py, 0), 0); will-change: transform; }
+/* Magnetic */
+.m-magnetic { display: inline-block; transition: transform 0.3s var(--m-ease); }
+/* Ripple Click */
+.m-ripple { position: relative; overflow: hidden; }
+.m-ripple-ink {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--m-gold-soft);
+  transform: scale(0);
+  animation: m-ripple 0.6s var(--m-ease) forwards;
+  pointer-events: none;
+}
+@keyframes m-ripple { to { transform: scale(1); opacity: 0; } }
+/* Morphing Menu: a sheet grows from its trigger */
+.m-morph { animation: m-morph 0.38s var(--m-ease) both; transform-origin: var(--mo, 50% 100%); }
+@keyframes m-morph { from { opacity: 0; transform: scale(0.92) translateY(14px); border-radius: 40px; } }
+/* Smooth Tab Switch */
+.m-tabs {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid rgba(176, 138, 69, 0.25);
+}
+.m-tabs::-webkit-scrollbar { display: none; }
+.m-tabs button {
+  flex: none;
+  min-height: 42px;
+  padding: 0 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #6b5d4a;
+  transition: color 0.25s;
+}
+.m-tabs button[aria-selected='true'] { color: #1c1612; }
+.m-tabs-ink {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #b08a45, #f1dda8, #b08a45);
+  transition: transform 0.45s var(--m-ease), width 0.45s var(--m-ease);
+}
+/* Heart Pop */
+.m-pop { animation: m-pop 0.45s var(--m-spring); }
+@keyframes m-pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+/* Shimmer (loading) and Sheen (hover highlight) */
+.m-shimmer {
+  background: linear-gradient(100deg, #efe8db 30%, #f8f3ea 50%, #efe8db 70%) 0 0 / 300% 100%;
+  animation: m-shimmer 1.4s linear infinite;
+}
+@keyframes m-shimmer { to { background-position: -150% 0; } }
+/* Golden Glow on hover/focus */
+.m-glow { transition: box-shadow 0.4s var(--m-ease), transform 0.4s var(--m-ease); }
+.m-glow:hover,
+.m-glow:focus-within { box-shadow: 0 0 0 1px var(--m-gold-soft), 0 14px 30px -12px rgba(176, 138, 69, 0.55); }
+/* Smooth Morph (View Transitions) */
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: 0.28s; }
+/* Scroll Storytelling */
+.m-story { position: relative; list-style: none; margin: 0; padding: 0 0 0 4px; display: grid; gap: 14px; }
+.m-story::before,
+.m-story::after {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  background: #e9dfcc;
+}
+.m-story::after {
+  background: linear-gradient(#c9a55c, #b08a45);
+  transform-origin: top;
+  transform: scaleY(var(--p, 0));
+  transition: transform 0.8s var(--m-ease);
+}
+.m-story-step { position: relative; z-index: 1; display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; opacity: 0.45; transition: opacity 0.5s; }
+.m-story-step.on { opacity: 1; }
+.m-story-n {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f3ead8;
+  color: #7e5f26;
+  font-size: 12.5px;
+  font-weight: 700;
+  transition: background 0.4s, color 0.4s;
+}
+.m-story-step.on .m-story-n { background: linear-gradient(135deg, #8c6a2e, #c9a55c 55%, #b08a45); color: #fffaf0; }
+.m-story-step b { display: block; font-size: 14px; color: #1c1612; }
+.m-story-step small { font-size: 12.5px; color: #6b5d4a; }
+
+@media (prefers-reduced-motion: reduce) {
+  .m-in, .m-stagger > *, .m-draw::before, .m-draw::after { transition: none !important; opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; }
+  .m-float, .m-shimmer, .m-pop, .m-morph, .m-ripple-ink { animation: none !important; }
+  .m-tilt, .m-magnetic, .m-parallax { transform: none !important; }
+}
