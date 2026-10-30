@@ -156,7 +156,7 @@ function TopStrip() {
     );
   }
   return (
-    sig.enabled !== false && (
+    sig.enabled !== false && sig.items.some((i) => i.enabled !== false) && (
       <Link to="/signature-experience" className="sg-strip" aria-label="The Jhayra Signature Experience — discover the experience">
         <span className="sg-strip-title">
           <b>The Jhayra</b>

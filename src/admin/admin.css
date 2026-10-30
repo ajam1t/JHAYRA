@@ -1636,3 +1636,4 @@
 .sgm-browse { max-height: 70vh; overflow-y: auto; }
 .sgm-browse li { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 6px; border-radius: 10px; }
 .sgm-browse li:hover { background: #faf6ee; }
+.sgm-browse li.ad-muted { display: block; }

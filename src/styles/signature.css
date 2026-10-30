@@ -279,7 +279,7 @@
 /* Detail */
 .sg-detail { position: fixed; inset: 0; z-index: 300; display: grid; place-items: end center; }
 @media (min-width: 900px) { .sg-detail { place-items: center; } }
-.sg-detail > .scrim { position: absolute; inset: 0; background: rgba(20, 15, 10, 0.6); }
+.sg-detail > .scrim { position: absolute; inset: 0; z-index: 0; background: rgba(20, 15, 10, 0.6); }
 .sg-detail-panel {
   position: relative;
   z-index: 1;
@@ -316,3 +316,4 @@
 @media (prefers-reduced-motion: reduce) {
   .sg-strip, .sg-strip::after, .sg-box-lid { animation: none; }
 }
+.sg-collection .sg-kick, .sg-pack .sg-kick, .sg-faq .sg-kick { color: #7e5f26; }
