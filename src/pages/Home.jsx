@@ -225,6 +225,48 @@ function Hero({ products }) {
     if (!slots && art.length >= 3) setSlots(art.slice(0, 3).map((p, i) => ({ key: `s${i}`, productId: p.id, photo: null, colour: 'Black', size: 'a3plus' })));
   }, [art, slots]);
 
+  // The large frame (third slot) rotates through bestsellers until someone
+  // styles it. Pauses on hover, touch or focus, off screen and in hidden tabs.
+  const SHOW = 's2';
+  const [auto, setAuto] = useState(true);
+  const [si, setSi] = useState(0);
+  const [hold, setHold] = useState(false);
+  const [seen, setSeen] = useState(true);
+  const holdT = useRef(0);
+  const showList = useMemo(() => {
+    if (!slots) return [];
+    const first = art.find((p) => p.id === slots[2]?.productId);
+    const others = slots.slice(0, 2).map((x) => x.productId);
+    const best = art.filter((p) => p.is_bestseller && p.id !== first?.id && !others.includes(p.id));
+    return first ? [first, ...best] : best;
+  }, [art, slots]);
+  const showing = auto && sel !== SHOW && showList.length > 1;
+  useEffect(() => {
+    if (!showing || hold || !seen || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const t = setTimeout(() => setSi((i) => (i + 1) % showList.length), 3600);
+    return () => clearTimeout(t);
+  }, [showing, hold, seen, si, showList.length]);
+  useEffect(() => {
+    const el = room.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    let inView = true;
+    const sync = () => setSeen(inView && document.visibilityState === 'visible');
+    const io = new IntersectionObserver(([e]) => ((inView = e.isIntersecting), sync()), { threshold: 0.2 });
+    io.observe(el);
+    document.addEventListener('visibilitychange', sync);
+    return () => (io.disconnect(), document.removeEventListener('visibilitychange', sync));
+  }, []);
+  // Styling the large frame stops the showcase on the artwork currently shown.
+  useEffect(() => {
+    if (sel !== SHOW || !auto) return;
+    const p = showList[si % showList.length];
+    if (p) setSlots((l) => l.map((x) => (x.key === SHOW ? { ...x, productId: p.id } : x)));
+    setAuto(false);
+  }, [sel]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pause = () => (clearTimeout(holdT.current), setHold(true));
+  const resume = (ms = 0) => (clearTimeout(holdT.current), (holdT.current = setTimeout(() => setHold(false), ms)));
+  useEffect(() => () => clearTimeout(holdT.current), []);
+
   const list = slots || [];
   const sizeOf = (slug) => SIZES.find((x) => x.slug === slug) || SIZES[1];
   const prodOf = (s) => art.find((p) => p.id === s.productId);
@@ -244,7 +286,33 @@ function Hero({ products }) {
     const dx = x + sz.w / 2;
     x += sz.w + GAP_IN;
     const p = prodOf(s);
-    return { key: s.key, src: s.photo?.url || p?.thumbnail, wIn: sz.w, hIn: sz.h, dxIn: dx, y: Math.max(0.08, hangY + ((maxH - sz.h) * inH) / 2), colour: COLOURS[s.colour].hex, hotspot: `Change ${s.photo ? 'your photo' : p?.name || 'artwork'}` };
+    const base = { key: s.key, src: s.photo?.url || p?.thumbnail, wIn: sz.w, hIn: sz.h, dxIn: dx, y: Math.max(0.08, hangY + ((maxH - sz.h) * inH) / 2), colour: COLOURS[s.colour].hex, hotspot: `Change ${s.photo ? 'your photo' : p?.name || 'artwork'}` };
+    if (s.key !== SHOW || !showing) return base;
+    const k = si % showList.length;
+    const sp = showList[k];
+    const layers = [(k - 1 + showList.length) % showList.length, k, (k + 1) % showList.length];
+    return {
+      ...base,
+      hotspot: `Change ${sp.name}`,
+      children: (
+        <Link
+          to={`/product/${sp.id}`}
+          className="hx-show"
+          aria-label={`${sp.name} — view this artwork`}
+          onClick={(e) => e.stopPropagation()}
+          onMouseEnter={pause}
+          onMouseLeave={() => resume()}
+          onFocus={pause}
+          onBlur={() => resume()}
+          onTouchStart={pause}
+          onTouchEnd={() => resume(6000)}
+        >
+          {layers.map((j, n) => (
+            <Img key={showList[j].id} src={showList[j].thumbnail} alt="" sizes="(max-width: 760px) 100px, 180px" width={480} className={n === 1 ? 'on' : n === 0 ? 'out' : 'next'} />
+          ))}
+        </Link>
+      ),
+    };
   });
   const cur = list.find((s) => s.key === sel);
   const curP = cur && prodOf(cur);
