@@ -7,6 +7,8 @@ import PanZoom, { IDENTITY, ZoomControls } from '../components/PanZoom';
 import WallStudio from '../components/WallStudio';
 import ProductCard, { Stars, categoryLabel } from '../components/ProductCard';
 import { Seo } from '../lib/seo';
+import { productLd, breadcrumbLd } from '../lib/schema';
+import { productTitle } from '../lib/seoContent';
 import { useFrameConfig, useCategories, useProducts } from '../lib/catalog';
 import { useCart } from '../state/cart';
 import { useShop, useToast } from '../state/store';
@@ -131,6 +133,7 @@ export default function Product() {
   if (!product)
     return (
       <div className="wrap section center">
+        <Seo title="Design Not Found" path={`/product/${id}`} noindex />
         <h1 className="h2">This design has moved</h1>
         <p className="lead" style={{ margin: '14px auto 24px' }}>
           It may have sold out or been renamed.
@@ -219,29 +222,14 @@ export default function Product() {
   return (
     <>
       <Seo
-        title={`${product.name} — ${catName} Frame`}
+        title={productTitle(product.name, catName)}
         description={`${product.description || product.name} Handcrafted in India, from ${money(product.price)}. Free delivery across India.`}
         path={`/product/${product.id}`}
         image={product.thumbnail ? optimized(product.thumbnail, 1200, 80).replace('output=webp', 'output=jpg') : undefined}
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'Product',
-          name: product.name,
-          description: product.description,
-          image: product.images.map((i) => i.url),
-          sku: product.id,
-          brand: { '@type': 'Brand', name: 'JHAYRA' },
-          category: catName,
-          ...(product.rating && product.review_count ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: product.rating, reviewCount: product.review_count } } : {}),
-          offers: {
-            '@type': 'AggregateOffer',
-            priceCurrency: 'INR',
-            lowPrice: Math.min(...(cfg?.sizes || [{ price: product.price }]).map((s) => s.price)),
-            highPrice: Math.max(...(cfg?.sizes || [{ price: product.price }]).map((s) => s.price)),
-            availability: 'https://schema.org/InStock',
-            url: `${SITE.url}/product/${product.id}`,
-          },
-        }}
+        jsonLd={[
+          productLd({ id: product.id, name: product.name, description: product.description || product.name, images: product.images.map((i) => i.url), category: catName, sizes: cfg?.sizes || [], colours: cfg?.colours || [], material: cfg?.materials?.[0]?.name }),
+          breadcrumbLd([['Home', '/'], ['Shop', '/shop'], [catName, `/shop/${product.category}`], [product.name, `/product/${product.id}`]]),
+        ]}
       />
       <div className="wrap">
         <nav className="crumbs" aria-label="Breadcrumb">
@@ -251,7 +239,7 @@ export default function Product() {
           {product.category && (
             <>
               <span aria-hidden>/</span>
-              <Link to={`/shop?category=${product.category}`}>{catName}</Link>
+              <Link to={`/shop/${product.category}`}>{catName}</Link>
             </>
           )}
         </nav>
@@ -280,7 +268,7 @@ export default function Product() {
                     <PanZoom src={photo.url} value={tf} onChange={setTf} alt="Your photo" />
                   </Frame>
                 ) : (
-                  <Frame src={artSrc} alt={product.name} ratio={ratio} colour={colour?.hex || '#1C1C1C'} tilt priority sizes="(max-width: 900px) 70vw, 34vw" />
+                  <Frame src={artSrc} alt={`${product.name} — ${catName} wall art in a ${(colour?.name || "black").toLowerCase()} frame`} ratio={ratio} colour={colour?.hex || '#1C1C1C'} tilt priority sizes="(max-width: 900px) 70vw, 34vw" />
                 )}
                 <div className="pdp-dim pdp-dim-w">
                   <span>{orientation === 'Horizontal' && photo ? ratio.h : ratio.w}″</span>
@@ -463,7 +451,7 @@ export default function Product() {
               <h2 className="h2">
                 More in <em>{catName}</em>
               </h2>
-              <Link to={`/shop?category=${product.category}`} className="link">
+              <Link to={`/shop/${product.category}`} className="link">
                 View all <Icon name="arrow" size={16} />
               </Link>
             </div>

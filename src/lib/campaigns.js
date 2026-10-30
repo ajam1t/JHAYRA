@@ -14,12 +14,12 @@ export const CAMPAIGNS_PATH = 'site-config/campaigns.json';
 // Where a campaign can send people: every option is an existing route.
 export const TARGETS = [
   ...COLLECTIONS.map((c) => ({ id: `collection:${c.id}`, label: `Collection · ${c.title}`, to: `/collections/${c.id}` })),
-  { id: 'shop:wedding', label: 'Shop · Wedding', to: '/shop?category=wedding' },
-  { id: 'shop:love-romance', label: 'Shop · Love & Romance', to: '/shop?category=love-romance' },
-  { id: 'shop:occasions', label: 'Shop · Occasions', to: '/shop?category=occasions' },
-  { id: 'shop:religious', label: 'Shop · Religious', to: '/shop?category=religious' },
-  { id: 'shop:family', label: 'Shop · Family', to: '/shop?category=family' },
-  { id: 'shop:baby-kids', label: 'Shop · Baby & Kids', to: '/shop?category=baby-kids' },
+  { id: 'shop:wedding', label: 'Shop · Wedding', to: '/shop/wedding' },
+  { id: 'shop:love-romance', label: 'Shop · Love & Romance', to: '/shop/love-romance' },
+  { id: 'shop:occasions', label: 'Shop · Occasions', to: '/shop/occasions' },
+  { id: 'shop:religious', label: 'Shop · Religious', to: '/shop/religious' },
+  { id: 'shop:family', label: 'Shop · Family', to: '/shop/family' },
+  { id: 'shop:baby-kids', label: 'Shop · Baby & Kids', to: '/shop/baby-kids' },
   { id: 'world:festivals', label: 'World · Festivals', to: '/worlds/festivals' },
   { id: 'world:wedding', label: 'World · Wedding', to: '/worlds/wedding' },
   { id: 'world:divine', label: 'World · Divine', to: '/worlds/divine' },

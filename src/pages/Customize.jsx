@@ -6,6 +6,7 @@ import Icon from '../components/Icon';
 import Reveal from '../components/Reveal';
 import { Story, reduced, ripple } from '../components/Motion';
 import { Seo } from '../lib/seo';
+import { SITE_URL, breadcrumbLd } from '../lib/schema';
 import { useTemplates, MOMENTS } from '../lib/templates';
 import { money } from '../lib/site';
 import { MIN_PRICE } from '../lib/frames';
@@ -229,7 +230,12 @@ export default function Customize() {
 
   return (
     <>
-      <Seo title="Personalised Photo Frames — Design Yours Live" description={`Choose from ${active.length}+ personalised frame designs for weddings, anniversaries, birthdays, babies and festivals. Add photos, names and dates and see it live. From ${money(MIN_PRICE)}.`} path="/customize" />
+      <Seo title="Personalised Photo Frames — Design Yours Live" description={`Choose from ${active.length}+ personalised frame designs for weddings, anniversaries, birthdays, babies and festivals. Add photos, names and dates and see it live. From ${money(MIN_PRICE)}.`} path="/customize"
+        jsonLd={[
+          breadcrumbLd([['Home', '/'], ['Personalised frames', '/customize']]),
+          { '@context': 'https://schema.org', '@type': 'CollectionPage', name: 'Personalised photo frames', url: `${SITE_URL}/customize`, mainEntity: { '@type': 'ItemList', numberOfItems: active.length, itemListElement: active.slice(0, 40).map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: `${SITE_URL}/customize/${t.id}`, name: t.title })) } },
+        ]}
+      />
       <section className="cz3-hero">
         <div className="wrap cz3-hero-grid">
           <div>

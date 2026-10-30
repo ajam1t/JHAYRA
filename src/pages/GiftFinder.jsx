@@ -11,7 +11,7 @@ import { useCategories, useFrameTables, useProducts } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
 import { money, waLink, deliveryWindow } from '../lib/site';
 import { SIZES } from '../lib/frames';
-import { WHO, WHEN, STYLES, TYPES, budgets, recommend } from '../lib/giftfinder';
+import { WHO, WHEN, STYLES, TYPES, budgets, recommend, GIFT_GUIDE, GIFT_HOW } from '../lib/giftfinder';
 
 const KEYS = ['who', 'when', 'budget', 'style', 'type'];
 const ANY = 'any';
@@ -350,6 +350,32 @@ export default function GiftFinder() {
           </div>
         </section>
       )}
+      <section className="wrap gf3-guide" aria-labelledby="gf3-guide-h">
+        <h2 id="gf3-guide-h" className="hs-title">
+          Gift ideas by occasion
+        </h2>
+        <div className="gf3-guide-grid">
+          {GIFT_GUIDE.map(([h, t, l]) => (
+            <article key={h}>
+              <h3>{h}</h3>
+              <p>{t}</p>
+              <p className="gf3-guide-links">
+                {l.map(([to, label]) => (
+                  <Link key={to + label} to={to}>
+                    {label}
+                  </Link>
+                ))}
+              </p>
+            </article>
+          ))}
+        </div>
+        <h2 className="hs-title">How the Gift Finder chooses</h2>
+        <p className="gf3-guide-how">{GIFT_HOW}</p>
+        <p className="gf3-guide-how">
+          Every piece comes in {sizes.map((s) => `${s.name} (${money(s.price)})`).join(', ')}, with a free printed gift card at checkout and free delivery across India. More ideas: <Link to="/journal/wall-art-gift-guide-occasions">the wall art gift guide</Link> and{' '}
+          <Link to="/journal/how-to-make-a-personalised-photo-frame">how to make a personalised photo frame gift</Link>.
+        </p>
+      </section>
     </>
   );
 }

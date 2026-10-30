@@ -42,7 +42,7 @@ export default function ProductCard({ product, categories, priority = false, ind
     <article className={`pcard ${room ? 'pcard-room' : ''}`} style={{ '--i': index }}>
       <div className="pcard-media">
         <Link to={href} className="pcard-stage" aria-label={product.name}>
-          <Frame src={product.thumbnail} alt={product.name} sizes="(max-width: 760px) 40vw, (max-width: 1120px) 22vw, 16vw" priority={priority} glare={false} thickness={3.6} colour={frame?.hex} />
+          <Frame src={product.thumbnail} alt={`${product.name} — framed wall art`} sizes="(max-width: 760px) 40vw, (max-width: 1120px) 22vw, 16vw" priority={priority} glare={false} thickness={3.6} colour={frame?.hex} />
           {alt && (
             <div className="pcard-alt" aria-hidden="true">
               <Img src={alt} sizes="(max-width: 760px) 50vw, 25vw" />

@@ -6,40 +6,127 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/product/:id", "destination": "/app-shell" },
-    { "source": "/customize/:id", "destination": "/app-shell" },
-    { "source": "/collections/:id", "destination": "/app-shell" },
-    { "source": "/journal/:slug", "destination": "/app-shell" },
-    { "source": "/worlds/:id", "destination": "/app-shell" },
-    { "source": "/admin", "destination": "/app-shell" },
-    { "source": "/admin/:path*", "destination": "/app-shell" }
+    {
+      "source": "/product/:id",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/shop/:category",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/customize/:id",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/collections/:id",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/journal/:slug",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/worlds/:id",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/admin",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/app-shell"
+    }
   ],
   "redirects": [
-    { "source": "/stories", "destination": "/about", "permanent": true },
-    { "source": "/product", "destination": "/shop", "permanent": true }
+    {
+      "source": "/stories",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/product",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/shop",
+      "has": [
+        {
+          "type": "query",
+          "key": "category",
+          "value": "(?<cat>[a-z0-9-]+)"
+        }
+      ],
+      "destination": "/shop/:cat",
+      "permanent": true
+    }
   ],
   "headers": [
     {
       "source": "/assets/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
       "source": "/(fonts|rooms)/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=2592000, stale-while-revalidate=86400" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=2592000, stale-while-revalidate=86400"
+        }
+      ]
     },
     {
-      "source": "/(logo-mark.*|favicon.*|icon-512.png|apple-touch-icon.png|og-image.jpg)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
+      "source": "/(logo-mark.*|og-image.jpg)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800"
+        }
+      ]
+    },
+    {
+      "source": "/(favicon.*|icon-512.png|apple-touch-icon.*|manifest.webmanifest)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, must-revalidate"
+        }
+      ]
     },
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; media-src 'self' blob:; connect-src 'self' data: blob: https://*.supabase.co wss://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://lsp.api.razorpay.com https://checkout.razorpay.com https://api.postalpincode.in https://wsrv.nl https://www.googleapis.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self';" },
-        { "key": "Permissions-Policy", "value": "camera=(self), microphone=(), geolocation=(), payment=(self)" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" }
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; media-src 'self' blob:; connect-src 'self' data: blob: https://*.supabase.co wss://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://lsp.api.razorpay.com https://checkout.razorpay.com https://api.postalpincode.in https://wsrv.nl https://www.googleapis.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self';"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(), geolocation=(), payment=(self)"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        }
       ]
     }
   ]

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { CATEGORY_SEO, categoryFaq } from '../lib/seoContent';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard';
 import Icon from '../components/Icon';
 import Frame from '../components/Frame';
@@ -11,8 +12,7 @@ import { Magnetic, Motion, SmoothTabs, Story, Tilt, morph, ripple, useParallax }
 import { Seo } from '../lib/seo';
 import { searchProducts, useCategories, useFrameTables, useOptionSummary, useProducts } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
-import { BRAND } from '../lib/brand';
-import { money, waLink } from '../lib/site';
+import { money, waLink, SITE } from '../lib/site';
 import { SIZES, COLOURS } from '../lib/frames';
 import { ROOMS, ROOM_MAP } from '../lib/rooms';
 import { useShop } from '../state/store';
@@ -451,7 +451,27 @@ function PersonalisePromo() {
 
 /* ── Page ────────────────────────────────────────────────────────────────── */
 export default function Shop() {
-  const [params, setParams] = useSearchParams();
+  // Categories live at clean URLs (/shop/religious); other filters stay in the
+  // query string. The category is merged in so filters see one set of params.
+  const { category: pathCat } = useParams();
+  const [sp] = useSearchParams();
+  const navigate = useNavigate();
+  const params = useMemo(() => {
+    const n = new URLSearchParams(sp);
+    if (pathCat) n.set('category', pathCat);
+    return n;
+  }, [sp, pathCat]);
+  const setParams = (n, opts) => {
+    const rest = new URLSearchParams(n);
+    const c = rest.get('category');
+    rest.delete('category');
+    const qs = rest.toString();
+    navigate(`${c ? `/shop/${c}` : '/shop'}${qs ? `?${qs}` : ''}`, opts);
+  };
+  // Old links (/shop/x) move to the clean URL.
+  useEffect(() => {
+    if (sp.get('category')) setParams(params, { replace: true });
+  }, [sp, pathCat]); // eslint-disable-line react-hooks/exhaustive-deps
   const { data: products, loading } = useProducts();
   const { data: categories } = useCategories();
   const { data: opts } = useOptionSummary();
@@ -522,15 +542,26 @@ export default function Shop() {
   };
   const frame = finishes.find((c) => c.slug === f.finish);
   const showSize = f.size || f.price ? okSizes[0] : null;
-  const title = f.q ? `Results for “${f.q}”` : cat ? cat.name : room ? `Wall art for your ${room.label.toLowerCase()}` : null;
+  const seo = CATEGORY_SEO[f.category];
+  const title = f.q ? `Results for “${f.q}”` : cat ? seo?.h1 || cat.name : room ? `Wall art for your ${room.label.toLowerCase()}` : null;
+  const faq = cat ? categoryFaq(seo?.h1 || cat.name, { sizes: tables?.sizes, colours: (tables?.colours || []).filter((c) => finishes.some((x) => x.slug === c.slug)) }) : null;
+  const pagePath = f.category ? `/shop/${f.category}` : room ? `/shop?room=${room.id}` : '/shop';
+  const jsonLd = cat
+    ? [
+        { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [['Home', '/'], ['Shop', '/shop'], [seo?.h1 || cat.name, pagePath]].map(([name, u], i) => ({ '@type': 'ListItem', position: i + 1, name, item: SITE.url + u })) },
+        { '@context': 'https://schema.org', '@type': 'CollectionPage', name: seo?.h1 || cat.name, description: seo?.description || cat.description, url: SITE.url + pagePath, mainEntity: { '@type': 'ItemList', itemListElement: list.slice(0, 30).map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: `${SITE.url}/product/${p.id}`, name: p.name })) } },
+        { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) },
+      ]
+    : undefined;
 
   return (
     <>
       <Seo
-        title={cat ? `${cat.name} Frames & Wall Art` : 'Shop Wall Art & Personalised Frames'}
-        description={cat?.description || `Find art that feels like you — shop handcrafted wall art by room, style and mood, in four sizes and three frame finishes. Free delivery across India. Since ${BRAND.since}.`}
-        path={f.category ? `/shop?category=${f.category}` : room ? `/shop?room=${room.id}` : '/shop'}
+        title={cat ? seo?.title || `${cat.name} Frames & Wall Art` : room ? `${room.label} Wall Art — Framed Art Ideas` : 'Buy Framed Wall Art & Personalised Photo Frames Online in India'}
+        description={seo?.description || cat?.description || room?.blurb || `Shop handcrafted framed wall art and personalised photo frames online — by room, style and mood, in four sizes and black, gold or brown frames. Free delivery across India.`}
+        path={pagePath}
         noindex={!!f.q}
+        jsonLd={jsonLd}
       />
       <section className={`sh-intro ${landing ? 'sh-intro-land' : ''}`}>
         <div className="wrap sh-intro-grid">
@@ -543,9 +574,9 @@ export default function Shop() {
                 </>
               )}
             </Motion>
-            {(cat?.description || room?.blurb) && (
+            {(seo?.intro || cat?.description || room?.blurb) && (
               <Motion as="p" type="fade" delay={0.1} className="sh-lead">
-                {cat?.description || room?.blurb}
+                {seo?.intro || cat?.description || room?.blurb}
               </Motion>
             )}
             <form
@@ -681,6 +712,20 @@ export default function Shop() {
           )}
         </div>
       </section>
+
+      {faq && (
+        <section className="wrap sh-faq" aria-labelledby="sh-faq-h">
+          <h2 id="sh-faq-h" className="hs-title">
+            Good to know
+          </h2>
+          {faq.map(([q, a]) => (
+            <details key={q}>
+              <summary>{q}</summary>
+              <p>{a}</p>
+            </details>
+          ))}
+        </section>
+      )}
 
       <LazyMount minHeight={360}>
         <PersonalisePromo />

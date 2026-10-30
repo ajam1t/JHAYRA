@@ -132,7 +132,7 @@ export function Categories() {
       <TableEditor
         table="categories"
         title="Shop categories"
-        hint="The slug is used in links (e.g. /shop?category=religious). Changing a slug also requires updating products in that category."
+        hint="The slug is used in links (e.g. /shop/religious). Changing a slug also requires updating products in that category."
         defaults={{ slug: `new-${Date.now().toString(36)}`, name: 'New category', active: false }}
         columns={[
           { key: 'name', label: 'Name', width: 160 },
@@ -201,7 +201,7 @@ export function HomepageCollections() {
       <TableEditor
         table="homepage_collections"
         title="“Every wall has a story” tiles"
-        hint="The first tile is shown largest. Link can be any page, e.g. /shop?category=religious or /customize?moment=wedding."
+        hint="The first tile is shown largest. Link can be any page, e.g. /shop/religious or /customize?moment=wedding."
         imagePrefix="homepage-collections"
         defaults={{ title: 'New collection', subtitle: '', link: '/shop', active: false }}
         order="display_order"

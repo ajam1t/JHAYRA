@@ -11,6 +11,7 @@ import ProductCard, { ProductCardSkeleton } from '../components/ProductCard';
 import LazyMount from '../components/LazyMount';
 import Monogram3D from '../components/Monogram3D';
 import { Seo } from '../lib/seo';
+import { ORGANIZATION, WEBSITE } from '../lib/schema';
 import { useCategories, useFrameTables, useOptionSummary, useProducts } from '../lib/catalog';
 import { COLLECTION_MAP, collectionProducts } from '../lib/collections';
 import { useTemplates } from '../lib/templates';
@@ -497,7 +498,7 @@ function CategoryCard({ c, colours, i }) {
   const cur = colours.find((x) => x.slug === sel) || colours[0];
   return (
     <article className="hc-card" style={{ '--i': i }}>
-      <Link to={`/shop?category=${c.slug}`} className="hc-link">
+      <Link to={`/shop/${c.slug}`} className="hc-link">
         <span className="hc-hang">
           <span className="hc-wire" aria-hidden="true" />
           <span className="hc-stage" key={cur?.slug}>
@@ -1050,22 +1051,13 @@ export default function Home() {
   return (
     <>
       <Seo
-        title={festival ? `${festival.name} Gifts — Personalised Frames | JHAYRA` : 'JHAYRA — Crafting Memories Into Art | Wall Art & Personalised Frames'}
-        description={festival ? festival.lead : 'Wall art and personalised photo frames, framed to order in India since 2017. Shop by room, create your own, see it on your wall before you buy, and find the perfect gift. Free delivery across India.'}
+        title={festival ? `${festival.name} Gifts — Personalised Frames | JHAYRA` : 'JHAYRA — Framed Wall Art & Personalised Photo Frames Online in India'}
+        description={festival ? festival.lead : 'JHAYRA — Crafting Memories Into Art. Framed wall art and personalised photo frames, handcrafted to order in India since 2017. Shop by room, design your own and see it on your wall. Free delivery across India.'}
         path="/"
         jsonLd={{
           '@context': 'https://schema.org',
           '@graph': [
-            {
-              '@type': 'Organization',
-              name: 'JHAYRA',
-              url: SITE.url,
-              logo: SITE.ogImage,
-              slogan: 'Crafting Memories Into Art',
-              foundingDate: String(BRAND.since),
-              sameAs: [SITE.instagram],
-              contactPoint: { '@type': 'ContactPoint', telephone: '+91-8446440469', contactType: 'customer service', availableLanguage: ['English', 'Hindi'] },
-            },
+            ...[ORGANIZATION, WEBSITE].map(({ '@context': _, ...x }) => x),
             { '@type': 'FAQPage', mainEntity: HOME_FAQ.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) },
           ],
         }}

@@ -73,7 +73,7 @@ function Index() {
         </h2>
         <div className="cat-grid">
           {cats.map((c) => (
-            <Link key={c.slug} to={`/shop?category=${c.slug}`} className="cat">
+            <Link key={c.slug} to={`/shop/${c.slug}`} className="cat">
               <div className="cat-img">{c.cover && <Img src={c.cover} alt="" sizes="(max-width: 760px) 50vw, 25vw" />}</div>
               <b>{c.name}</b>
               <small>

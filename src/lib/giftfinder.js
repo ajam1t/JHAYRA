@@ -112,3 +112,16 @@ export function recommend({ products = [], templates = [], sizes = [], a }) {
 
   return { products: prods, templates: tmpls, productTotal, templateTotal, fits, budget, who, when, style };
 }
+
+// Gift ideas by recipient and occasion, shown under the quiz and in the
+// crawlable version of the page.
+export const GIFT_GUIDE = [
+  ['Partner or spouse', 'Couple and wedding photo frames, calendar designs that mark your date, and moon & stars designs.', [['/shop/love-romance', 'Couple & love frames'], ['/shop/wedding', 'Wedding photo frames'], ['/customize?moment=anniversary', 'Anniversary designs']]],
+  ['Parents and grandparents', 'Family photo frames, collage designs with photos across the years, and devotional art.', [['/shop/family', 'Family photo frames'], ['/shop/religious', 'Religious wall art']]],
+  ['Housewarming', 'Ready-made art for the new home: devotional art, running horses, Vastu motifs and nature prints.', [['/shop/religious', 'Religious wall art'], ['/shop/running-horses', 'Running horses'], ['/shop/home-vastu', 'Vastu wall art'], ['/shop/nature', 'Nature wall art']]],
+  ['Birthdays', 'Collage and milestone frames for family and friends; quote frames and modern prints for colleagues.', [['/shop/occasions', 'Occasion frames'], ['/shop/quotes', 'Quote wall art'], ['/customize?moment=birthday', 'Birthday designs']]],
+  ['New parents', 'Baby milestone frames and kids’ name boards.', [['/shop/baby-kids', 'Baby & kids frames'], ['/customize?moment=baby', 'Baby designs']]],
+  ['Festivals', 'Devotional art and festive personalised frames for Diwali and other celebrations.', [['/shop/religious', 'Religious wall art'], ['/customize?moment=festivals', 'Festival designs'], ['/celebrations', 'Celebrations']]],
+];
+
+export const GIFT_HOW = 'Your answers are matched against the live JHAYRA collection. Who it’s for and the occasion point to the categories and personalised designs that suit them; your budget limits the sizes shown, using the real price of each size; the style and type of art narrow the list to ready-made artwork, personalised frames, or both. Nothing is sponsored — results are simply the closest matches, with bestsellers first when several fit equally.';
