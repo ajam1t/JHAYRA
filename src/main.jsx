@@ -13,6 +13,7 @@ import './styles/worlds.css';
 import './styles/storefront.css';
 import './styles/motion.css';
 import './styles/signature.css';
+import './styles/bag.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
