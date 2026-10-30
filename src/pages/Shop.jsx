@@ -16,7 +16,6 @@ import { money, waLink } from '../lib/site';
 import { SIZES, COLOURS } from '../lib/frames';
 import { ROOMS, ROOM_MAP } from '../lib/rooms';
 import { useShop } from '../state/store';
-import { FeaturedCollections, ShopByCategory } from './Home';
 
 const SORTS = [
   ['featured', 'Featured'],
@@ -153,27 +152,85 @@ function FilterSheet({ f, set, clear, count, categories, usedCats, sizes, finish
 }
 
 /* ── Sections ────────────────────────────────────────────────────────────── */
-function RoomRail() {
+// Round "story" bubbles: quick room filters with real interior photos.
+function RoomBubbles({ current, onPick }) {
   return (
-    <section className="hs sh-rooms">
+    <div className="sh-bubbles" role="group" aria-label="Shop by room">
+      {ROOMS.map((r, i) => (
+        <button key={r.id} type="button" className={`sh-bubble ${current === r.id ? 'on' : ''}`} style={{ '--i': i }} aria-pressed={current === r.id} onClick={() => onPick(r.id)}>
+          <span className="sh-bubble-ring">{ROOM_PHOTOS[r.id] ? <img src={`/rooms/${ROOM_PHOTOS[r.id]}.webp`} alt="" loading="lazy" decoding="async" width="120" height="120" /> : <Icon name={r.id === 'pooja' ? 'temple' : 'users'} size={22} />}</span>
+          <small>{r.label}</small>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// A salon-style hang of real artworks for the shop's opening view.
+function SalonWall({ products }) {
+  const art = (products || []).filter((p) => p.thumbnail && p.is_bestseller).slice(0, 5);
+  if (art.length < 5) return <div className="sh-salon" aria-hidden="true" />;
+  const spots = [
+    [6, 18, 22, 1.3],
+    [31, 4, 26, 1.33],
+    [60, 14, 20, 1.3],
+    [83, 26, 14, 1.25],
+    [36, 58, 16, 1.25],
+  ];
+  return (
+    <div className="sh-salon" aria-label="A few of our bestsellers">
+      {art.map((p, i) => (
+        <Link key={p.id} to={`/product/${p.id}`} className="sh-salon-f m-float" style={{ left: `${spots[i][0]}%`, top: `${spots[i][1]}%`, width: `${spots[i][2]}%`, animationDelay: `${i * -1.3}s`, '--i': i }} aria-label={p.name}>
+          <Frame src={p.thumbnail} alt="" ratio={{ w: 12, h: 12 * spots[i][3] }} colour={i === 1 ? '#b08a45' : i === 3 ? '#6b4a2b' : '#1C1C1C'} glare={false} sizes="(max-width: 760px) 26vw, 180px" priority={i < 2} />
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+// Category index: each tile is a mini collage of the category's own artwork.
+function CategoryIndex({ products, usedCats, onPick }) {
+  const by = {};
+  (products || []).forEach((p) => p.thumbnail && (by[p.category] ||= []).push(p));
+  const all = usedCats.filter((c) => (by[c.slug] || []).length).sort((a, b) => b.count - a.count);
+  const [more, setMore] = useState(false);
+  const cats = more ? all : all.slice(0, 6);
+  return (
+    <section className="hs sh-index">
       <div className="wrap">
         <div className="hs-head">
-          <h2 className="hs-title">Shop by Room</h2>
-          <Link to="/room-inspiration" className="hs-all">
-            Room ideas <Icon name="arrow" size={14} />
+          <h2 className="hs-title">The Category Index</h2>
+          <Link to="/collections" className="hs-all">
+            Collections <Icon name="arrow" size={14} />
           </Link>
         </div>
-        <Motion type="left" stagger className="hs-scroll sh-room-row">
-          {ROOMS.map((r, i) => (
-            <Link key={r.id} to={`/shop?room=${r.id}#catalogue`} className="sh-room m-zoom m-glow" style={{ '--i': i }}>
-              {ROOM_PHOTOS[r.id] ? <img src={`/rooms/${ROOM_PHOTOS[r.id]}.webp`} alt="" loading="lazy" decoding="async" width="600" height="400" /> : <span className="sh-room-ph" aria-hidden="true" />}
-              <span className="sh-room-t">
-                <b>{r.label}</b>
-                <small>{r.blurb}</small>
-              </span>
-            </Link>
-          ))}
+        <Motion type="up" stagger className="sh-index-grid">
+          {cats.map((c, i) => {
+            const t = by[c.slug].sort((a, b) => b.is_bestseller - a.is_bestseller).slice(0, 3);
+            return (
+              <button key={c.slug} type="button" className="sh-tile m-glow" style={{ '--i': i }} onClick={() => onPick(c.slug)}>
+                <span className={`sh-tile-mosaic n${t.length}`}>
+                  {t.map((p) => (
+                    <Img key={p.id} src={p.thumbnail} alt="" sizes="(max-width: 760px) 30vw, 160px" width={320} />
+                  ))}
+                </span>
+                <span className="sh-tile-t">
+                  <b>{c.name}</b>
+                  <small>
+                    {c.count} design{c.count > 1 ? 's' : ''}
+                  </small>
+                </span>
+              </button>
+            );
+          })}
         </Motion>
+        {all.length > 6 && (
+          <div className="center" style={{ marginTop: 14 }}>
+            <button type="button" className="btn btn-ghost btn-sm m-ripple" onClick={(e) => (ripple(e), morph(() => setMore((m) => !m)))} aria-expanded={more}>
+              {more ? 'Show fewer' : `Show all ${all.length} categories`}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -398,6 +455,19 @@ export default function Shop() {
   const { f, sort, sizes, okSizes, list, active } = useFilters(params, products, opts, tables);
   const [sheet, setSheet] = useState(false);
   const [shown, setShown] = useState(24);
+  const [big, setBig] = useState(() => {
+    try {
+      return localStorage.getItem('jh_grid') === 'big';
+    } catch {
+      return false;
+    }
+  });
+  const toggleGrid = (v) => {
+    morph(() => setBig(v));
+    try {
+      localStorage.setItem('jh_grid', v ? 'big' : 'small');
+    } catch {}
+  };
   const catRef = useRef(null);
   const landing = !active.length;
 
@@ -458,46 +528,49 @@ export default function Shop() {
         path={f.category ? `/shop?category=${f.category}` : room ? `/shop?room=${room.id}` : '/shop'}
         noindex={!!f.q}
       />
-      <section className="sh-intro">
+      <section className={`sh-intro ${landing ? 'sh-intro-land' : ''}`}>
+        <div className="wrap sh-intro-grid">
+          <div>
+            {landing && <span className="sh-eyebrow">The JHAYRA gallery · {products?.length || ''} designs</span>}
+            <Motion as="h1" type="blur" className="sh-title">
+              {title || (
+                <>
+                  Find Art That <em>Feels Like You.</em>
+                </>
+              )}
+            </Motion>
+            <Motion as="p" type="fade" delay={0.1} className="sh-lead">
+              {cat?.description || room?.blurb || '4 sizes · black, gold & wood frames · handcrafted to order · free delivery across India.'}
+            </Motion>
+            <form
+              className="sh-search"
+              role="search"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const v = new FormData(e.currentTarget).get('q').trim();
+                set('q', v);
+                if (v) setTimeout(toCatalogue, 80);
+              }}
+            >
+              <Icon name="search" size={18} />
+              <input name="q" defaultValue={f.q} key={f.q} placeholder="Search Ganesha, horses, wedding…" aria-label="Search wall art" enterKeyHint="search" />
+              <button type="submit" className="m-ripple" onClick={ripple}>
+                Search
+              </button>
+            </form>
+          </div>
+          {landing && <SalonWall products={products} />}
+        </div>
         <div className="wrap">
-          <Motion as="h1" type="blur" className="sh-title">
-            {title || (
-              <>
-                Find Art That <em>Feels Like You.</em>
-              </>
-            )}
-          </Motion>
-          <Motion as="p" type="fade" delay={0.1} className="sh-lead">
-            {cat?.description || room?.blurb || `${products?.length || 'Our'} handcrafted designs · 4 sizes · black, gold & wood frames · free delivery across India.`}
-          </Motion>
-          {landing && (
-            <div className="sh-quick">
-              <button type="button" className="sh-quick-btn m-ripple" onClick={(e) => (ripple(e), toCatalogue())}>
-                <Icon name="grid" size={16} /> Browse all
-              </button>
-              <button type="button" className="sh-quick-btn m-ripple" onClick={(e) => (ripple(e), set('photo', '1'), setTimeout(toCatalogue, 80))}>
-                <Icon name="camera" size={16} /> With my photo
-              </button>
-              <Link to="/visualise" className="sh-quick-btn">
-                <Icon name="sofa" size={16} /> See it on my wall
-              </Link>
-              <Link to="/gift-finder" className="sh-quick-btn">
-                <Icon name="gift" size={16} /> Gift finder
-              </Link>
-            </div>
-          )}
+          <RoomBubbles current={f.room} onPick={(id) => (set('room', f.room === id ? '' : id), setTimeout(toCatalogue, 80))} />
         </div>
       </section>
 
       {landing && (
         <>
-          <RoomRail />
-          <ShopByCategory products={products} categories={categories} />
+          <CategoryIndex products={products} usedCats={usedCats} onPick={(slug) => (set('category', slug), setTimeout(toCatalogue, 80))} />
           <LazyMount minHeight={320}>
             <StyleExplorer products={products} />
-          </LazyMount>
-          <LazyMount minHeight={360}>
-            <FeaturedCollections products={products} />
           </LazyMount>
           <LazyMount minHeight={460}>
             <Trending products={products} categories={categories} opts={opts} />
@@ -530,8 +603,16 @@ export default function Shop() {
               </select>
             </label>
             <button type="button" className={`sh-bar-chip m-ripple ${f.photo === '1' ? 'on' : ''}`} aria-pressed={f.photo === '1'} onClick={(e) => (ripple(e), set('photo', f.photo === '1' ? '' : '1'))}>
-              <Icon name="camera" size={15} /> My photo
+              <Icon name="camera" size={15} /> Photo
             </button>
+            <span className="sh-view" role="group" aria-label="Grid size">
+              <button type="button" aria-pressed={!big} aria-label="More per row" onClick={() => toggleGrid(false)}>
+                <Icon name="grid" size={16} />
+              </button>
+              <button type="button" aria-pressed={big} aria-label="Bigger pictures" onClick={() => toggleGrid(true)}>
+                <Icon name="square" size={16} />
+              </button>
+            </span>
             <span className="sh-count" aria-live="polite">
               {loading ? 'Loading…' : `${list.length} design${list.length === 1 ? '' : 's'}`}
             </span>
@@ -551,7 +632,7 @@ export default function Shop() {
             </div>
           )}
           {landing && <h2 className="hs-title sh-all-title">All Wall Art</h2>}
-          <div className="grid-products">
+          <div className={`grid-products sh-grid ${big ? 'big' : ''}`}>
             {loading && Array.from({ length: 8 }, (_, i) => <ProductCardSkeleton key={i} />)}
             {!loading &&
               list.slice(0, shown).map((p, i) => (
