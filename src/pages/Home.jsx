@@ -378,7 +378,7 @@ function Hero({ products, campaign }) {
               Create Your Own
             </Link>
           </div>
-          <Monogram3D className="sf-hero-3d sf-in" />
+          <Monogram3D className="sf-hero-3d sf-in" items={art.filter((p) => p.is_bestseller).slice(0, 8)} />
         </div>
         <ul className="hx-facts sf-in" style={{ '--d': '.4s' }}>
           {HERO_FACTS.map(([ic, a, b], i) => (

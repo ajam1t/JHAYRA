@@ -6389,3 +6389,32 @@
 @media (max-width: 899px) {
   .sh-promo-art { width: 40%; }
 }
+/* 3D hero frame: bestsellers crossfade on the front */
+.m3d-show {
+  position: relative;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+}
+.m3d-show img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+  pointer-events: none;
+}
+.m3d-show img.on {
+  opacity: 1;
+  animation: hxs-in 0.9s ease both;
+}
+.m3d-stage[role='link'] {
+  cursor: pointer;
+}
+.m3d-stage[role='link']:focus-visible {
+  outline: 2px solid #b08a45;
+  outline-offset: 6px;
+}
