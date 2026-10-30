@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import Icon, { InstagramLogo, WhatsAppGlyph } from './Icon';
 import Frame from './Frame';
 import Img from './Img';
+import { optimized } from '../lib/img';
 import { useCart } from '../state/cart';
 import { trackView } from '../lib/analytics';
 import { useShop } from '../state/store';
@@ -189,6 +190,22 @@ function MenuSheet({ onClose, returnFocus }) {
   const homeClick = useHomeClick(onClose);
   const { setSearchOpen } = useShop();
   const panel = useRef(null);
+  const { pathname, search } = useLocation();
+  const here = (to) => to === pathname + search || (!to.includes('?') && to !== '/' && to === pathname && !search);
+  // The section holding the current page starts open; Shop otherwise.
+  const [open, setOpen] = useState(() => MENU.find(([, l]) => l.some(([to]) => to === pathname + search))?.[0] || 'Shop');
+  const [art, setArt] = useState([]);
+  useEffect(() => {
+    loadProducts()
+      .then((l) => setArt((l || []).filter((p) => p.thumbnail && p.is_bestseller)))
+      .catch(() => {});
+  }, []);
+  const tiles = [
+    ['/shop', 'Shop', 'All wall art', art[0]?.thumbnail],
+    ['/customize', 'Create', 'Design your frame', art[3]?.thumbnail],
+    ['/gift-finder', 'Gift Finder', 'Five questions', art[6]?.thumbnail],
+    ['/signature-experience', 'Signature', 'Founder-curated', null, 'sig'],
+  ];
   // Focus the panel, trap Tab inside it, close on Escape, restore focus on close.
   useEffect(() => {
     const el = panel.current;
@@ -224,40 +241,73 @@ function MenuSheet({ onClose, returnFocus }) {
   }, [onClose, returnFocus]);
   return (
     <>
-      <div className="scrim" onClick={onClose} />
-      <aside className="sheet sheet-left menu-sheet" id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" ref={panel}>
-        <div className="sheet-head">
+      <div className="scrim menu3-scrim" onClick={onClose} />
+      <aside className="sheet sheet-left menu-sheet menu3" id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" ref={panel}>
+        <div className="menu3-glow" aria-hidden="true" />
+        <div className="sheet-head menu3-head">
           <Logo onNavigate={onClose} />
-          <button className="icon-btn" onClick={onClose} aria-label="Close menu">
-            <Icon name="close" />
+          <button className="menu3-close" onClick={onClose} aria-label="Close menu">
+            <Icon name="close" size={20} />
           </button>
         </div>
-        <div className="sheet-body">
-          <button type="button" className="menu-search" onClick={() => (onClose(), setSearchOpen(true))}>
-            <Icon name="search" size={18} /> Search art, designs and gifts
+        <div className="sheet-body menu3-body">
+          <button type="button" className="menu3-search" onClick={() => (onClose(), setSearchOpen(true))}>
+            <Icon name="search" size={18} /> <span>Search art, designs and gifts</span>
           </button>
-          <Link to="/" className="menu-home" onClick={homeClick}>
-            Home <Icon name="arrow" size={18} />
+          <div className="menu3-tiles">
+            {tiles.map(([to, label, sub, img, cls], i) => (
+              <Link key={to} to={to} className={`menu3-tile ${cls || ''}`} onClick={to === '/' ? homeClick : onClose} style={{ '--i': i }}>
+                {img ? <img src={optimized(img, 320)} alt="" loading="lazy" decoding="async" /> : <span className="menu3-tile-mark" aria-hidden="true">✦</span>}
+                <span className="menu3-tile-txt">
+                  <b>{label}</b>
+                  <small>{sub}</small>
+                </span>
+              </Link>
+            ))}
+          </div>
+          <Link to="/" className={`menu3-home ${pathname === '/' ? 'on' : ''}`} onClick={homeClick}>
+            <Icon name="home" size={18} /> Home
           </Link>
-          {MENU.map(([title, links]) => (
-            <nav key={title} className="menu-group" aria-label={title}>
-              <h2>{title}</h2>
-              <ul>
-                {links.map(([to, label]) => (
-                  <li key={to + label}>
-                    <Link to={to} onClick={onClose}>
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          ))}
+          {MENU.map(([title, items], gi) => {
+            const isOpen = open === title;
+            return (
+              <nav key={title} className={`menu3-group ${isOpen ? 'open' : ''}`} aria-label={title} style={{ '--g': gi }}>
+                <button type="button" className="menu3-group-btn" aria-expanded={isOpen} onClick={() => setOpen(isOpen ? '' : title)}>
+                  <span>{title}</span>
+                  <small>{items.length}</small>
+                  <Icon name="chevronD" size={18} />
+                </button>
+                <div className="menu3-group-body">
+                  <ul>
+                    {items.map(([to, label], i) => (
+                      <li key={to + label} style={{ '--i': i }}>
+                        <Link to={to} onClick={onClose} className={here(to) ? 'on' : ''} tabIndex={isOpen ? undefined : -1}>
+                          {label}
+                          <Icon name="arrow" size={15} />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </nav>
+            );
+          })}
         </div>
-        <div className="sheet-foot">
-          <a className="btn btn-wa btn-block" href={waLink('Hi JHAYRA! I need help choosing a frame.')} target="_blank" rel="noopener noreferrer">
-            <WhatsAppGlyph /> Chat with us on WhatsApp
+        <div className="sheet-foot menu3-foot">
+          <a className="menu3-wa" href={waLink('Hi JHAYRA! I need help choosing a frame.')} target="_blank" rel="noopener noreferrer">
+            <WhatsAppGlyph size={20} /> <span>Chat with us on WhatsApp</span>
           </a>
+          <div className="menu3-quick">
+            <Link to="/orders" onClick={onClose}>
+              <Icon name="truck" size={17} /> Orders
+            </Link>
+            <Link to="/wishlist" onClick={onClose}>
+              <Icon name="heart" size={17} /> Wishlist
+            </Link>
+            <a href={SITE.instagram} target="_blank" rel="noopener noreferrer">
+              <Icon name="instagram" size={17} /> Instagram
+            </a>
+          </div>
         </div>
       </aside>
     </>
