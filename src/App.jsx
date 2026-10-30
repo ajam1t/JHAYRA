@@ -15,6 +15,7 @@ const PhotoBuilder = lazy(() => import('./pages/PhotoBuilder'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const Orders = lazy(() => import('./pages/Orders'));
+const Track = lazy(() => import('./pages/Track'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
 const GiftFinder = lazy(() => import('./pages/GiftFinder'));
 const Inspiration = lazy(() => import('./pages/Inspiration'));
@@ -68,6 +69,7 @@ export default function App() {
                     <Route path="cart" element={<Cart />} />
                     <Route path="checkout" element={<Checkout />} />
                     <Route path="orders" element={<Orders />} />
+                    <Route path="track" element={<Track />} />
                     <Route path="wishlist" element={<Wishlist />} />
                     <Route path="gift-finder" element={<GiftFinder />} />
                     <Route path="room-inspiration" element={<Inspiration />} />

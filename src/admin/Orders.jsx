@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { money } from '../lib/site';
 import Icon from '../components/Icon';
@@ -34,7 +35,9 @@ export default function Orders() {
   const [items, setItems] = useState({});
   const [urls, setUrls] = useState({});
   const [err, setErr] = useState('');
-  const [filter, setFilter] = useState('paid');
+  const [sp] = useSearchParams();
+  const [filter, setFilter] = useState(() => sp.get('filter') || 'paid');
+  const [ship, setShip] = useState({});
   const [q, setQ] = useState('');
 
   useEffect(() => {
@@ -53,6 +56,7 @@ export default function Orders() {
     let l = orders || [];
     if (filter === 'paid') l = l.filter((o) => o.payment_status === 'paid');
     else if (filter === 'toship') l = l.filter((o) => o.payment_status === 'paid' && !['shipped', 'delivered', 'cancelled'].includes(o.order_status));
+    else if (filter === 'followup') l = l.filter((o) => o.payment_status !== 'paid' && Date.now() - new Date(o.created_at).getTime() < 14 * 864e5);
     if (q) {
       const s = q.toLowerCase();
       l = l.filter((o) => [o.order_number, o.customer_name, o.customer_mobile, o.city, o.pin].join(' ').toLowerCase().includes(s));
@@ -92,6 +96,19 @@ export default function Orders() {
     }
   }
 
+  const wa = (mobile, text) => `https://wa.me/91${String(mobile || '').replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(text)}`;
+  const shipVal = (o, k) => ship[o.id]?.[k] ?? o[k] ?? '';
+  const setShipVal = (id, k, v) => setShip((x) => ({ ...x, [id]: { ...(x[id] || {}), [k]: v } }));
+  async function saveShipping(o) {
+    setErr('');
+    const tracking_url = shipVal(o, 'tracking_url').trim();
+    if (tracking_url && !/^https?:\/\//i.test(tracking_url)) return setErr('Tracking link should start with https://');
+    const patch = { courier: shipVal(o, 'courier').trim() || null, tracking_number: shipVal(o, 'tracking_number').trim() || null, tracking_url: tracking_url || null, order_status: 'shipped', shipped_at: o.shipped_at || new Date().toISOString() };
+    const { error } = await supabase.from('orders').update(patch).eq('id', o.id);
+    if (error) return setErr(`Could not save: ${error.message}`);
+    setOrders((l) => l.map((x) => (x.id === o.id ? { ...x, ...patch } : x)));
+  }
+
   async function setStatus(id, status) {
     setErr('');
     const { error } = await supabase.from('orders').update({ order_status: status }).eq('id', id);
@@ -108,6 +125,7 @@ export default function Orders() {
         {[
           ['paid', 'Paid'],
           ['toship', 'To ship'],
+          ['followup', 'Follow up (unpaid)'],
           ['all', 'All (incl. unpaid)'],
         ].map(([v, l]) => (
           <button key={v} className={`ad-chip ${filter === v ? 'on' : ''}`} onClick={() => setFilter(v)}>
@@ -174,6 +192,33 @@ export default function Orders() {
                             {o.razorpay_payment_id || o.razorpay_order_id} {o.paid_at && `· paid ${new Date(o.paid_at).toLocaleString('en-IN')}`}
                             {o.failure_reason && <><br />Failure: {o.failure_reason}</>}
                           </p>
+                          {o.payment_status !== 'paid' && (
+                            <>
+                              <h3 style={{ marginTop: 18 }}>Follow up</h3>
+                              <p className="ad-muted">Started checkout but didn’t pay. A friendly reminder often recovers the order.</p>
+                              <a className="ad-btn ad-btn-primary" href={wa(o.customer_mobile, `Hi ${o.customer_name}, this is JHAYRA. We noticed your order${(items[o.id] || []).length ? ` for ${(items[o.id] || []).map((i) => i.name).join(', ')}` : ''} wasn’t completed — can we help with anything? You can finish it any time at https://www.jhayra.com/cart, or reply here and we’ll send you a payment link.`)} target="_blank" rel="noreferrer">
+                                Send reminder on WhatsApp
+                              </a>
+                            </>
+                          )}
+                          {o.payment_status === 'paid' && (
+                            <>
+                              <h3 style={{ marginTop: 18 }}>Shipping</h3>
+                              <div className="ad-ship">
+                                <input className="ad-input" placeholder="Courier (e.g. Delhivery)" value={shipVal(o, 'courier')} onChange={(e) => setShipVal(o.id, 'courier', e.target.value)} />
+                                <input className="ad-input" placeholder="Tracking number" value={shipVal(o, 'tracking_number')} onChange={(e) => setShipVal(o.id, 'tracking_number', e.target.value)} />
+                                <input className="ad-input" placeholder="Tracking link (https://…)" value={shipVal(o, 'tracking_url')} onChange={(e) => setShipVal(o.id, 'tracking_url', e.target.value)} />
+                                <div className="ad-toolbar">
+                                  <button className="ad-btn ad-btn-primary" onClick={() => saveShipping(o)}>
+                                    Save & mark shipped
+                                  </button>
+                                  <a className="ad-btn" href={wa(o.customer_mobile, `Hi ${o.customer_name}, your JHAYRA order ${o.order_number || ''} is on its way${shipVal(o, 'courier') ? ` with ${shipVal(o, 'courier')}` : ''}${shipVal(o, 'tracking_number') ? ` (tracking no. ${shipVal(o, 'tracking_number')})` : ''}. Track it here: ${shipVal(o, 'tracking_url') || 'https://www.jhayra.com/track'}`)} target="_blank" rel="noreferrer">
+                                    Send tracking on WhatsApp
+                                  </a>
+                                </div>
+                              </div>
+                            </>
+                          )}
                           <h3 style={{ marginTop: 18 }}>Update status</h3>
                           <div className="ad-toolbar">
                             {STATUSES.map((s) => (

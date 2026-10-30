@@ -17,6 +17,7 @@ import { money, deliveryWindow, SITE, waLink } from '../lib/site';
 import DeliveryTimeline from '../components/DeliveryTimeline';
 import { readPhoto, uploadArtwork, QUALITY_LABEL } from '../lib/upload';
 import { optimized } from '../lib/img';
+import { trackStep } from '../lib/analytics';
 
 export function PincodeCheck() {
   const [pin, setPin] = useState(() => {
@@ -104,7 +105,10 @@ export default function Product() {
   const [showSticky, setShowSticky] = useState(false);
 
   useEffect(() => {
-    if (product) pushRecent(product.id);
+    if (product) {
+      pushRecent(product.id);
+      trackStep('product_view');
+    }
   }, [product?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {

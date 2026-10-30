@@ -398,8 +398,8 @@ function MobileHero({ o, series, live, period, setPeriod }) {
 
 function Attention({ o, catalog }) {
   const items = [];
-  if (o?.toShip) items.push(['truck', `${o.toShip} order${o.toShip > 1 ? 's' : ''} to ship`, 'Paid and waiting — pack & dispatch', '/admin/orders', 'gold']);
-  if (o?.unpaid) items.push(['bag', `${o.unpaid} unpaid checkout${o.unpaid > 1 ? 's' : ''}`, 'Started but not paid — follow up on WhatsApp', '/admin/orders', '']);
+  if (o?.toShip) items.push(['truck', `${o.toShip} order${o.toShip > 1 ? 's' : ''} to ship`, 'Paid and waiting — pack & dispatch', '/admin/orders?filter=toship', 'gold']);
+  if (o?.unpaid) items.push(['bag', `${o.unpaid} unpaid checkout${o.unpaid > 1 ? 's' : ''}`, 'Started but not paid — follow up on WhatsApp', '/admin/orders?filter=followup', '']);
   if (catalog?.noImage?.length) items.push(['image', `${catalog.noImage.length} product${catalog.noImage.length > 1 ? 's' : ''} without a photo`, 'Hidden from the shop until a photo is added', '/admin/products', '']);
   if (!o) return null;
   return (
@@ -503,6 +503,51 @@ function States({ from, to }) {
         </ul>
       )}
       <p className="ad-muted db-note">Approximate, from each visitor’s network. No IP addresses are stored.</p>
+    </div>
+  );
+}
+
+// Sales funnel: sessions reaching each step, so drop-offs are visible.
+function Funnel({ from, to }) {
+  const [f, setF] = useState(null);
+  useEffect(() => {
+    let stop = false;
+    setF(null);
+    supabase.rpc('site_funnel', { p_from: from.toISOString(), p_to: to.toISOString() }).then(({ data }) => !stop && setF(data || {}));
+    return () => {
+      stop = true;
+    };
+  }, [from, to]);
+  const steps = [
+    ['sessions', 'Visits'],
+    ['product_view', 'Viewed a product'],
+    ['add_to_cart', 'Added to bag'],
+    ['checkout_start', 'Started checkout'],
+    ['paid', 'Paid'],
+  ];
+  const top = Math.max(1, f?.sessions || 0);
+  return (
+    <div className="ad-card db-funnel">
+      <h2>Sales funnel</h2>
+      {!f ? (
+        <p className="ad-muted db-empty">Loading…</p>
+      ) : (
+        <ol>
+          {steps.map(([k, l], i) => {
+            const v = Number(f[k]) || 0;
+            const prev = i ? Number(f[steps[i - 1][0]]) || 0 : 0;
+            return (
+              <li key={k}>
+                <span className="db-funnel-bar" style={{ width: `${Math.max(4, (v / top) * 100)}%` }} />
+                <span className="db-funnel-l">{l}</span>
+                <b>{num(v)}</b>
+                {i > 0 && <small>{prev ? `${Math.round((v / prev) * 100)}% of previous` : '—'}</small>}
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      <p className="ad-muted db-note">Counted per visit, from today onwards. Paid = paid orders in the period.</p>
     </div>
   );
 }
@@ -739,6 +784,7 @@ export default function Dashboard() {
           <h2>Top pages</h2>
           <Bars rows={traffic?.pages || []} value={(r) => r.views} render={(r) => <a href={r.path} target="_blank" rel="noreferrer">{r.path === '/' ? 'Homepage' : r.path}</a>} />
         </div>
+        {!noTraffic && <Funnel from={from} to={to} />}
         {!noTraffic && <States from={from} to={to} />}
         <div className="ad-card">
           <h2>Where visitors come from</h2>

@@ -30,6 +30,29 @@ function timingSafeEqual(a: string, b: string): boolean {
   return result === 0;
 }
 
+
+// WhatsApp alert to the owner for each newly paid order (CallMeBot). Needs the
+// secrets CALLMEBOT_PHONE (e.g. 918446440469) and CALLMEBOT_APIKEY; without
+// them it does nothing. Never blocks or fails the payment flow.
+async function notifyOwner(supabase: ReturnType<typeof createClient>, orderId: string) {
+  const phone = Deno.env.get('CALLMEBOT_PHONE');
+  const key = Deno.env.get('CALLMEBOT_APIKEY');
+  if (!phone || !key) return;
+  try {
+    const { data: o } = await supabase.from('orders').select('order_number, total_amount, customer_name, city, notes').eq('id', orderId).maybeSingle();
+    const { data: items } = await supabase.from('order_items').select('name, quantity, frame_size, frame_colour, artwork_paths').eq('order_id', orderId);
+    if (!o) return;
+    const lines = (items || []).map((i: { name: string; quantity: number; frame_size: string | null; frame_colour: string | null; artwork_paths: string[] | null }) => {
+      const photos = i.artwork_paths?.length ? ` — ${i.artwork_paths.length} photo${i.artwork_paths.length > 1 ? 's' : ''} to print` : '';
+      return `• ${i.name} · ${[i.frame_size, i.frame_colour].filter(Boolean).join(' ')} ×${i.quantity}${photos}`;
+    });
+    const text = [`New paid order ${o.order_number || ''}`, `Rs ${Math.round(Number(o.total_amount))} · ${o.customer_name} · ${o.city}`, ...lines, o.notes || '', 'Open: https://www.jhayra.com/admin/orders'].filter(Boolean).join('\n');
+    await fetch(`https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(text)}&apikey=${encodeURIComponent(key)}`, { signal: AbortSignal.timeout(6000) });
+  } catch (e) {
+    console.error('Owner alert failed:', e);
+  }
+}
+
 serve(async (req) => {
   const origin = req.headers.get('Origin');
   const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), {
@@ -78,14 +101,17 @@ serve(async (req) => {
       return json({ success: true, order_id, already_processed: true });
     }
 
-    await supabase.from('orders').update({
+    // Only the first confirmation (here or the webhook) flips the order to
+    // paid, so the owner alert is sent exactly once.
+    const { data: changed } = await supabase.from('orders').update({
       razorpay_payment_id,
       razorpay_signature,
       payment_status: 'paid',
       payment_amount: order.total_amount,
       paid_at: new Date().toISOString(),
       order_status: 'confirmed',
-    }).eq('id', order_id);
+    }).eq('id', order_id).neq('payment_status', 'paid').select('id');
+    if (changed?.length) await notifyOwner(supabase, order_id);
 
     return json({ success: true, order_id });
   } catch (err) {

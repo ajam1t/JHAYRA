@@ -616,7 +616,7 @@ function SearchPalette() {
 function Footer() {
   const cols = [
     ['Shop', [['/shop', 'All wall art'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/collections', 'Collections'], ['/customize', 'Create your own'], ['/gift-finder', 'Gift finder'], ['/corporate', 'Corporate gifting']]],
-    ['Help', [['/support', 'Help & FAQs'], ['/orders', 'Track my order'], ['/shipping-policy', 'Shipping'], ['/refund', 'Returns & refunds'], ['/contact', 'Contact us']]],
+    ['Help', [['/support', 'Help & FAQs'], ['/track', 'Track my order'], ['/shipping-policy', 'Shipping'], ['/refund', 'Returns & refunds'], ['/contact', 'Contact us']]],
     ['Jhayra', [['/signature-experience', 'Signature'], ['/about', 'About us'], ['/worlds', 'Worlds'], ['/journal', 'Journal'], ['/visualise', 'Visualise']]],
   ];
   return (

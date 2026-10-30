@@ -11,6 +11,7 @@ import { useCart } from '../state/cart';
 import { useToast, saveLocalOrder } from '../state/store';
 import { useFestival } from '../state/festival';
 import { useActiveCampaign } from '../lib/campaigns';
+import { trackStep } from '../lib/analytics';
 import { founderEligible, useSignature } from '../lib/signature';
 import { money, waLink, deliveryWindow, SITE, mobile10, GIFT_FEE } from '../lib/site';
 import { BRAND } from '../lib/brand';
@@ -88,7 +89,7 @@ function Unboxing({ order }) {
             <a className="btn btn-wa" href={share} target="_blank" rel="noopener noreferrer">
               <WhatsAppGlyph size={18} /> Share the excitement
             </a>
-            <Link to="/orders" className="btn btn-ghost">
+            <Link to={`/track?order=${encodeURIComponent(order.orderNumber || '')}`} className="btn btn-ghost">
               Track my order
             </Link>
             <Link to="/shop" className="link">
@@ -156,6 +157,7 @@ export default function Checkout() {
 
   useEffect(() => {
     if (cart.items.length === 0 && !order) navigate('/cart', { replace: true });
+    else if (!order) trackStep('checkout_start');
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Festival offer applies itself.

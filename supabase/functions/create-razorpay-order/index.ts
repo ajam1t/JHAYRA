@@ -12,7 +12,7 @@ function corsHeaders(origin: string | null) {
   };
 }
 
-const VALID_COUPONS: Record<string, number> = { JHAYRA10: 10, JHAYRA15: 15 };
+
 
 // Gift card & hidden-price packing, charged once per order when chosen.
 const GIFT_FEE = 100;
@@ -190,8 +190,12 @@ serve(async (req) => {
     // Server-side coupon validation
     let discountAmount = 0;
     const coupon = customer.coupon?.trim().toUpperCase();
-    if (coupon && VALID_COUPONS[coupon]) {
-      discountAmount = Math.round(subtotal * VALID_COUPONS[coupon] / 100);
+    if (coupon && /^[A-Z0-9]{3,20}$/.test(coupon)) {
+      // Codes come from the coupons table (Admin → Coupons): active and in date.
+      const { data: c } = await supabase.from('coupons').select('percent, active, starts_at, ends_at').eq('code', coupon).maybeSingle();
+      const now = Date.now();
+      const ok = c && c.active && (!c.starts_at || new Date(c.starts_at).getTime() <= now) && (!c.ends_at || new Date(c.ends_at).getTime() >= now);
+      if (ok) discountAmount = Math.round(subtotal * Number(c.percent) / 100);
     }
 
     const giftFee = gift === true || (Array.isArray(items) && items.some((i: { customization?: { gift?: unknown } }) => i?.customization?.gift)) ? GIFT_FEE : 0;

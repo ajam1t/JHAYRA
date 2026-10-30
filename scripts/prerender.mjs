@@ -223,6 +223,7 @@ const PRIVATE = [
   ['/checkout', 'Secure Checkout | JHAYRA'],
   ['/orders', 'My Orders | JHAYRA'],
   ['/wishlist', 'My Wishlist | JHAYRA'],
+  ['/track', 'Track Your Order | JHAYRA'],
 ];
 
 const urls = []; // [path, priority, lastmod?, images?]

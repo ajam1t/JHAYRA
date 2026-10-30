@@ -1,7 +1,17 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// Coupon codes live here only — never shipped to the browser
-const VALID_COUPONS: Record<string, number> = { JHAYRA10: 10, JHAYRA15: 15 };
+// Coupon codes live in the coupons table (Admin → Coupons) — never shipped to
+// the browser. A code is valid while active and inside its optional dates.
+async function couponPercent(code: string): Promise<number | null> {
+  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  const { data } = await supabase.from('coupons').select('percent, active, starts_at, ends_at').eq('code', code).maybeSingle();
+  const now = Date.now();
+  if (!data || !data.active) return null;
+  if (data.starts_at && new Date(data.starts_at).getTime() > now) return null;
+  if (data.ends_at && new Date(data.ends_at).getTime() < now) return null;
+  return Number(data.percent) || null;
+}
 
 const ALLOWED_ORIGINS = [
   'https://jhayra.com',
@@ -35,8 +45,8 @@ serve(async (req) => {
     const code = typeof body?.code === 'string' ? body.code.trim().toUpperCase() : '';
     if (!code) return json({ valid: false }, 400);
 
-    const discount = VALID_COUPONS[code];
-    if (discount !== undefined) {
+    const discount = /^[A-Z0-9]{3,20}$/.test(code) ? await couponPercent(code) : null;
+    if (discount) {
       return json({ valid: true, discount });
     }
     return json({ valid: false });

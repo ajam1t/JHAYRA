@@ -1814,3 +1814,32 @@
 .db-cities span { font-size: 12.5px; padding: 4px 10px; border-radius: 99px; background: #fff; border: 1px solid var(--line); }
 .db-cities b { margin-left: 4px; }
 .db-note { margin: 10px 0 0; font-size: 12px; }
+.ad-ship { display: grid; gap: 8px; } .ad-ship .ad-toolbar { margin-top: 2px; }
+
+/* Coupons */
+.cp-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cp-head .ad-h1 { margin-bottom: 6px; }
+.cp-form { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; margin: 14px 0; }
+.cp-form h2, .cp-form .cp-wide, .cp-form .cp-actions, .cp-form .cp-check { grid-column: 1 / -1; }
+.cp-form label { display: grid; gap: 6px; font-size: 13px; font-weight: 600; }
+.cp-check { display: flex !important; align-items: center; gap: 8px; }
+.cp-list { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); margin-top: 14px; }
+.cp-item { display: grid; gap: 6px; margin: 0; }
+.cp-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.cp-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 18px; letter-spacing: 0.06em; padding: 4px 10px; border: 1.5px dashed #c9a55c; border-radius: 8px; background: #fbf6ea; }
+.cp-pct { font-family: var(--fd); font-size: 30px; line-height: 1; }
+.cp-st { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: #eee; color: #555; }
+.cp-st.live { background: #e3f4e9; color: #22663f; }
+.cp-st.sched { background: #fdf1d8; color: #8a5a00; }
+.cp-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.cp-del { color: #a83a3a; }
+@media (max-width: 560px) { .cp-form { grid-template-columns: 1fr; } }
+
+/* Sales funnel */
+.db-funnel ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.db-funnel li { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 10px; padding: 10px 12px; border-radius: 10px; overflow: hidden; }
+.db-funnel-bar { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #ecdcb9, #f7efdf); border-radius: 10px; animation: db-grow-x 0.6s var(--ease) both; }
+.db-funnel-l, .db-funnel b, .db-funnel small { position: relative; }
+.db-funnel b { font-size: 16px; }
+.db-funnel small { grid-column: 1 / -1; font-size: 11.5px; color: #6b6158; }
+@media (prefers-reduced-motion: reduce) { .db-funnel-bar { animation: none; } }

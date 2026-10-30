@@ -71,6 +71,19 @@ export function trackView(path) {
   startVitals();
 }
 
+// Sales-funnel steps (product_view, add_to_cart, checkout_start), anonymous
+// like page views; each counted once per session and page.
+const stepped = new Set();
+export function trackStep(name) {
+  if (off() || location.pathname.startsWith('/admin')) return;
+  const key = `${name}|${location.pathname}`;
+  if (stepped.has(key)) return;
+  stepped.add(key);
+  const [visitor] = store('local', 'jh_vid', rid);
+  const [session] = store('session', 'jh_sid', rid);
+  withGeo({ kind: 'event', name, path: location.pathname.slice(0, 300), visitor, session, device: device() }).then(send);
+}
+
 // Approximate state/city once per session from /api/geo (no IP stored).
 // Never holds a view back for long: after 1.5 s it's sent without location.
 let geo;

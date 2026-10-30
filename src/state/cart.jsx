@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { cartTotals } from './cartTotals';
+import { trackStep } from '../lib/analytics';
 
 const CartCtx = createContext(null);
 const KEY = 'jhayra_cart_v2';
@@ -36,6 +37,7 @@ export function CartProvider({ children }) {
       return [...list, { ...item, key, qty: item.qty || 1 }];
     });
     setLastAdded(key);
+    trackStep('add_to_cart');
     if (open) setDrawerOpen(true);
   }, []);
 
