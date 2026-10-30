@@ -7,8 +7,9 @@ import { supabase } from './supabase';
 // Admin → Signature. Only products the admin adds AND enables appear; the
 // full catalogue is never included automatically.
 //
-// Pricing: Signature price = regular size price × 3 (when the rule is on),
-// always computed from the live product price — never stored per product.
+// Pricing: by default Signature price = regular size price × 3 (multiplier
+// editable in the admin). The admin may also set a custom price per size
+// for any Signature product, which then wins.
 // ════════════════════════════════════════════════════════════════════════
 
 export const SIGNATURE_PATH = 'site-config/signature.json';
@@ -17,7 +18,7 @@ export const PREVIEW_KEY = 'jh_signature_preview';
 
 export const DEFAULT_SIGNATURE = {
   enabled: true,
-  pricing: { enabled: true },
+  pricing: { enabled: true, multiplier: 3 },
   hero: {
     kicker: 'By invitation',
     title: 'The Jhayra Signature Experience',
@@ -49,7 +50,7 @@ export const DEFAULT_SIGNATURE = {
   // concierge on WhatsApp, at the same prices.
   checkout: { online: false },
   faq: [
-    ['How is Signature pricing calculated?', 'Each Signature piece is priced at three times the regular price of the same artwork and size. It includes premium packaging and personal service.'],
+    ['How is Signature pricing set?', 'Signature pieces are priced separately from our regular collection, and every Signature price includes premium packaging and personal service.'],
     ['Can I choose the size and frame finish?', 'Yes — every Signature piece is offered in the same sizes and frame finishes as the artwork in our regular collection.'],
     ['What is founder delivery?', 'An optional service in Mumbai, Thane and Navi Mumbai: our founder delivers your order personally at a confirmed slot. It is added to your order separately.'],
     ['How do I pay?', 'You can review your Signature bag at checkout. We confirm your order, delivery and slot with you personally on WhatsApp.'],
@@ -129,7 +130,12 @@ export function useSignature() {
 }
 
 // ── Pricing ───────────────────────────────────────────────────────────────
-export const signaturePrice = (regular, s = cfg) => Math.round(Number(regular) || 0) * (s.pricing?.enabled === false ? 1 : SIGNATURE_MULTIPLIER);
+// Admin-set price for this product and size wins; otherwise regular × multiplier.
+export const multiplierOf = (s = cfg) => (s.pricing?.enabled === false ? 1 : Number(s.pricing?.multiplier) > 0 ? Number(s.pricing.multiplier) : SIGNATURE_MULTIPLIER);
+export const signaturePrice = (regular, s = cfg, item, sizeSlug) => {
+  const custom = Number(item?.prices?.[sizeSlug]);
+  return custom > 0 ? Math.round(custom) : Math.round((Number(regular) || 0) * multiplierOf(s));
+};
 
 // Enabled items in display order, joined to live products. Never the whole
 // catalogue: an empty list stays empty.

@@ -50,7 +50,7 @@ function Detail({ item, s, onClose }) {
   const sz = cfg?.sizes.find((z) => z.slug === size);
   const col = cfg?.colours.find((c) => c.slug === colour);
   const mat = cfg?.materials[0];
-  const price = sz ? signaturePrice(sz.price, s) : null;
+  const price = sz ? signaturePrice(sz.price, s, item, sz.slug) : null;
   const add = (go) => {
     if (!sz || !col) return;
     cart.add(
@@ -65,7 +65,7 @@ function Detail({ item, s, onClose }) {
         option: { id: `sig-${sz.slug}-${col.slug}`, size: sz.name, dimensions: sz.dimensions, colour: col.name, material: mat?.name },
         colourHex: col.hex,
         orientation: 'Vertical',
-        customization: { source: 'signature', productId: p.id, productName: p.name, signature: { multiplier: s.pricing?.enabled === false ? 1 : 3, regularPrice: sz.price, packaging: 'premium included' } },
+        customization: { source: 'signature', productId: p.id, productName: p.name, signature: { price, regularPrice: sz.price, custom: Number(item.prices?.[sz.slug]) > 0, packaging: 'premium included' } },
       },
       { open: false },
     );
@@ -97,7 +97,7 @@ function Detail({ item, s, onClose }) {
                 {cfg.sizes.map((z) => (
                   <button key={z.slug} type="button" className={`sg-opt ${size === z.slug ? 'on' : ''}`} aria-pressed={size === z.slug} onClick={() => setSize(z.slug)}>
                     <b>{z.name}</b>
-                    <small>{money(signaturePrice(z.price, s))}</small>
+                    <small>{money(signaturePrice(z.price, s, item, z.slug))}</small>
                   </button>
                 ))}
               </div>
@@ -111,7 +111,7 @@ function Detail({ item, s, onClose }) {
                 <b>{money(price)}</b>
                 <small>
                   {sz?.dimensions} · premium packaging included
-                  {s.pricing?.enabled !== false && ` · Signature price (3 × ${money(sz?.price)})`}
+                  {` · Signature price`}
                 </small>
               </div>
               <div className="sg-actions">
@@ -154,7 +154,7 @@ export default function SignaturePage() {
   const items = useMemo(() => signatureItems(s, products), [s, products]);
   const hero = items.find((i) => i.product.id === s.hero.productId) || items.find((i) => i.featured) || items[0];
   const [open, setOpen] = useState(null);
-  const from = (p) => signaturePrice(p.price, s);
+  const from = (it) => signaturePrice(it.product.price, s, it, 'a4');
 
   if (s.enabled === false && !s.preview)
     return (
@@ -203,7 +203,7 @@ export default function SignaturePage() {
                 <Frame src={hero.product.thumbnail} alt={hero.product.name} ratio={{ w: 12, h: 16 }} colour="#1C1C1C" mat glare sizes="(max-width: 760px) 70vw, 380px" priority />
               </button>
               <span className="sg-hero-cap">
-                {hero.product.name} · from {money(from(hero.product))}
+                {hero.product.name} · from {money(from(hero))}
               </span>
             </Motion>
           )}
@@ -245,7 +245,7 @@ export default function SignaturePage() {
                   <div className="sg-card-body">
                     <h3>{it.product.name}</h3>
                     {it.note && <p>{it.note}</p>}
-                    <span className="sg-card-price">from {money(from(it.product))}</span>
+                    <span className="sg-card-price">from {money(from(it))}</span>
                     <button type="button" className="sg-card-cta" onClick={() => setOpen(it)}>
                       View & reserve <Icon name="arrow" size={14} />
                     </button>

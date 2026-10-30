@@ -120,10 +120,11 @@ export default function SignatureManager() {
       <div className="ad-card">
         <h3>Pricing rule</h3>
         <label className="toggle">
-          <input type="checkbox" checked={s.pricing.enabled !== false} onChange={(e) => upIn('pricing', { enabled: e.target.checked })} /> <span className="sw" /> Signature price = regular price × {SIGNATURE_MULTIPLIER}
+          <input type="checkbox" checked={s.pricing.enabled !== false} onChange={(e) => upIn('pricing', { enabled: e.target.checked })} /> <span className="sw" /> Default Signature price = regular price ×
         </label>
+        <input className="ad-input" type="number" min={1} step={0.5} style={{ width: 90, marginLeft: 8 }} value={s.pricing.multiplier ?? SIGNATURE_MULTIPLIER} onChange={(e) => upIn('pricing', { multiplier: Number(e.target.value) || SIGNATURE_MULTIPLIER })} aria-label="Multiplier" />
         <p className="ad-muted">
-          Calculated live from each product’s regular size price — e.g. {SIZES.map((z) => `${money(z.price)} → ${money(signaturePrice(z.price, s))}`).join(' · ')}. Regular shop prices never change. Premium packaging is included in the Signature price.
+          Calculated from each product’s regular size price unless you set your own price for a piece below — e.g. {SIZES.map((z) => `${money(z.price)} → ${money(signaturePrice(z.price, s))}`).join(' · ')}. Regular shop prices never change. Premium packaging is included in the Signature price.
         </p>
         <label className="toggle">
           <input type="checkbox" checked={!!s.checkout.online} onChange={(e) => upIn('checkout', { online: e.target.checked })} /> <span className="sw" /> Take online payment for Signature orders
@@ -155,7 +156,7 @@ export default function SignatureManager() {
                     <span className="sgm-info">
                       <b>{p?.name || `${it.productId} (not in catalogue)`}</b>
                       <small>
-                        {it.productId} · regular {money(p?.price)} → Signature {money(signaturePrice(p?.price, s))}
+                        {it.productId} · regular {money(p?.price)} → Signature {money(signaturePrice(p?.price, s, it, 'a4'))}
                       </small>
                     </span>
                   </div>
@@ -174,6 +175,22 @@ export default function SignatureManager() {
                     </button>
                   </div>
                   <input className="ad-input" placeholder="Signature note (editorial line shown on the card)" value={it.note || ''} onChange={(e) => patchItem(it.productId, { note: e.target.value })} />
+                  <div className="sgm-prices">
+                    <span>Your price (optional — blank uses the default)</span>
+                    {SIZES.map((z) => (
+                      <label key={z.slug}>
+                        {z.name}
+                        <input
+                          className="ad-input"
+                          type="number"
+                          min={0}
+                          placeholder={String(signaturePrice(z.price, s))}
+                          value={it.prices?.[z.slug] ?? ''}
+                          onChange={(e) => patchItem(it.productId, { prices: { ...(it.prices || {}), [z.slug]: e.target.value === '' ? undefined : Number(e.target.value) } })}
+                        />
+                      </label>
+                    ))}
+                  </div>
                 </li>
               );
             })}

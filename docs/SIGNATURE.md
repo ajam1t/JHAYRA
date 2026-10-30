@@ -21,7 +21,7 @@ Signature lines are ordinary items with two additions:
 ```json
 { "legacyId": "p018", "qty": 1, "price": 2997, "size": "A3+", "colour": "Gold",
   "signature": true,
-  "customization": { "source": "signature", "signature": { "multiplier": 3, "regularPrice": 999 } } }
+  "customization": { "source": "signature", "signature": { "price": 2997, "regularPrice": 999, "custom": false } } }
 ```
 
 and, when chosen, a top-level `"founderDelivery": { "fee": 5000, "slot": "Saturday · 11 am – 2 pm" }`.
@@ -35,14 +35,16 @@ Never trust `price` from the browser. Compute it:
 const { data: file } = await admin.storage.from('product-images').download('site-config/signature.json');
 const sig = file ? JSON.parse(await file.text()) : null;
 const enabled = sig?.enabled !== false;
-const multiplier = sig?.pricing?.enabled === false ? 1 : 3;
+const multiplier = sig?.pricing?.enabled === false ? 1 : Number(sig?.pricing?.multiplier) || 3;
+const itemCfg = Object.fromEntries((sig?.items || []).map((i) => [i.productId, i]));
 const allowed = new Set((sig?.items || []).filter((i) => i.enabled !== false).map((i) => i.productId));
 
 // 2. For each item, compute the regular unit price exactly as today
 //    (frame_sizes.base_price or product_options.price_override), then:
 if (item.signature) {
   if (!enabled || !allowed.has(item.legacyId)) throw new Error('This Signature piece is not available.');
-  unitPrice = regularUnitPrice * multiplier;          // once per line — never re-multiplied
+  const custom = Number(itemCfg[item.legacyId]?.prices?.[sizeSlug]);   // admin-set price wins
+  unitPrice = custom > 0 ? custom : regularUnitPrice * multiplier;   // once per line — never re-multiplied
 }
 
 // 3. Founder delivery: only if enabled, the cart has a Signature item and the
