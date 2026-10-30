@@ -5,6 +5,7 @@ import Img from '../components/Img';
 import Icon from '../components/Icon';
 import PanZoom, { IDENTITY, ZoomControls } from '../components/PanZoom';
 import WallStudio from '../components/WallStudio';
+import PreviewDock from '../components/PreviewDock';
 import ProductCard, { Stars, categoryLabel } from '../components/ProductCard';
 import { Seo } from '../lib/seo';
 import { productLd, breadcrumbLd } from '../lib/schema';
@@ -99,6 +100,7 @@ export default function Product() {
   const [building, setBuilding] = useState(false);
   const fileRef = useRef(null);
   const atcRef = useRef(null);
+  const mediaRef = useRef(null);
   const [showSticky, setShowSticky] = useState(false);
 
   useEffect(() => {
@@ -244,8 +246,18 @@ export default function Product() {
           )}
         </nav>
       </div>
+      {/* Phones: once the preview scrolls away, a small live copy follows the size and frame choices. */}
+      <PreviewDock target={mediaRef} label="Frame preview">
+        <Frame ratio={ratio} orientation={photo ? orientation : 'Vertical'} colour={colour?.hex || '#1C1C1C'} glare={false} sizes="140px" {...(photo ? {} : { src: artSrc, alt: '' })}>
+          {photo ? <PanZoom src={photo.url} value={tf} alt="" editable={false} /> : null}
+        </Frame>
+        <span className="pdock-cap">
+          {size?.name} · {colour?.name}
+          <b>{money(price)}</b>
+        </span>
+      </PreviewDock>
       <section className="wrap pdp">
-        <div className="pdp-media">
+        <div className="pdp-media" ref={mediaRef}>
           <div className="pdp-views" role="tablist" aria-label="Preview mode">
             <button role="tab" aria-selected={view === 'frame'} onClick={() => setView('frame')}>
               <Icon name="image" size={17} /> Frame

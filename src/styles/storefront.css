@@ -7045,3 +7045,7 @@
   .m5-sub li { transform: none; }
 }
 .m5-sub ul { padding-left: 10px; padding-right: 10px; }
+.pdock-cap { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; margin-top: 7px; font-size: 10.5px; line-height: 1.2; color: #4a4c45; text-align: left; }
+.pdock-cap b { font-size: 12px; color: var(--ink); white-space: nowrap; }
+.pdock.big .pdock-cap { font-size: 12.5px; }
+.pdock.big .pdock-cap b { font-size: 14px; }
