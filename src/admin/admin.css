@@ -1644,3 +1644,63 @@
 .db-page-pick .ad-input { flex: 1 1 160px; width: auto; }
 .db-page-sum { margin: 0 0 10px; font-size: 13px; color: var(--ad-muted, #6b6b6b); }
 .db-page-sum b { color: inherit; font-weight: 700; }
+
+/* ═══ Sign-in: futuristic welcome gate ═════════════════════════════════ */
+.gt-stage { position: relative; overflow: hidden; min-height: 100dvh; background: radial-gradient(70% 50% at 50% 0%, #2a2214 0%, #0b0b09 60%), #0b0b09; color: #ece6d8; font-family: var(--fb, system-ui); }
+.gt-grid { position: absolute; inset: -50% -20% -20%; background-image: linear-gradient(rgba(201, 163, 91, 0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(201, 163, 91, 0.09) 1px, transparent 1px); background-size: 42px 42px; transform: perspective(600px) rotateX(58deg); transform-origin: 50% 100%; mask-image: linear-gradient(to top, #000 10%, transparent 75%); -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 75%); animation: gtGrid 8s linear infinite; }
+@keyframes gtGrid { to { background-position: 0 42px, 0 0; } }
+.gt-orb { position: absolute; width: 520px; height: 520px; left: 50%; top: 8%; margin-left: -260px; border-radius: 50%; background: radial-gradient(circle, rgba(201, 163, 91, 0.22), transparent 62%); filter: blur(10px); animation: gtOrb 6s ease-in-out infinite; pointer-events: none; }
+@keyframes gtOrb { 50% { transform: scale(1.12); opacity: 0.7; } }
+
+.gt { position: relative; z-index: 1; display: grid; justify-items: center; text-align: center; width: min(340px, 100%); animation: gtIn 0.8s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+@keyframes gtIn { from { opacity: 0; transform: translateY(24px) scale(0.97); filter: blur(6px); } }
+.gt-portrait { position: relative; width: 150px; height: 150px; margin-bottom: 18px; }
+.gt-portrait img { position: absolute; inset: 12px; width: calc(100% - 24px); height: calc(100% - 24px); border-radius: 50%; object-fit: cover; object-position: 50% 18%; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.6), 0 20px 40px -12px rgba(0, 0, 0, 0.8); }
+.gt-ring { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0 20%, #e7cf9c 35%, transparent 50% 70%, #b08a45 85%, transparent); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px)); animation: gtSpin 3.2s linear infinite; }
+.gt-ring2 { inset: -10px; opacity: 0.45; animation-duration: 7s; animation-direction: reverse; }
+@keyframes gtSpin { to { transform: rotate(360deg); } }
+.gt-scan { position: absolute; inset: 12px; border-radius: 50%; overflow: hidden; pointer-events: none; }
+.gt-scan::after { content: ''; position: absolute; left: 0; right: 0; height: 30%; background: linear-gradient(180deg, transparent, rgba(231, 207, 156, 0.35), transparent); animation: gtScan 2.6s ease-in-out infinite; }
+@keyframes gtScan { 0% { top: -30%; } 100% { top: 100%; } }
+.gt-hello { margin: 0; font-size: 11px; letter-spacing: 0.34em; text-transform: uppercase; color: #a39a86; }
+.gt-name { margin: 6px 0 2px; font-family: var(--fd, serif); font-weight: 400; font-size: 46px; line-height: 1; color: #fff; background: linear-gradient(100deg, #fff 30%, #e7cf9c 50%, #fff 70%); background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gtShine 4s ease-in-out infinite; }
+@keyframes gtShine { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0 0; } }
+.gt-role { margin: 0 0 22px; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #8f897b; }
+.gt-role span { color: #e7cf9c; font-weight: 700; }
+.gt-prompt { margin: 0 0 14px; font-size: 14px; color: #cfc8b8; min-height: 20px; }
+.gt.bad .gt-prompt { color: #ff9b8f; }
+.gt.ok .gt-prompt { color: #e7cf9c; }
+.gt-dots { display: flex; gap: 16px; margin-bottom: 26px; }
+.gt-dots span { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid rgba(231, 207, 156, 0.55); transition: background 0.2s, transform 0.25s cubic-bezier(0.34, 1.6, 0.64, 1), box-shadow 0.3s; }
+.gt-dots span.on { background: #e7cf9c; transform: scale(1.15); box-shadow: 0 0 14px rgba(231, 207, 156, 0.7); }
+.gt.bad .gt-dots { animation: gtShake 0.45s; }
+.gt.bad .gt-dots span { border-color: #ff8a7a; background: rgba(255, 138, 122, 0.6); box-shadow: none; }
+@keyframes gtShake { 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+.gt.ok .gt-ring { animation-duration: 0.6s; }
+.gt.ok .gt-portrait img { box-shadow: 0 0 0 2px #e7cf9c, 0 0 40px rgba(231, 207, 156, 0.6); transition: box-shadow 0.4s; }
+.gt.ok { animation: gtOut 0.5s 0.45s ease-in forwards; }
+@keyframes gtOut { to { opacity: 0; transform: scale(1.04); filter: blur(4px); } }
+.gt-pad { display: grid; grid-template-columns: repeat(3, 72px); gap: 14px 22px; justify-content: center; }
+.gt-pad button { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; font-weight: 300; color: #fff; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: background 0.15s, transform 0.15s, border-color 0.2s, box-shadow 0.2s; cursor: pointer; }
+.gt-pad button:hover { border-color: rgba(231, 207, 156, 0.5); box-shadow: 0 0 18px rgba(231, 207, 156, 0.18); }
+.gt-pad button:active { transform: scale(0.92); background: rgba(231, 207, 156, 0.22); }
+.gt-pad button:focus-visible { outline: 2px solid #e7cf9c; outline-offset: 3px; }
+.gt-pad .gt-del { background: transparent; border-color: transparent; color: #cfc8b8; }
+
+.gt-card { position: relative; z-index: 1; width: min(380px, 100%); display: grid; gap: 16px; padding: 28px 26px 22px; border-radius: 22px; background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03)); border: 1px solid rgba(231, 207, 156, 0.22); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08); animation: gtIn 0.7s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+.gt-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+.gt-card-head img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; object-position: 50% 18%; box-shadow: 0 0 0 2px #b08a45; }
+.gt-card-head b { display: block; font-family: var(--fd, serif); font-weight: 400; font-size: 24px; color: #fff; }
+.gt-card-head small { color: #a39a86; font-size: 13px; }
+.gt-field { display: grid; gap: 6px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #a39a86; }
+.gt-field input { min-height: 48px; padding: 0 14px; border-radius: 12px; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.14); color: #fff; font-size: 16px; letter-spacing: 0; text-transform: none; transition: border-color 0.2s, box-shadow 0.2s; }
+.gt-field input:focus { outline: none; border-color: #e7cf9c; box-shadow: 0 0 0 3px rgba(231, 207, 156, 0.18); }
+.gt-err { font-size: 13px; color: #ffb4a8; background: rgba(255, 120, 100, 0.1); border: 1px solid rgba(255, 120, 100, 0.25); padding: 9px 12px; border-radius: 10px; }
+.gt-go { min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; border: 0; background: linear-gradient(135deg, #e7cf9c, #b08a45); color: #14110d; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 12px 30px -12px rgba(231, 207, 156, 0.6); transition: transform 0.2s, box-shadow 0.2s; }
+.gt-go:hover { transform: translateY(-1px); box-shadow: 0 16px 34px -12px rgba(231, 207, 156, 0.75); }
+.gt-go:disabled { opacity: 0.7; }
+.gt-back { display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: #a39a86; font-size: 13px; text-decoration: none; }
+.gt-back:hover { color: #fff; }
+@media (prefers-reduced-motion: reduce) {
+  .gt-grid, .gt-orb, .gt-ring, .gt-scan::after, .gt-name, .gt, .gt-card { animation: none; }
+}

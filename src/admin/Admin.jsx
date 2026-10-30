@@ -13,6 +13,7 @@ import Campaigns from './Campaigns';
 import Dashboard from './Dashboard';
 import SignatureManager from './Signature';
 import { supabase } from '../lib/supabase';
+import Gate, { GATE_KEY } from './Gate';
 import { FESTIVALS, FESTIVALS_PATH, saveFestivals } from '../lib/festivals';
 import { CAMPAIGNS_PATH, DEFAULT_CAMPAIGNS, saveCampaigns } from '../lib/campaigns';
 import { TEMPLATES_PATH, saveTemplates } from '../lib/templates';
@@ -45,46 +46,64 @@ function Login() {
   const [password, setPassword] = useState('');
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(() => {
+    try {
+      return sessionStorage.getItem(GATE_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
   const navigate = useNavigate();
   useEffect(() => {
     if (user && isAdmin) navigate('/admin', { replace: true });
   }, [user, isAdmin, navigate]);
   return (
-    <div className="ad-login">
-      <form
-        className="ad-card"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setErr('');
-          setBusy(true);
-          try {
-            await signIn(email, password);
-          } catch (x) {
-            setErr(x.message || 'Sign in failed');
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <img src="/logo-mark.webp" alt="" width="56" height="50" style={{ margin: '0 auto 8px' }} />
-        <h1>JHAYRA Admin</h1>
-        <label>
-          Email
-          <input className="ad-input" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
-        </label>
-        <label>
-          Password
-          <input className="ad-input" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-        </label>
-        {err && <div className="ad-err">{err}</div>}
-        {user && !isAdmin && <div className="ad-err">This account doesn't have admin access.</div>}
-        <button className="ad-btn ad-btn-primary" disabled={busy}>
-          {busy ? 'Signing in…' : 'Sign in'}
-        </button>
-        <Link to="/" className="ad-muted" style={{ textAlign: 'center' }}>
-          ← Back to store
-        </Link>
-      </form>
+    <div className="ad-login gt-stage">
+      <div className="gt-grid" aria-hidden="true" />
+      <div className="gt-orb" aria-hidden="true" />
+      {!open ? (
+        <Gate onUnlock={() => setOpen(true)} />
+      ) : (
+        <form
+          className="gt-card"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setErr('');
+            setBusy(true);
+            try {
+              await signIn(email, password);
+            } catch (x) {
+              setErr(x.message || 'Sign in failed');
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <div className="gt-card-head">
+            <img src="/founder/sandeep-jha.webp" alt="" width="48" height="48" />
+            <div>
+              <b>Hello, Sandeep</b>
+              <small>Sign in to the JHAYRA studio</small>
+            </div>
+          </div>
+          <label className="gt-field">
+            <span>Email</span>
+            <input type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
+          </label>
+          <label className="gt-field">
+            <span>Password</span>
+            <input type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+          </label>
+          {err && <div className="gt-err">{err}</div>}
+          {user && !isAdmin && <div className="gt-err">This account doesn't have access.</div>}
+          <button className="gt-go" disabled={busy}>
+            {busy ? 'Signing in…' : 'Sign in'} <Icon name="arrow" size={17} />
+          </button>
+          <Link to="/" className="gt-back">
+            <Icon name="arrowL" size={14} /> Back to store
+          </Link>
+        </form>
+      )}
     </div>
   );
 }
@@ -146,7 +165,7 @@ export default function Admin() {
   if (loading) return <div className="ad-login ad-muted">Loading…</div>;
   return (
     <>
-      <Seo title="Admin" path="/admin" noindex />
+      <Seo title="Studio" path="/admin" noindex />
       <Routes>
         <Route path="login" element={<Login />} />
         <Route
@@ -156,11 +175,11 @@ export default function Admin() {
               <Navigate to="/admin/login" replace />
             ) : (
               <div className={`ad ${open ? 'nav-open' : ''}`}>
-                <aside className="ad-side" aria-label="Admin menu">
+                <aside className="ad-side" aria-label="Studio menu">
                   <Link to="/admin" className="ad-brand" onClick={() => setOpen(false)}>
                     <img src="/logo-mark.webp" alt="" width="30" height="27" />
                     <span>
-                      JHAYRA <small>Admin</small>
+                      JHAYRA <small>Studio</small>
                     </span>
                   </Link>
                   <SideNav onPick={() => setOpen(false)} />
@@ -177,7 +196,7 @@ export default function Admin() {
                 {open && <button className="ad-scrim" aria-label="Close menu" onClick={() => setOpen(false)} />}
                 <header className="ad-top">
                   <Link to="/admin" className="ad-top-brand">
-                    <img src="/logo-mark.webp" alt="" width="26" height="23" /> Admin
+                    <img src="/logo-mark.webp" alt="" width="26" height="23" /> Studio
                   </Link>
                   <a href="/" target="_blank" rel="noreferrer" className="ad-top-link">
                     Store ↗
@@ -200,7 +219,7 @@ export default function Admin() {
                     <Route path="*" element={<Navigate to="/admin" replace />} />
                   </Routes>
                 </main>
-                <nav className="ad-tabs" aria-label="Admin sections">
+                <nav className="ad-tabs" aria-label="Studio sections">
                   {TABS.map(([to, label, ic, end]) => (
                     <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)}>
                       <Icon name={ic} size={20} />
