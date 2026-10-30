@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Icon, { InstagramLogo, WhatsAppGlyph } from './Icon';
 import Frame from './Frame';
@@ -186,17 +186,14 @@ function CountBadge({ count }) {
   );
 }
 
-// Full-screen menu: opens as a circle growing from the menu button, with
-// numbered editorial links, expanding sub-links and a strip of bestsellers.
-const PRIMARY = [
-  ['/', 'Home'],
-  ['/shop', 'Shop', 'Shop'],
-  ['/customize', 'Create', 'Create'],
-  ['/gift-finder', 'Gift Finder'],
-  ['/celebrations', 'Celebrations', 'Celebrations'],
-  ['/signature-experience', 'Signature', null, true],
-  ['/collections', 'Discover', 'Discover'],
-  ['/about', 'About', 'About'],
+// Ivory side drawer: the main sections with artwork thumbnails, expanding
+// into their links; Discover and About as compact links below.
+const MAIN = [
+  ['Shop', 'Wall art for every room', 'Shop'],
+  ['Create', 'Design your own frame', 'Create'],
+  ['Gift Finder', 'The right gift in five questions', null, '/gift-finder'],
+  ['Celebrations', 'Festivals, weddings & gifting', 'Celebrations'],
+  ['Signature', 'Founder-curated collection', null, '/signature-experience', true],
 ];
 const SUB = Object.fromEntries(MENU);
 
@@ -204,30 +201,26 @@ function MenuSheet({ onClose, returnFocus }) {
   const [closing, setClosing] = useState(false);
   const shut = useCallback(() => {
     setClosing(true);
-    setTimeout(onClose, matchMedia('(prefers-reduced-motion: reduce)').matches ? 150 : 480);
+    setTimeout(onClose, matchMedia('(prefers-reduced-motion: reduce)').matches ? 120 : 360);
   }, [onClose]);
   const homeClick = useHomeClick(shut);
   const { setSearchOpen } = useShop();
   const panel = useRef(null);
   const { pathname, search } = useLocation();
   const here = (to) => to === pathname + search || (to !== '/' && !to.includes('?') && pathname.startsWith(to));
-  const [open, setOpen] = useState('');
+  const [open, setOpen] = useState(() => MAIN.find(([, , sub]) => sub && SUB[sub].some(([to]) => to === pathname + search))?.[0] || '');
   const [art, setArt] = useState([]);
   useEffect(() => {
     loadProducts()
-      .then((l) => setArt((l || []).filter((p) => p.thumbnail && p.is_bestseller).slice(0, 8)))
+      .then((l) => setArt((l || []).filter((p) => p.thumbnail && p.is_bestseller)))
       .catch(() => {});
   }, []);
-  // Circle origin: the menu button.
-  const origin = useMemo(() => {
-    const r = document.querySelector('.header-menu')?.getBoundingClientRect();
-    return r ? `${Math.round(r.left + r.width / 2)}px ${Math.round(r.top + r.height / 2)}px` : '32px 32px';
-  }, []);
+  const thumbs = [art[0], art[3], art[6], art[2]];
   // Focus the panel, trap Tab inside it, close on Escape, restore focus on close.
   useEffect(() => {
     const el = panel.current;
     const opener = document.activeElement;
-    el?.querySelector('.m4-close')?.focus();
+    el?.querySelector('.m5-close')?.focus();
     const onKey = (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -258,64 +251,57 @@ function MenuSheet({ onClose, returnFocus }) {
   }, [shut, returnFocus]);
 
   return (
-    <div className={`m4 ${closing ? 'closing' : ''}`} id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" ref={panel} style={{ '--o': origin }}>
-      <div className="m4-bg" aria-hidden="true">
-        <span className="m4-aura a1" />
-        <span className="m4-aura a2" />
-        <span className="m4-aura a3" />
-        <span className="m4-grain" />
-      </div>
-      <div className="m4-top">
-        <Logo onNavigate={shut} />
-        <button type="button" className="m4-close" onClick={shut} aria-label="Close menu">
-          <span />
-          <span />
-        </button>
-      </div>
-      <div className="m4-ticker" aria-hidden="true">
-        <div>
-          {Array.from({ length: 2 }).map((_, k) => (
-            <span key={k}>
-              Crafting Memories Into Art <i>✦</i> Handcrafted to order <i>✦</i> Free delivery across India <i>✦</i> Personalised frames <i>✦</i>{' '}
-            </span>
-          ))}
+    <div className={`m5-wrap ${closing ? 'closing' : ''}`}>
+      <div className="m5-scrim" onClick={shut} />
+      <aside className="m5" id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" ref={panel}>
+        <div className="m5-head">
+          <Logo onNavigate={shut} />
+          <button type="button" className="m5-close" onClick={shut} aria-label="Close menu">
+            <Icon name="close" size={18} />
+          </button>
         </div>
-      </div>
-      <div className="m4-scroll">
-        <button type="button" className="m4-search" onClick={() => (shut(), setTimeout(() => setSearchOpen(true), 300))}>
-          <Icon name="search" size={18} /> <span>Search art, designs and gifts</span>
-        </button>
-        <nav className="m4-nav" aria-label="Main">
-          <ol>
-            {PRIMARY.map(([to, label, sub, gold], i) => {
-              const kids = sub ? SUB[sub] : null;
+        <div className="m5-body">
+          <button type="button" className="m5-search" onClick={() => (shut(), setTimeout(() => setSearchOpen(true), 250))}>
+            <Icon name="search" size={18} /> Search art, designs and gifts
+          </button>
+          <Link to="/" className={`m5-home ${pathname === '/' ? 'on' : ''}`} onClick={homeClick} style={{ '--i': 0 }}>
+            <Icon name="home" size={17} /> Home
+          </Link>
+          <ul className="m5-main">
+            {MAIN.map(([label, sub, group, to, gold], i) => {
+              const kids = group ? SUB[group] : null;
               const isOpen = open === label;
+              const img = thumbs[i];
+              const inner = (
+                <>
+                  <span className={`m5-thumb ${gold ? 'gold' : ''}`} aria-hidden="true">
+                    {gold ? <span>✦</span> : img ? <img src={optimized(img.thumbnail, 160)} alt="" loading="lazy" decoding="async" /> : null}
+                  </span>
+                  <span className="m5-txt">
+                    <b>{label}</b>
+                    <small>{sub}</small>
+                  </span>
+                  <Icon name={kids ? 'chevronD' : 'chevron'} size={18} />
+                </>
+              );
               return (
-                <li key={label} className={`m4-item ${isOpen ? 'open' : ''} ${gold ? 'gold' : ''} ${here(to) ? 'here' : ''}`} style={{ '--i': i }}>
-                  <div className="m4-row">
-                    <span className="m4-num">{String(i + 1).padStart(2, '0')}</span>
-                    <Link to={to} className="m4-link" onClick={to === '/' ? homeClick : shut}>
-                      <span className="m4-mask">
-                        <span>
-                          {label}
-                          {gold && <i aria-hidden="true"> ✦</i>}
-                        </span>
-                      </span>
+                <li key={label} className={`m5-item ${isOpen ? 'open' : ''} ${gold ? 'gold' : ''}`} style={{ '--i': i + 1 }}>
+                  {kids ? (
+                    <button type="button" className="m5-row" aria-expanded={isOpen} onClick={() => setOpen(isOpen ? '' : label)}>
+                      {inner}
+                    </button>
+                  ) : (
+                    <Link to={to} className={`m5-row ${here(to) ? 'on' : ''}`} onClick={shut}>
+                      {inner}
                     </Link>
-                    {kids && (
-                      <button type="button" className="m4-plus" aria-expanded={isOpen} aria-label={`${isOpen ? 'Hide' : 'Show'} ${label} links`} onClick={() => setOpen(isOpen ? '' : label)}>
-                        <span />
-                        <span />
-                      </button>
-                    )}
-                  </div>
+                  )}
                   {kids && (
-                    <div className="m4-sub">
+                    <div className="m5-sub">
                       <ul>
                         {kids.map(([kto, kl], j) => (
                           <li key={kto + kl} style={{ '--j': j }}>
                             <Link to={kto} onClick={shut} tabIndex={isOpen ? undefined : -1} className={here(kto) ? 'on' : ''}>
-                              {kl.replace(' ✦', '')}
+                              {kl}
                             </Link>
                           </li>
                         ))}
@@ -325,47 +311,38 @@ function MenuSheet({ onClose, returnFocus }) {
                 </li>
               );
             })}
-          </ol>
-        </nav>
-        {art.length > 2 && (
-          <section className="m4-trend" aria-label="Trending now">
-            <div className="m4-trend-head">
-              <span>Trending now</span>
-              <Link to="/shop?sort=bestsellers" onClick={shut}>
-                See all <Icon name="arrow" size={14} />
-              </Link>
-            </div>
-            <div className="m4-trend-row">
-              {art.map((p, i) => (
-                <Link key={p.id} to={`/product/${p.id}`} className="m4-card" onClick={shut} style={{ '--i': i }}>
-                  <span className="m4-card-frame">
-                    <img src={optimized(p.thumbnail, 240)} alt="" loading="lazy" decoding="async" />
-                  </span>
-                  <b>{p.name}</b>
-                  <small>from {money(p.price)}</small>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
-      <div className="m4-foot">
-        <a className="m4-wa" href={waLink('Hi JHAYRA! I need help choosing a frame.')} target="_blank" rel="noopener noreferrer">
-          <span className="m4-wa-dot" aria-hidden="true" />
-          <WhatsAppGlyph size={18} /> <span>Chat on WhatsApp</span>
-        </a>
-        <div className="m4-quick">
-          <Link to="/orders" onClick={shut} aria-label="My orders">
-            <Icon name="truck" size={18} />
-          </Link>
-          <Link to="/wishlist" onClick={shut} aria-label="Wishlist">
+          </ul>
+          <div className="m5-more">
+            {['Discover', 'About'].map((g, gi) => (
+              <nav key={g} aria-label={g} style={{ '--i': 7 + gi }}>
+                <h2>{g}</h2>
+                <ul>
+                  {SUB[g]
+                    .filter(([to]) => to !== '/signature-experience' && to !== '/gift-finder')
+                    .map(([to, l]) => (
+                      <li key={to + l}>
+                        <Link to={to} onClick={shut} className={here(to) ? 'on' : ''}>
+                          {l}
+                        </Link>
+                      </li>
+                    ))}
+                </ul>
+              </nav>
+            ))}
+          </div>
+        </div>
+        <div className="m5-foot">
+          <a className="m5-wa" href={waLink('Hi JHAYRA! I need help choosing a frame.')} target="_blank" rel="noopener noreferrer">
+            <WhatsAppGlyph size={18} /> Chat on WhatsApp
+          </a>
+          <Link to="/wishlist" onClick={shut} className="m5-ic" aria-label="Wishlist">
             <Icon name="heart" size={18} />
           </Link>
-          <a href={SITE.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <a href={SITE.instagram} target="_blank" rel="noopener noreferrer" className="m5-ic" aria-label="Instagram">
             <Icon name="instagram" size={18} />
           </a>
         </div>
-      </div>
+      </aside>
     </div>
   );
 }
