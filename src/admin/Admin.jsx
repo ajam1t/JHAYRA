@@ -149,6 +149,62 @@ const NAV = [
 const FLAT = NAV.flatMap(([, l]) => l);
 const TABS = [FLAT[0], FLAT[1], FLAT[2], ['/admin/campaigns', 'Events', 'calendar']];
 
+// Phones: "More" opens a bottom sheet with every section, the account and
+// sign-out (the side menu is for larger screens).
+function MoreSheet({ user, onClose, signOut }) {
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+  return (
+    <div className="ad-more" role="dialog" aria-modal="true" aria-label="All sections">
+      <button type="button" className="ad-more-scrim" aria-label="Close" onClick={onClose} />
+      <div className="ad-more-sheet">
+        <span className="ad-more-grab" aria-hidden="true" />
+        <div className="ad-more-me">
+          <img src="/founder/sandeep-jha.webp" alt="" width="44" height="44" />
+          <div>
+            <b>Sandeep Jha</b>
+            <small>{user.email}</small>
+          </div>
+          <button type="button" className="ad-more-x" onClick={onClose} aria-label="Close">
+            <Icon name="close" size={18} />
+          </button>
+        </div>
+        {NAV.map(([group, links]) => (
+          <div key={group} className="ad-more-group">
+            <span>{group}</span>
+            <div className="ad-more-grid">
+              {links.map(([to, label, ic, end], i) => (
+                <NavLink key={to} to={to} end={end} onClick={onClose} style={{ '--i': i }}>
+                  <i>
+                    <Icon name={ic} size={20} />
+                  </i>
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        ))}
+        <div className="ad-more-foot">
+          <a href="/" target="_blank" rel="noreferrer">
+            <Icon name="arrow" size={17} /> View store
+          </a>
+          <button type="button" onClick={signOut}>
+            <Icon name="logout" size={17} /> Sign out
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SideNav({ onPick }) {
   return (
     <nav onClick={onPick}>
@@ -204,10 +260,14 @@ export default function Admin() {
                   </div>
                 </aside>
                 {open && <button className="ad-scrim" aria-label="Close menu" onClick={() => setOpen(false)} />}
+                {open && <MoreSheet user={user} signOut={signOut} onClose={() => setOpen(false)} />}
                 <header className="ad-top">
                   <Link to="/admin" className="ad-top-brand">
                     <img src="/logo-mark.webp" alt="" width="26" height="23" /> Studio
                   </Link>
+                  <button type="button" className="ad-top-me" onClick={() => setOpen(true)} aria-label="Account and all sections">
+                    <img src="/founder/sandeep-jha.webp" alt="" width="34" height="34" />
+                  </button>
                   <a href="/" target="_blank" rel="noreferrer" className="ad-top-link">
                     Store ↗
                   </a>

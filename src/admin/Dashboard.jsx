@@ -327,6 +327,134 @@ function PageVisitors({ from, to, top }) {
   );
 }
 
+// Phones: the money and the to-dos first, in one glance.
+function Spark({ values }) {
+  const max = Math.max(1, ...values);
+  const n = values.length;
+  if (n < 2) return null;
+  const pts = values.map((v, i) => `${(i / (n - 1)) * 100},${36 - (v / max) * 32}`).join(' ');
+  return (
+    <svg className="dbm-spark" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="dbmFill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor="#e7cf9c" stopOpacity=".45" />
+          <stop offset="1" stopColor="#e7cf9c" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={`0,40 ${pts} 100,40`} fill="url(#dbmFill)" />
+      <polyline points={pts} fill="none" stroke="#e7cf9c" strokeWidth="1.6" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function MobileHero({ o, series, live, period, setPeriod }) {
+  const h = new Date(Date.now() + IST).getUTCHours();
+  const hello = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  const label = PERIODS.find((p) => p[0] === period)?.[1];
+  return (
+    <section className="dbm-hero">
+      <div className="dbm-hello">
+        <img src="/founder/sandeep-jha.webp" alt="" width="44" height="44" />
+        <div>
+          <small>{hello}</small>
+          <b>Sandeep</b>
+        </div>
+        {live !== null && (
+          <span className="db-live dbm-live">
+            <i /> {live} live
+          </span>
+        )}
+      </div>
+      <div className="dbm-seg" role="group" aria-label="Period">
+        {PERIODS.map(([k, l]) => (
+          <button key={k} type="button" className={period === k ? 'on' : ''} onClick={() => setPeriod(k)}>
+            {l}
+          </button>
+        ))}
+      </div>
+      <p className="dbm-label">Revenue · {label === 'Today' ? 'today' : `last ${label}`}</p>
+      <div className="dbm-rev">
+        <b>{o ? money(o.rev) : '…'}</b>
+        <Delta now={o?.rev} before={o?.revPrev} />
+      </div>
+      <Spark values={series.map((d) => d.revenue)} />
+      <div className="dbm-mini">
+        <span>
+          <b>{o ? num(o.paid) : '…'}</b>
+          <small>Paid orders</small>
+        </span>
+        <span>
+          <b>{o ? money(o.aov) : '…'}</b>
+          <small>Avg. order</small>
+        </span>
+        <span className={o?.toShip ? 'warn' : ''}>
+          <b>{o ? num(o.toShip) : '…'}</b>
+          <small>To ship</small>
+        </span>
+      </div>
+    </section>
+  );
+}
+
+function Attention({ o, catalog }) {
+  const items = [];
+  if (o?.toShip) items.push(['truck', `${o.toShip} order${o.toShip > 1 ? 's' : ''} to ship`, 'Paid and waiting — pack & dispatch', '/admin/orders', 'gold']);
+  if (o?.unpaid) items.push(['bag', `${o.unpaid} unpaid checkout${o.unpaid > 1 ? 's' : ''}`, 'Started but not paid — follow up on WhatsApp', '/admin/orders', '']);
+  if (catalog?.noImage?.length) items.push(['image', `${catalog.noImage.length} product${catalog.noImage.length > 1 ? 's' : ''} without a photo`, 'Hidden from the shop until a photo is added', '/admin/products', '']);
+  if (!o) return null;
+  return (
+    <section className="dbm-att" aria-label="Needs attention">
+      <h2>Needs attention</h2>
+      {items.length ? (
+        items.map(([ic, t, sub, to, tone], i) => (
+          <Link key={t} to={to} className={`dbm-att-row ${tone}`} style={{ '--i': i }}>
+            <i>
+              <Icon name={ic} size={19} />
+            </i>
+            <span>
+              <b>{t}</b>
+              <small>{sub}</small>
+            </span>
+            <Icon name="chevron" size={18} />
+          </Link>
+        ))
+      ) : (
+        <p className="dbm-att-ok">
+          <Icon name="check" size={18} /> All caught up — nothing waiting.
+        </p>
+      )}
+    </section>
+  );
+}
+
+const QUICK = [
+  ['/admin/products/new', 'Add product', 'plus'],
+  ['/admin/orders', 'Orders', 'box'],
+  ['/admin/campaigns', 'Campaign', 'calendar'],
+  ['/admin/signature', 'Signature', 'star'],
+  ['/admin/templates', 'Templates', 'sparkle'],
+];
+function MobileQuick() {
+  return (
+    <nav className="dbm-quick" aria-label="Quick actions">
+      {QUICK.map(([to, l, ic]) => (
+        <Link key={to} to={to}>
+          <i>
+            <Icon name={ic} size={19} />
+          </i>
+          {l}
+        </Link>
+      ))}
+      <a href="/" target="_blank" rel="noreferrer">
+        <i>
+          <Icon name="arrow" size={19} />
+        </i>
+        Store
+      </a>
+    </nav>
+  );
+}
+
 export default function Dashboard() {
   const [period, setPeriod] = useState(() => {
     try {
@@ -485,6 +613,9 @@ export default function Dashboard() {
 
   return (
     <div className="db">
+      <MobileHero o={o} series={series} live={live} period={period} setPeriod={setPeriod} />
+      <Attention o={o} catalog={catalog} />
+      <MobileQuick />
       <header className="db-head">
         <div>
           <p className="ad-muted">{today}</p>
@@ -677,7 +808,7 @@ export default function Dashboard() {
             <p className="ad-muted">Loading…</p>
           )}
         </div>
-        <div className="ad-card">
+        <div className="ad-card db-latest">
           <div className="db-card-head">
             <h2>Latest orders</h2>
             <Link to="/admin/orders" className="ad-link">
@@ -702,7 +833,7 @@ export default function Dashboard() {
             {o && !o.latest.length && <li className="ad-muted">No orders yet — they’ll appear here the moment someone pays.</li>}
           </ul>
         </div>
-        <div className="ad-card">
+        <div className="ad-card db-quick-card">
           <h2>Quick actions</h2>
           <div className="db-quick">
             <Link to="/admin/products/new">
