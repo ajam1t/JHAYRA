@@ -65,6 +65,8 @@ export function recommend({ products = [], templates = [], sizes = [], a }) {
 
   // Products: hard filters are budget (its starting price) and style; then score.
   let prods = [];
+  let productTotal = 0;
+  let templateTotal = 0;
   if (wantProducts) {
     prods = products
       .filter((p) => p.thumbnail && (p.price || 0) <= max && (!style || style.test(p)))
@@ -81,7 +83,9 @@ export function recommend({ products = [], templates = [], sizes = [], a }) {
     // With a recipient or occasion chosen, show matches first; keep a few
     // general favourites only if nothing matched.
     const matched = prods.filter((x) => x.score >= 2);
-    prods = (matched.length ? matched : prods).slice(0, 8);
+    prods = matched.length ? matched : prods;
+    productTotal = prods.length;
+    prods = prods.slice(0, 8);
   }
 
   // Templates: price starts at the smallest size, so they fit any budget the
@@ -101,8 +105,10 @@ export function recommend({ products = [], templates = [], sizes = [], a }) {
       })
       .sort((x, y) => y.score - x.score || (x.t.sortOrder || 0) - (y.t.sortOrder || 0));
     const matched = tmpls.filter((x) => x.score >= 2);
-    tmpls = (matched.length ? matched : tmpls.filter((x) => x.t.popular || x.t.bestSeller)).slice(0, 8);
+    tmpls = matched.length ? matched : tmpls.filter((x) => x.t.popular || x.t.bestSeller);
+    templateTotal = tmpls.length;
+    tmpls = tmpls.slice(0, 8);
   }
 
-  return { products: prods, templates: tmpls, fits, budget, who, when, style };
+  return { products: prods, templates: tmpls, productTotal, templateTotal, fits, budget, who, when, style };
 }

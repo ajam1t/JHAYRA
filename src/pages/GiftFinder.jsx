@@ -1,19 +1,124 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Icon from '../components/Icon';
 import GiftWheel from '../components/GiftWheel';
 import Frame from '../components/Frame';
 import TemplateCanvas from '../components/TemplateCanvas';
 import ProductCard from '../components/ProductCard';
+import { SmoothTabs, ripple } from '../components/Motion';
 import { Seo } from '../lib/seo';
 import { useCategories, useFrameTables, useProducts } from '../lib/catalog';
 import { useTemplates } from '../lib/templates';
-import { money, waLink } from '../lib/site';
+import { money, waLink, deliveryWindow } from '../lib/site';
 import { SIZES } from '../lib/frames';
 import { WHO, WHEN, STYLES, TYPES, budgets, recommend } from '../lib/giftfinder';
 
 const KEYS = ['who', 'when', 'budget', 'style', 'type'];
 const ANY = 'any';
+
+/* Live "your gift so far" panel: real matches for the answers given so far. */
+function GiftPreview({ live, answers, step, total }) {
+  const thumbs = (live?.products || []).slice(0, 3).map(({ p }) => p);
+  const tmpl = !thumbs.length ? live?.templates?.[0]?.t : null;
+  const n = (live?.productTotal || 0) + (live?.templateTotal || 0);
+  return (
+    <aside className="gf3-preview" aria-live="polite">
+      <div className="gf3-fan" key={thumbs.map((p) => p.id).join() || tmpl?.id || 'none'}>
+        {thumbs.length ? (
+          thumbs.map((p, i) => (
+            <span key={p.id} className="gf3-fan-card" style={{ '--i': i }}>
+              <Frame src={p.thumbnail} alt="" ratio={{ w: 12, h: 16 }} colour={i === 1 ? '#b08a45' : '#1C1C1C'} glare={false} sizes="120px" />
+            </span>
+          ))
+        ) : tmpl ? (
+          <span className="gf3-fan-card" style={{ '--i': 1 }}>
+            <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false}>
+              <TemplateCanvas template={tmpl} mini />
+            </Frame>
+          </span>
+        ) : (
+          <span className="gf3-box" aria-hidden="true" />
+        )}
+      </div>
+      <p className="gf3-count">
+        {live ? (
+          <>
+            <b>{n}</b> {n === 1 ? 'design matches' : 'designs match'} so far
+          </>
+        ) : (
+          'Loading the collection…'
+        )}
+      </p>
+      <ul className="gf3-tags">
+        {answers.map(([k, v]) => (
+          <li key={k} className={v ? 'on' : ''}>
+            {v || '…'}
+          </li>
+        ))}
+      </ul>
+      <div className="gf3-meter" aria-hidden="true">
+        <span style={{ width: `${(step / total) * 100}%` }} />
+      </div>
+    </aside>
+  );
+}
+
+/* The top pick, unwrapped. */
+function GiftReveal({ pick, sizes, onShare, shared }) {
+  const win = deliveryWindow();
+  if (!pick) return null;
+  const isT = pick.kind === 'template';
+  const href = isT ? `/customize/${pick.t.id}` : `/product/${pick.p.id}${pick.query || ''}`;
+  return (
+    <div className="gf3-reveal">
+      <div className="gf3-reveal-art">
+        <span className="gf3-lid" aria-hidden="true" />
+        <span className="gf3-glow" aria-hidden="true" />
+        <Link to={href} className="gf3-reveal-frame" aria-label={isT ? pick.t.title : pick.p.name}>
+          {isT ? (
+            <Frame ratio={{ w: 12, h: 16 }} colour="#b08a45" glare={false}>
+              <TemplateCanvas template={pick.t} mini />
+            </Frame>
+          ) : (
+            <Frame src={pick.p.thumbnail} alt="" ratio={{ w: 12, h: 16 }} colour="#b08a45" glare={false} sizes="(max-width: 760px) 60vw, 300px" priority />
+          )}
+        </Link>
+      </div>
+      <div className="gf3-reveal-copy">
+        <span className="eyebrow">Our top pick</span>
+        <h2 className="h2">{isT ? pick.t.title : pick.p.name}</h2>
+        {pick.why.length > 0 && (
+          <ul className="gf3-why">
+            {pick.why.slice(0, 3).map((w) => (
+              <li key={w}>
+                <Icon name="check" size={13} /> {w}
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="gf3-price">
+          {isT ? `Personalise with their photos · from ${money(sizes[0]?.price || 499)}` : `from ${money(pick.p.price)}`}
+        </p>
+        <div className="gf3-reveal-ctas">
+          <Link to={href} className="btn btn-gold" onPointerDown={ripple}>
+            {isT ? 'Personalise this gift' : 'See this gift'} <Icon name="arrow" size={16} />
+          </Link>
+          <button type="button" className="btn btn-ghost" onClick={onShare}>
+            <Icon name={shared ? 'check' : 'share'} size={16} /> {shared ? 'Link copied' : 'Share these ideas'}
+          </button>
+        </div>
+        <ul className="gf3-perks">
+          <li>
+            <Icon name="gift" size={15} /> Free gift card at checkout — and we can hide the price
+          </li>
+          <li>
+            <Icon name="truck" size={15} /> Free delivery · order today, arrives {win.early} – {win.late}
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
+}
 
 export default function GiftFinder() {
   const [params, setParams] = useSearchParams();
@@ -61,15 +166,34 @@ export default function GiftFinder() {
     heading.current?.focus({ preventScroll: true });
   }, [step]);
 
-  const results = useMemo(() => {
-    if (!done || !products) return null;
+  // Recommendations update live as each question is answered.
+  const live = useMemo(() => {
+    if (!products) return null;
     const clean = Object.fromEntries(KEYS.map((k) => [k, a[k] === ANY ? '' : a[k]]));
     return recommend({ products, templates: active, sizes, a: clean });
-  }, [done, products, active, sizes, params]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [products, active, sizes, params]); // eslint-disable-line react-hooks/exhaustive-deps
+  const results = done ? live : null;
+  const [tab, setTab] = useState('');
 
   const largest = results?.fits?.[results.fits.length - 1];
   const sizeQuery = results?.budget && largest ? `?size=${largest.slug}` : '';
   const empty = results && !results.products.length && !results.templates.length;
+  const kinds = results ? (a.type === 'personal' ? ['templates', 'products'] : ['products', 'templates']).filter((k) => (k === 'products' ? results.products.length : results.templates.length)) : [];
+  const kind = kinds.includes(tab) ? tab : kinds[0];
+  const top = kinds[0] === 'templates' ? results?.templates[0] : results?.products[0];
+  const pick = top ? { ...top, kind: kinds[0] === 'templates' ? 'template' : 'product', query: sizeQuery } : null;
+  const [shared, setShared] = useState(false);
+  const share = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) await navigator.share({ title: 'Gift ideas from JHAYRA', url });
+      else {
+        await navigator.clipboard.writeText(url);
+        setShared(true);
+        setTimeout(() => setShared(false), 2500);
+      }
+    } catch {}
+  };
   const label = (key) => {
     const s = steps.find((x) => x.key === key);
     const v = a[key];
@@ -81,13 +205,14 @@ export default function GiftFinder() {
     <>
       <Seo title="Gift Finder — Find Art They’ll Love" description="Five quick questions — who it’s for, the occasion, your budget, their style and the kind of art — and we’ll match real JHAYRA artwork and personalised frames." path="/gift-finder" />
       <section className="gf2 mesh">
-        <div className="wrap wrap-narrow">
+        <div className={`wrap ${done ? 'wrap-narrow' : 'gf3-wrap'}`}>
           <div className="gf2-progress" role="progressbar" aria-label="Gift Finder progress" aria-valuemin={0} aria-valuemax={steps.length} aria-valuenow={Math.min(step, steps.length)} aria-valuetext={done ? 'Results' : `Question ${step + 1} of ${steps.length}`}>
             {steps.map((s, i) => (
               <span key={s.key} className={i < step ? 'done' : i === step ? 'now' : ''} />
             ))}
           </div>
           {!done ? (
+            <div className="gf3-grid">
             <div className="gf2-step" key={step}>
               <h1 className="h1 gf2-q" tabIndex={-1} ref={heading}>
                 {steps[step].q}
@@ -115,6 +240,8 @@ export default function GiftFinder() {
                   )}
                 </span>
               </div>
+            </div>
+            <GiftPreview live={live} answers={steps.map((x) => [x.key, label(x.key)])} step={step} total={steps.length} />
             </div>
           ) : (
             <div className="gf2-step gf2-summary" key="done">
@@ -180,39 +307,47 @@ export default function GiftFinder() {
 
       {results && !empty && (
         <section className="wrap gf2-results" aria-live="polite">
-          {[a.type === 'personal' ? 'templates' : 'products', a.type === 'personal' ? 'products' : 'templates'].map((kind) =>
-            kind === 'templates' && results.templates.length ? (
-              <div key={kind} className="gf2-block">
-                <h2 className="h3">Personalised with their photos</h2>
-                <div className="tgrid sf-stagger">
-                  {results.templates.map(({ t, why }, i) => (
-                    <Link key={t.id} to={`/customize/${t.id}`} className="tcard" style={{ '--i': i }}>
-                      <div className="tcard-stage">
-                        <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false}>
-                          <TemplateCanvas template={t} mini />
-                        </Frame>
-                      </div>
-                      <b>{t.title}</b>
-                      <small>Personalise · from {money(sizes[0]?.price || 499)}</small>
-                      {why.length > 0 && <span className="gf2-why">{why.slice(0, 2).join(' · ')}</span>}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ) : kind === 'products' && results.products.length ? (
-              <div key={kind} className="gf2-block">
-                <h2 className="h3">Ready-made art they’ll love</h2>
-                <div className="grid-products sf-stagger">
-                  {results.products.map(({ p, why }, i) => (
-                    <div key={p.id} className="gf2-pwrap" style={{ '--i': i }}>
-                      <ProductCard product={p} categories={categories} index={i} query={sizeQuery} />
-                      {why.length > 0 && <span className="gf2-why">{why.slice(0, 2).join(' · ')}</span>}
+          <GiftReveal pick={pick} sizes={sizes} onShare={share} shared={shared} />
+          {kinds.length > 1 && <SmoothTabs className="gf3-tabs" label="Gift ideas" value={kind} onChange={setTab} tabs={kinds.map((k) => [k, k === 'products' ? `Ready-made · ${results.productTotal}` : `Personalised · ${results.templateTotal}`])} />}
+          {kind === 'templates' ? (
+            <div key="t" className="gf2-block">
+              {kinds.length < 2 && <h2 className="h3">Personalised with their photos</h2>}
+              <div className="tgrid sf-stagger">
+                {results.templates.map(({ t, why }, i) => (
+                  <Link key={t.id} to={`/customize/${t.id}`} className="tcard" style={{ '--i': i }}>
+                    <div className="tcard-stage">
+                      <Frame ratio={{ w: 12, h: 16 }} colour="#1C1C1C" glare={false}>
+                        <TemplateCanvas template={t} mini />
+                      </Frame>
                     </div>
-                  ))}
-                </div>
+                    <b>{t.title}</b>
+                    <small>Personalise · from {money(sizes[0]?.price || 499)}</small>
+                    {why.length > 0 && <span className="gf2-why">{why.slice(0, 2).join(' · ')}</span>}
+                  </Link>
+                ))}
               </div>
-            ) : null,
+            </div>
+          ) : (
+            <div key="p" className="gf2-block">
+              {kinds.length < 2 && <h2 className="h3">Ready-made art they’ll love</h2>}
+              <div className="grid-products sf-stagger">
+                {results.products.map(({ p, why }, i) => (
+                  <div key={p.id} className="gf2-pwrap" style={{ '--i': i }}>
+                    <ProductCard product={p} categories={categories} index={i} query={sizeQuery} />
+                    {why.length > 0 && <span className="gf2-why">{why.slice(0, 2).join(' · ')}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
+          <div className="gf3-help">
+            <p>
+              Still not sure? Tell us about them — we’ll suggest something personally.
+            </p>
+            <a className="btn btn-ghost btn-sm" href={waLink('Hi JHAYRA! Can you help me choose a gift?')} target="_blank" rel="noopener noreferrer">
+              Ask us on WhatsApp
+            </a>
+          </div>
         </section>
       )}
     </>
