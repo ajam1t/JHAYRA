@@ -74,13 +74,11 @@ function Login() {
             setErr('');
             setBusy(true);
             try {
-              // A mobile number signs in to the admin account it's linked to.
-              let id = email.trim();
-              if (!id.includes('@')) {
-                const { data } = await supabase.rpc('admin_login_email', { p_phone: mobile10(id) });
-                if (!data) throw new Error('Incorrect mobile number or password');
-                id = data;
-              }
+              // Sign-in is by mobile number: it maps to the admin account it's linked to.
+              const phone = mobile10(email);
+              if (!/^[6-9]\d{9}$/.test(phone)) throw new Error('Please enter your 10-digit mobile number');
+              const { data: id } = await supabase.rpc('admin_login_email', { p_phone: phone });
+              if (!id) throw new Error('Incorrect mobile number or password');
               await signIn(id, password);
             } catch (x) {
               setErr(/invalid login|incorrect/i.test(x.message || '') ? 'Incorrect mobile number or password' : x.message || 'Sign in failed');
@@ -97,8 +95,8 @@ function Login() {
             </div>
           </div>
           <label className="gt-field">
-            <span>Mobile number or email</span>
-            <input type="text" inputMode="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
+            <span>Mobile number</span>
+            <input type="tel" inputMode="tel" autoComplete="username" maxLength={16} required value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
           </label>
           <label className="gt-field">
             <span>Password</span>
@@ -171,7 +169,7 @@ function MoreSheet({ user, onClose, signOut }) {
           <img src="/founder/sandeep-jha.webp" alt="" width="44" height="44" />
           <div>
             <b>Sandeep Jha</b>
-            <small>{user.email}</small>
+            <small>Owner · JHAYRA Studio</small>
           </div>
           <button type="button" className="ad-more-x" onClick={onClose} aria-label="Close">
             <Icon name="close" size={18} />
@@ -253,7 +251,7 @@ export default function Admin() {
                     <a href="/" target="_blank" rel="noreferrer" className="ad-btn ad-btn-ghost">
                       View store ↗
                     </a>
-                    <small>{user.email}</small>
+                    <small>Signed in as owner</small>
                     <button className="ad-btn ad-btn-ghost" onClick={signOut}>
                       <Icon name="logout" size={16} /> Sign out
                     </button>
