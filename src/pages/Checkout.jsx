@@ -12,7 +12,7 @@ import { useToast, saveLocalOrder } from '../state/store';
 import { useFestival } from '../state/festival';
 import { useActiveCampaign } from '../lib/campaigns';
 import { founderEligible, useSignature } from '../lib/signature';
-import { money, waLink, deliveryWindow, SITE, mobile10 } from '../lib/site';
+import { money, waLink, deliveryWindow, SITE, mobile10, GIFT_FEE } from '../lib/site';
 import { BRAND } from '../lib/brand';
 
 function loadRazorpay() {
@@ -136,7 +136,7 @@ export default function Checkout() {
   const [pinState, setPinState] = useState('');
   const [errors, setErrors] = useState({});
   const [params] = useSearchParams();
-  // ?gift=1 (from the Signature Experience) opens the free gift card section.
+  // ?gift=1 (from the Signature Experience) opens the gift card section.
   const [gift, setGift] = useState({ on: params.get('gift') === '1', to: '', from: '', note: '', hidePrice: true });
   const [status, setStatus] = useState('idle');
   const [failure, setFailure] = useState('');
@@ -150,7 +150,8 @@ export default function Checkout() {
   const [founder, setFounder] = useState({ on: false, slot: '' });
   const founderOk = hasSig && founderEligible(d.pin, sig);
   const founderFee = founder.on && founderOk ? Number(sig.founder.fee) || 0 : 0;
-  const grand = cart.total + founderFee;
+  const giftFee = gift.on ? GIFT_FEE : 0;
+  const grand = cart.total + founderFee + giftFee;
   const concierge = hasSig && !sig.checkout?.online;
 
   useEffect(() => {
@@ -224,6 +225,7 @@ export default function Checkout() {
         ...lines,
         cart.discount > 0 ? `Discount (${cart.coupon.code}): −${money(cart.discount)}` : '',
         founderFee ? `Founder delivery: ${money(founderFee)} · preferred slot: ${founder.slot}` : '',
+        giftFee ? `Gift card & hidden price: ${money(giftFee)}` : '',
         `Total: ${money(grand)}`,
         '',
         `Name: ${d.name}`,
@@ -276,6 +278,7 @@ export default function Checkout() {
             coupon: cart.coupon?.code || null,
           },
           ...(founderFee ? { founderDelivery: { fee: founderFee, slot: founder.slot } } : {}),
+          ...(giftInfo ? { gift: true } : {}),
         },
       });
       if (error || data?.error) {
@@ -477,7 +480,7 @@ export default function Checkout() {
             <label className="toggle" style={{ marginBottom: gift.on ? 18 : 0 }}>
               <input type="checkbox" checked={gift.on} onChange={(e) => setGift((g) => ({ ...g, on: e.target.checked }))} />
               <span />
-              Yes — add a free gift card {gift.on ? '' : '& hide the price'}
+              Yes — add a gift card & hide the price (+{money(GIFT_FEE)})
             </label>
             {gift.on && (
               <div className="gift-grid">
@@ -543,8 +546,8 @@ export default function Checkout() {
             </div>
             {gift.on && (
               <div className="sum-row">
-                <span>Gift card</span>
-                <span>Free</span>
+                <span>Gift card & hidden price</span>
+                <span>{money(GIFT_FEE)}</span>
               </div>
             )}
             {hasSig && (

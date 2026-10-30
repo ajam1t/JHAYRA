@@ -109,7 +109,7 @@ function GiftReveal({ pick, sizes, onShare, shared }) {
         </div>
         <ul className="gf3-perks">
           <li>
-            <Icon name="gift" size={15} /> Free gift card at checkout — and we can hide the price
+            <Icon name="gift" size={15} /> Add a gift card and hide the price at checkout (₹100)
           </li>
           <li>
             <Icon name="truck" size={15} /> Free delivery · order today, arrives {win.early} – {win.late}
@@ -372,7 +372,7 @@ export default function GiftFinder() {
         <h2 className="hs-title">How the Gift Finder chooses</h2>
         <p className="gf3-guide-how">{GIFT_HOW}</p>
         <p className="gf3-guide-how">
-          Every piece comes in {sizes.map((s) => `${s.name} (${money(s.price)})`).join(', ')}, with a free printed gift card at checkout and free delivery across India. More ideas: <Link to="/journal/wall-art-gift-guide-occasions">the wall art gift guide</Link> and{' '}
+          Every piece comes in {sizes.map((s) => `${s.name} (${money(s.price)})`).join(', ')}, with an optional printed gift card at checkout (₹100) and free delivery across India. More ideas: <Link to="/journal/wall-art-gift-guide-occasions">the wall art gift guide</Link> and{' '}
           <Link to="/journal/how-to-make-a-personalised-photo-frame">how to make a personalised photo frame gift</Link>.
         </p>
       </section>

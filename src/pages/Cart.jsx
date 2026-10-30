@@ -415,7 +415,7 @@ export default function Cart() {
                 <Icon name="lock" size={16} /> UPI, cards, netbanking & wallets via Razorpay
               </li>
               <li>
-                <Icon name="gift" size={16} /> Sending a gift? Add a free gift card at checkout
+                <Icon name="gift" size={16} /> Sending a gift? Add a gift card & hide the price at checkout (₹100)
               </li>
               <li>
                 <Icon name="check" size={16} /> Damaged in transit?{' '}

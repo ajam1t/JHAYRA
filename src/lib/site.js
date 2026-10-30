@@ -58,3 +58,7 @@ export function withoutPromo(x) {
   if (!x || !PROMO_COUPONS_PAUSED) return x;
   return { ...x, coupon: null, offer: null, banner: x.banner && MENTIONS_OFFER.test(x.banner) ? null : x.banner };
 }
+
+// Gift card with the price hidden: charged once per order when chosen at
+// checkout (the payment function adds the same amount on the server).
+export const GIFT_FEE = 100;

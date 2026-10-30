@@ -264,7 +264,7 @@ const BODIES = {
     `<h1>Gift Finder — personalised gift ideas</h1><p>Answer five quick questions — who the gift is for, the occasion, your budget, their style and whether you want ready-made or personalised art — and the Gift Finder suggests matching JHAYRA artwork and personalised frames from the live collection.</p><h2>How recommendations work</h2><p>${esc(GIFT_HOW)}</p>` +
     `<h2>Gift ideas by recipient and occasion</h2>${GIFT_GUIDE.map(([h, t, l]) => `<h3>${esc(h)}</h3><p>${esc(t)}</p><p>${links(l)}</p>`).join('')}` +
     `<h2>Budgets</h2><p>Every design comes in these sizes: ${cat.sizes.map((s) => `${esc(s.name)} (${esc(s.dimensions)}) ${inr(s.base_price)}`).join(', ') || 'A4 to 24 × 36 inches, from ₹499'}.</p>` +
-    `<h2>Gift-ready</h2><p>Add a free printed gift card at checkout and choose to hide the price. Made to order in 1–2 business days, then 5–7 business days in transit, with free delivery across India.</p>` +
+    `<h2>Gift-ready</h2><p>Add a printed gift card at checkout and hide the price (₹100). Made to order in 1–2 business days, then 5–7 business days in transit, with free delivery across India.</p>` +
     `<h2>Popular gifts</h2><ul>${products.filter((p) => p.is_bestseller).slice(0, 8).map(productItem).join('')}</ul><p>Read the <a href="/journal/wall-art-gift-guide-occasions">wall art gift guide</a> or <a href="/journal/how-to-make-a-personalised-photo-frame">how to make a personalised photo frame gift</a>.</p>`,
   '/about': () =>
     `<h1>About JHAYRA</h1><p>JHAYRA — Crafting Memories Into Art — was founded in 2017 by Sandeep Jha with one idea: the moments people love most deserve a place on their walls, not just on their phones.</p>` +

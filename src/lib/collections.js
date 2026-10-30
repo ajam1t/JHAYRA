@@ -56,7 +56,7 @@ export const COLLECTIONS = [
     id: 'art-for-gifting',
     title: 'Art for Gifting',
     kicker: 'Anniversaries, birthdays, housewarmings',
-    story: 'Thoughtful gifts that last longer than flowers — with a free gift note and prices hidden.',
+    story: 'Thoughtful gifts that last longer than flowers — with a printed gift card and the price hidden, if you choose.',
     cats: ['occasions', 'love-romance', 'religious', 'family'],
     words: ['anniversary', 'birthday', 'love', 'diwali'],
     tone: 'mist',

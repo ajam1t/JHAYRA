@@ -14,6 +14,9 @@ function corsHeaders(origin: string | null) {
 
 const VALID_COUPONS: Record<string, number> = { JHAYRA10: 10, JHAYRA15: 15 };
 
+// Gift card & hidden-price packing, charged once per order when chosen.
+const GIFT_FEE = 100;
+
 // Personalised (customer-photo) frames are made in these size/finish pairs —
 // the same list the storefront offers (src/lib/frames.js CUSTOM).
 const CUSTOM_COMBOS = new Set([
@@ -48,7 +51,7 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(origin) });
 
   try {
-    const { items, customer } = await req.json();
+    const { items, customer, gift } = await req.json();
 
     // Basic shape validation
     if (!Array.isArray(items) || !items.length) return json({ error: 'No items' }, 400);
@@ -191,7 +194,8 @@ serve(async (req) => {
       discountAmount = Math.round(subtotal * VALID_COUPONS[coupon] / 100);
     }
 
-    const totalAmount = Math.max(0, subtotal - discountAmount);
+    const giftFee = gift === true || (Array.isArray(items) && items.some((i: { customization?: { gift?: unknown } }) => i?.customization?.gift)) ? GIFT_FEE : 0;
+    const totalAmount = Math.max(0, subtotal - discountAmount) + giftFee;
     const amountPaise = Math.round(totalAmount * 100); // Razorpay uses paise
 
     if (amountPaise < 100) return json({ error: 'Order total too low (minimum ₹1)' }, 400);
@@ -240,6 +244,7 @@ serve(async (req) => {
         coupon_code: coupon || null,
         shipping: 0,
         total_amount: totalAmount,
+      notes: giftFee ? `Gift card: ₹${giftFee}` : null,
         razorpay_order_id: rzpOrder.id,
         payment_status: 'pending',
         currency: 'INR',
