@@ -67,8 +67,33 @@ export function trackView(path) {
     }
     row.referrer = ref.slice(0, 120);
   }
-  send(row);
+  withGeo(row).then(send);
   startVitals();
+}
+
+// Approximate state/city once per session from /api/geo (no IP stored).
+// Never holds a view back for long: after 1.5 s it's sent without location.
+let geo;
+function withGeo(row) {
+  if (!geo) {
+    geo = (() => {
+      try {
+        const cached = sessionStorage.getItem('jh_geo');
+        if (cached) return Promise.resolve(JSON.parse(cached));
+      } catch {}
+      return fetch('/api/geo', { cache: 'no-store' })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((g) => {
+          try {
+            if (g) sessionStorage.setItem('jh_geo', JSON.stringify(g));
+          } catch {}
+          return g;
+        })
+        .catch(() => null);
+    })();
+  }
+  const timeout = new Promise((r) => setTimeout(() => r(null), 1500));
+  return Promise.race([geo, timeout]).then((g) => (g ? { ...row, country: g.country || null, state: g.state || null, city: g.city || null } : row));
 }
 
 // Core Web Vitals for the landing page, sent once when the tab is hidden.

@@ -1804,3 +1804,13 @@
 }
 .ad-dl-all { margin: 0 0 12px; gap: 8px; }
 .cm-paused { margin: 0 0 12px; }
+
+/* Top states */
+.db-states .db-bars li { display: block; padding: 0; }
+.db-states .db-bars li > button { position: relative; width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; overflow: hidden; text-align: left; color: inherit; font: inherit; }
+.db-states .db-bars li > button .db-bars-label, .db-states .db-bars li > button b { position: relative; }
+.db-states .db-bars li.open > button { background: #fbf4e6; }
+.db-cities { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px 10px; }
+.db-cities span { font-size: 12.5px; padding: 4px 10px; border-radius: 99px; background: #fff; border: 1px solid var(--line); }
+.db-cities b { margin-left: 4px; }
+.db-note { margin: 10px 0 0; font-size: 12px; }

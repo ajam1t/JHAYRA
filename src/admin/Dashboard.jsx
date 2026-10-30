@@ -455,6 +455,58 @@ function MobileQuick() {
   );
 }
 
+// Visitors by state (approximate, from the visitor's network); tap a state
+// to see its top cities.
+function States({ from, to }) {
+  const [rows, setRows] = useState(null);
+  const [open, setOpen] = useState('');
+  useEffect(() => {
+    let stop = false;
+    setRows(null);
+    supabase.rpc('site_geo', { p_from: from.toISOString(), p_to: to.toISOString() }).then(({ data, error }) => !stop && setRows(error ? [] : data || []));
+    return () => {
+      stop = true;
+    };
+  }, [from, to]);
+  const max = Math.max(1, ...(rows || []).map((r) => r.visitors));
+  return (
+    <div className="ad-card db-states">
+      <h2>Top states</h2>
+      {rows === null ? (
+        <p className="ad-muted db-empty">Loading…</p>
+      ) : !rows.length ? (
+        <p className="ad-muted db-empty">Locations appear as new visitors arrive.</p>
+      ) : (
+        <ul className="db-bars">
+          {rows.slice(0, 12).map((r) => (
+            <li key={r.state} className={open === r.state ? 'open' : ''}>
+              <button type="button" onClick={() => setOpen(open === r.state ? '' : r.state)} aria-expanded={open === r.state}>
+                <span className="db-bars-fill" style={{ width: `${(r.visitors / max) * 100}%` }} />
+                <span className="db-bars-label">{r.state}</span>
+                <b>{num(r.visitors)}</b>
+              </button>
+              {open === r.state && (
+                <div className="db-cities">
+                  {(r.cities || []).length ? (
+                    r.cities.map((c) => (
+                      <span key={c.city}>
+                        {c.city} <b>{num(c.visitors)}</b>
+                      </span>
+                    ))
+                  ) : (
+                    <small className="ad-muted">No city detail yet</small>
+                  )}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="ad-muted db-note">Approximate, from each visitor’s network. No IP addresses are stored.</p>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [period, setPeriod] = useState(() => {
     try {
@@ -687,6 +739,7 @@ export default function Dashboard() {
           <h2>Top pages</h2>
           <Bars rows={traffic?.pages || []} value={(r) => r.views} render={(r) => <a href={r.path} target="_blank" rel="noreferrer">{r.path === '/' ? 'Homepage' : r.path}</a>} />
         </div>
+        {!noTraffic && <States from={from} to={to} />}
         <div className="ad-card">
           <h2>Where visitors come from</h2>
           <Bars rows={traffic?.sources || []} value={(r) => r.sessions} label={(r) => r.source} />
