@@ -232,6 +232,101 @@ function Setup() {
   );
 }
 
+// Daily visitors for one page: pick from the top pages or type any path.
+const PAGE_PICKS = ['/', '/shop', '/customize', '/gift-finder', '/cart', '/signature-experience', '/celebrations'];
+function PageVisitors({ from, to, top }) {
+  const options = [...new Set([...PAGE_PICKS, ...(top || []).map((p) => p.path)])];
+  const [path, setPath] = useState('/');
+  const [draft, setDraft] = useState('/');
+  const [rows, setRows] = useState(null);
+  useEffect(() => {
+    let stop = false;
+    setRows(null);
+    (async () => {
+      const all = [];
+      for (let page = 0; page < 10; page++) {
+        const { data, error } = await supabase
+          .from('site_events')
+          .select('created_at,visitor')
+          .eq('kind', 'view')
+          .eq('path', path)
+          .gte('created_at', from.toISOString())
+          .lt('created_at', to.toISOString())
+          .range(page * 1000, page * 1000 + 999);
+        if (error || !data) break;
+        all.push(...data);
+        if (data.length < 1000) break;
+      }
+      if (!stop) setRows(all);
+    })();
+    return () => {
+      stop = true;
+    };
+  }, [path, from, to]);
+  const days = useMemo(() => {
+    const by = {};
+    (rows || []).forEach((r) => {
+      const d = istDay(r.created_at);
+      (by[d] ||= { views: 0, v: new Set() }).views++;
+      by[d].v.add(r.visitor);
+    });
+    const out = [];
+    for (let t = from.getTime(); t < to.getTime(); t += DAY) {
+      const day = istDay(t);
+      out.push({ day, label: new Date(t + IST).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' }), views: by[day]?.views || 0, visitors: by[day]?.v.size || 0 });
+    }
+    return out;
+  }, [rows, from, to]);
+  const unique = new Set((rows || []).map((r) => r.visitor)).size;
+  const today = days[days.length - 1];
+  return (
+    <div className="ad-card db-span2">
+      <div className="db-card-head">
+        <h2>Daily visitors by page</h2>
+        <span className="db-legend">
+          <i className="b-views" /> Page views <i className="b-visitors" /> Visitors
+        </span>
+      </div>
+      <form
+        className="db-page-pick"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const v = draft.trim();
+          if (v) setPath(v.startsWith('/') ? v.replace(/^https?:\/\/[^/]+/, '') : `/${v}`);
+        }}
+      >
+        <select className="ad-input" value={options.includes(path) ? path : ''} onChange={(e) => e.target.value && (setPath(e.target.value), setDraft(e.target.value))} aria-label="Page">
+          {!options.includes(path) && <option value="">{path}</option>}
+          {options.map((p) => (
+            <option key={p} value={p}>
+              {p === '/' ? 'Homepage' : p}
+            </option>
+          ))}
+        </select>
+        <input className="ad-input" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="/product/p018" aria-label="Page path" />
+        <button className="ad-btn">Show</button>
+      </form>
+      {rows === null ? (
+        <p className="ad-muted db-empty">Loading…</p>
+      ) : (
+        <>
+          <p className="db-page-sum">
+            <b>{num(unique)}</b> visitors · <b>{num(rows.length)}</b> views in this period · today <b>{num(today?.visitors)}</b> visitors
+          </p>
+          <Columns
+            label={`Daily visitors for ${path}`}
+            days={days}
+            series={[
+              { key: 'views', name: 'page views', cls: 'b-views' },
+              { key: 'visitors', name: 'visitors', cls: 'b-visitors' },
+            ]}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [period, setPeriod] = useState(() => {
     try {
@@ -454,6 +549,8 @@ export default function Dashboard() {
           </div>
           <Columns label="Daily revenue" days={series} format={(v) => money(v)} series={[{ key: 'revenue', name: 'revenue', cls: 'b-rev' }]} />
         </div>
+
+        {!noTraffic && <PageVisitors from={from} to={to} top={traffic?.pages} />}
 
         <div className="ad-card">
           <h2>Top pages</h2>
