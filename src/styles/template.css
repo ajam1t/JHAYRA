@@ -63,7 +63,7 @@
   place-content: center;
   justify-items: center;
   gap: 1.5cqw;
-  color: color-mix(in srgb, var(--acc) 80%, #000);
+  color: color-mix(in srgb, var(--acc) 45%, #000);
   font-size: clamp(9px, 3.2cqw, 14px);
   font-weight: 600;
   text-align: center;

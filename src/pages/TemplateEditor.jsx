@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Frame from '../components/Frame';
 import TemplateCanvas from '../components/TemplateCanvas';
+import PreviewDock from '../components/PreviewDock';
 import Icon from '../components/Icon';
 import { IDENTITY, ZoomControls } from '../components/PanZoom';
 import WallStudio from '../components/WallStudio';
@@ -73,6 +74,7 @@ export default function TemplateEditor({ scratch = false }) {
   const [busy, setBusy] = useState(false);
   const [wall, setWall] = useState(false);
   const fileRef = useRef(null);
+  const stageRef = useRef(null);
   const pendingSlot = useRef(null);
 
   useEffect(() => {
@@ -211,7 +213,7 @@ export default function TemplateEditor({ scratch = false }) {
         </nav>
       </div>
       <section className="wrap editor">
-        <div className="editor-stage">
+        <div className="editor-stage" ref={stageRef}>
           <div className="editor-wall">
             <div className="editor-frame" style={{ width: orientation === 'Horizontal' ? '86%' : `${Math.min(74, 40 + size.h * 1.1)}%` }}>
               <Frame ratio={{ w: size.w, h: size.h }} orientation={orientation} colour={colourHex(colour)} thickness={3.6}>
@@ -487,6 +489,11 @@ export default function TemplateEditor({ scratch = false }) {
           )}
         </div>
       </section>
+      <PreviewDock target={stageRef}>
+        <Frame ratio={{ w: size.w, h: size.h }} orientation={orientation} colour={colourHex(colour)} thickness={3.6} glare={false}>
+          <TemplateCanvas template={base} photos={srcs} transforms={transforms} texts={texts} calendar={cal} editable />
+        </Frame>
+      </PreviewDock>
       <input
         ref={fileRef}
         type="file"

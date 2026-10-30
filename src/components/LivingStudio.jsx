@@ -4,6 +4,7 @@ import Frame from './Frame';
 import Icon from './Icon';
 import PanZoom, { IDENTITY, ZoomControls } from './PanZoom';
 import WallStudio from './WallStudio';
+import PreviewDock from './PreviewDock';
 import { SIZES, customOption, colourHex } from '../lib/frames';
 import { TREATMENTS, treatedSource, composePrint, canvasToBlob, loadImage } from '../lib/treatments';
 import { readPhoto, uploadArtwork, photoHandoff, QUALITY_LABEL } from '../lib/upload';
@@ -42,6 +43,7 @@ export default function LivingStudio({ compact = false, samplePhoto }) {
   const [wall, setWall] = useState(false);
   const [drag, setDrag] = useState(false);
   const file = useRef(null);
+  const stageRef = useRef(null);
   const cart = useCart();
   const toast = useToast();
 
@@ -174,6 +176,7 @@ export default function LivingStudio({ compact = false, samplePhoto }) {
   return (
     <div className={`ls ${compact ? 'ls-compact' : ''}`}>
       <div
+        ref={stageRef}
         className={`ls-stage ${drag ? 'drag' : ''}`}
         onDragOver={(e) => {
           e.preventDefault();
@@ -215,6 +218,24 @@ export default function LivingStudio({ compact = false, samplePhoto }) {
         </div>
       </div>
 
+      {!compact && previewUrl && (
+        <PreviewDock target={stageRef}>
+          <Frame ratio={{ w: size.w, h: size.h }} orientation={orientation} colour="#1C1C1C" thickness={3} glare={false}>
+            <div className="ls-print" style={capStyle}>
+              <div className="ls-photo">
+                <PanZoom src={previewUrl} value={tf} alt="" editable={false} />
+              </div>
+              {hasCaption && (
+                <div className="ls-cap">
+                  {caption.title && <b>{caption.title}</b>}
+                  {caption.sub && <small>{caption.sub}</small>}
+                  {caption.msg && <i>{caption.msg}</i>}
+                </div>
+              )}
+            </div>
+          </Frame>
+        </PreviewDock>
+      )}
       <div className="ls-panel">
         <fieldset className="ls-group">
           <legend>1 · Treatment</legend>

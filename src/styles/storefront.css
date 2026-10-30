@@ -6753,3 +6753,15 @@
 .cz3-feat-card.big .btn-gold { background: var(--champagne); color: var(--obsidian); border-color: var(--champagne); }
 @media (prefers-reduced-motion: reduce) { .cz3-feat-card { animation: none; } }
 @media (max-width: 999px) { .cz3-feat-card.big h3 { font-size: 24px; } }
+
+/* Floating live preview (phones) */
+.pdock { position: fixed; z-index: 80; top: calc(var(--header-h) + 10px); right: 12px; width: 112px; animation: pdockIn 0.35s var(--ease-spring); transition: width 0.35s var(--ease); }
+.pdock.big { width: min(64vw, 280px); }
+@keyframes pdockIn { from { opacity: 0; transform: translateY(-10px) scale(0.9); } }
+.pdock-art { display: block; width: 100%; padding: 8px; border-radius: 14px; background: radial-gradient(80% 70% at 50% 15%, #fffaf0, #e7dccb); box-shadow: 0 16px 34px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.06); position: relative; }
+.pdock-inner { display: block; pointer-events: none; }
+.pdock-live { position: absolute; z-index: 3; top: -8px; left: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 99px; background: var(--obsidian); color: #fff; font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.pdock-live i { width: 6px; height: 6px; border-radius: 50%; background: #e0574a; animation: cz3Pulse 1.4s ease-in-out infinite; }
+.pdock-up { position: absolute; bottom: -10px; right: -6px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--obsidian); color: #fff; box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.5); }
+@media (min-width: 980px) { .pdock { display: none; } }
+@media (prefers-reduced-motion: reduce) { .pdock { animation: none; } .pdock-live i { animation: none; } }
