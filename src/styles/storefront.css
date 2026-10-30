@@ -192,7 +192,6 @@
 }
 @keyframes sf-rise {
   from {
-    opacity: 0;
     transform: translateY(14px);
   }
 }
@@ -1017,7 +1016,6 @@
 }
 @keyframes gf2-in {
   from {
-    opacity: 0;
     transform: translateX(18px);
   }
 }

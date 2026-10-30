@@ -6,7 +6,7 @@
 // product feed, the catalogue snapshot and 404.html.
 // If the catalogue can't be fetched (offline build), product and category
 // pages are skipped and the SPA fallback in vercel.json still serves them.
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ORGANIZATION, WEBSITE, productLd, breadcrumbLd } from '../src/lib/schema.js';
@@ -23,6 +23,55 @@ const SUPABASE = process.env.VITE_SUPABASE_URL || 'https://gwxdzemazqontjobqnyy.
 const KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_aY3MrFdQflveTXhDNb_YyQ_S7HOZUE3';
 const OG = `${SITE}/og-image.jpg`;
 const shell = readFileSync(join(dist, 'index.html'), 'utf8');
+
+// Each route's page chunk (and its CSS) is preloaded in the HTML, so the
+// browser fetches it alongside the main bundle instead of after it runs.
+let manifest = {};
+try {
+  manifest = JSON.parse(readFileSync(join(dist, '.vite', 'manifest.json'), 'utf8'));
+} catch {}
+const PAGE_FILES = [
+  [/^\/shop(\/|$)/, 'src/pages/Shop.jsx'],
+  [/^\/product\//, 'src/pages/Product.jsx'],
+  [/^\/customize$/, 'src/pages/Customize.jsx'],
+  [/^\/customize\/photo$/, 'src/pages/PhotoBuilder.jsx'],
+  [/^\/customize\//, 'src/pages/TemplateEditor.jsx'],
+  [/^\/cart$/, 'src/pages/Cart.jsx'],
+  [/^\/checkout$/, 'src/pages/Checkout.jsx'],
+  [/^\/orders$/, 'src/pages/Orders.jsx'],
+  [/^\/wishlist$/, 'src/pages/Wishlist.jsx'],
+  [/^\/gift-finder$/, 'src/pages/GiftFinder.jsx'],
+  [/^\/collections/, 'src/pages/Collections.jsx'],
+  [/^\/journal/, 'src/pages/Journal.jsx'],
+  [/^\/worlds/, 'src/pages/Worlds.jsx'],
+  [/^\/celebrations$/, 'src/pages/Celebrations.jsx'],
+  [/^\/signature-experience$/, 'src/pages/Signature.jsx'],
+  [/^\/visualise$/, 'src/pages/Visualise.jsx'],
+  [/^\/wall-planner$/, 'src/pages/WallPlanner.jsx'],
+  [/^\/room-inspiration$/, 'src/pages/Inspiration.jsx'],
+  [/^\/(about|contact|support|corporate|privacy|terms|refund|replacement-policy|shipping-policy|cookie-policy)$/, 'src/pages/Info.jsx'],
+];
+const entryChunks = new Set();
+(function walk(key) {
+  const c = manifest[key];
+  if (!c || entryChunks.has(key)) return;
+  entryChunks.add(key);
+  (c.imports || []).forEach(walk);
+})('index.html');
+function preloadsFor(path) {
+  const src = PAGE_FILES.find(([re]) => re.test(path))?.[1];
+  if (!src || !manifest[src]) return '';
+  const js = new Set();
+  const css = new Set();
+  (function walk(key) {
+    const c = manifest[key];
+    if (!c || entryChunks.has(key) || js.has(c.file)) return;
+    js.add(c.file);
+    (c.css || []).forEach((f) => css.add(f));
+    (c.imports || []).forEach(walk);
+  })(src);
+  return [...[...css].map((f) => `<link rel="preload" as="style" href="/${f}" />`), ...[...js].map((f) => `<link rel="modulepreload" crossorigin href="/${f}" />`)].join('\n    ');
+}
 
 const esc = (s = '') => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const inr = (n) => '₹' + Math.round(Number(n) || 0).toLocaleString('en-IN');
@@ -71,6 +120,7 @@ function page({ path, title, description, image = OG, noindex = false, jsonLd, b
     .replace(/<meta property="og:image"[^>]*>/, `<meta property="og:image" content="${esc(image)}" />`);
   const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
   const extra = [
+    preloadsFor(path),
     `<meta name="robots" content="${noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'}" />`,
     `<meta name="twitter:title" content="${esc(title)}" />`,
     `<meta name="twitter:description" content="${esc(description)}" />`,
@@ -131,6 +181,8 @@ function config(p) {
   const material = of('material').map((o) => cat.materials.find((x) => x.slug === o.option_slug)).filter(Boolean)[0];
   return { sizes, colours, material };
 }
+// Images in the crawler-readable HTML sit inside <noscript>: crawlers read
+// them, while browsers running the app don't download them a second time.
 const thumb = (u, w = 480) => `https://wsrv.nl/?url=${encodeURIComponent(u)}&w=${w}&output=webp&q=78`;
 const images = (p) => (p.product_images || []).filter((i) => i.active !== false).sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0) || (a.display_order || 0) - (b.display_order || 0));
 const catName = (slug) => cat.categories.find((c) => c.slug === slug)?.name || slug;
@@ -138,7 +190,7 @@ const products = cat.products.filter((p) => p.legacy_id);
 const fromPrice = (p) => Math.min(...(config(p).sizes.map((s) => s.price).concat(p.price ? [+p.price] : [])));
 const productItem = (p) => {
   const img = images(p)[0]?.url;
-  return `<li><a href="/product/${p.legacy_id}">${esc(p.name)}</a> — <a href="/shop/${p.category_slug}">${esc(catName(p.category_slug))} wall art</a>, from ${inr(fromPrice(p))}${p.description ? `. ${esc(p.description)}` : ''}${img ? `<br /><img src="${esc(thumb(img))}" alt="${esc(`${p.name} — framed ${catName(p.category_slug).toLowerCase()} wall art by JHAYRA`)}" width="240" loading="lazy" />` : ''}</li>`;
+  return `<li><a href="/product/${p.legacy_id}">${esc(p.name)}</a> — <a href="/shop/${p.category_slug}">${esc(catName(p.category_slug))} wall art</a>, from ${inr(fromPrice(p))}${p.description ? `. ${esc(p.description)}` : ''}${img ? `<noscript><img src="${esc(thumb(img))}" alt="${esc(`${p.name} — framed ${catName(p.category_slug).toLowerCase()} wall art by JHAYRA`)}" width="240" loading="lazy" /></noscript>` : ''}</li>`;
 };
 const usedCats = cat.categories.filter((c) => products.some((p) => p.category_slug === c.slug));
 const shopFacts = cat.sizes.length
@@ -292,7 +344,7 @@ for (const p of products) {
   const body =
     crumbs([['Home', '/'], ['Shop', '/shop'], [cName, `/shop/${p.category_slug}`], [p.name, path]]) +
     `<h1>${esc(p.name)}</h1>` +
-    (main ? `<img src="${esc(thumb(main, 800))}" alt="${esc(`${p.name} — framed ${cName.toLowerCase()} wall art by JHAYRA`)}" width="600" />` : '') +
+    (main ? `<noscript><img src="${esc(thumb(main, 800))}" alt="${esc(`${p.name} — framed ${cName.toLowerCase()} wall art by JHAYRA`)}" width="600" /></noscript>` : '') +
     `<p>${esc(p.description || '')}</p>` +
     (p.customer_photo_eligible ? '<p>You can add your own photo to this design before it is framed.</p>' : '') +
     (sizes.length ? `<h2>Sizes &amp; prices</h2><ul>${sizes.map((s) => `<li>${esc(s.name)} — ${esc(s.dimensions)} — ${inr(s.price)}</li>`).join('')}</ul>` : '') +
@@ -489,4 +541,5 @@ writeFileSync(
   `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">\n  <channel>\n    <title>JHAYRA — Framed Wall Art &amp; Personalised Photo Frames</title>\n    <link>${SITE}/</link>\n    <description>JHAYRA product feed</description>\n${feedItems.join('\n')}\n  </channel>\n</rss>\n`,
 );
 
+rmSync(join(dist, '.vite'), { recursive: true, force: true });
 console.log(`[prerender] ${urls.length} indexable pages, ${products.length} products, ${usedCats.length} categories, ${feedItems.length} feed items`);

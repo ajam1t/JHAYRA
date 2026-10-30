@@ -104,6 +104,7 @@ export default function TemplateEditor({ scratch = false }) {
   if (!base)
     return (
       <div className="wrap section center">
+        <Seo title="Design Not Found" path="/customize" noindex />
         <h1 className="h2">Design not found</h1>
         <Link to="/customize" className="btn" style={{ marginTop: 22 }}>
           Browse all designs

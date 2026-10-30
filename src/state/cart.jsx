@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { cartTotals } from './cartTotals';
 
 const CartCtx = createContext(null);
 const KEY = 'jhayra_cart_v2';
@@ -64,12 +65,7 @@ export function CartProvider({ children }) {
     }
   }, []);
 
-  const totals = useMemo(() => {
-    const count = items.reduce((s, i) => s + i.qty, 0);
-    const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
-    const discount = coupon ? Math.round((subtotal * coupon.discount) / 100) : 0;
-    return { count, subtotal, discount, total: Math.max(0, subtotal - discount) };
-  }, [items, coupon]);
+  const totals = useMemo(() => cartTotals(items, coupon), [items, coupon]);
 
   const value = { items, ...totals, coupon, add, setQty, remove, clear, applyCoupon, clearCoupon: () => setCoupon(null), drawerOpen, setDrawerOpen, lastAdded };
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;

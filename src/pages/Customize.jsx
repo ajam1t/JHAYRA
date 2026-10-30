@@ -4,6 +4,7 @@ import Frame from '../components/Frame';
 import TemplateCanvas from '../components/TemplateCanvas';
 import Icon from '../components/Icon';
 import Reveal from '../components/Reveal';
+import LazyMount from '../components/LazyMount';
 import { Story, reduced, ripple } from '../components/Motion';
 import { Seo } from '../lib/seo';
 import { SITE_URL, breadcrumbLd } from '../lib/schema';
@@ -297,7 +298,9 @@ export default function Customize() {
               <h2 className="hs-title">What are you celebrating?</h2>
             </div>
           </div>
-          <Moments active={active} moment={moment} onPick={(v) => set('moment', v)} />
+          <LazyMount minHeight={260} margin="300px">
+            <Moments active={active} moment={moment} onPick={(v) => set('moment', v)} />
+          </LazyMount>
         </div>
       </section>
 
@@ -310,11 +313,13 @@ export default function Customize() {
                 <h2 className="hs-title">Our bestselling designs</h2>
               </div>
             </div>
-            <div className="hs-scroll cz3-rail">
-              {loved.map((t, i) => (
-                <TCard key={t.id} t={t} i={i} />
-              ))}
-            </div>
+            <LazyMount minHeight={360} margin="300px">
+              <div className="hs-scroll cz3-rail">
+                {loved.map((t, i) => (
+                  <TCard key={t.id} t={t} i={i} />
+                ))}
+              </div>
+            </LazyMount>
           </div>
         </section>
       )}
@@ -374,11 +379,13 @@ export default function Customize() {
               </button>
             )}
           </div>
-          <div className="tgrid">
-            {list.slice(0, shown).map((t, i) => (
-              <TCard key={t.id} t={t} i={i} />
-            ))}
-          </div>
+          <LazyMount minHeight={900} margin="400px">
+            <div className="tgrid">
+              {list.slice(0, shown).map((t, i) => (
+                <TCard key={t.id} t={t} i={i} />
+              ))}
+            </div>
+          </LazyMount>
           {list.length > shown && (
             <div className="center" style={{ marginTop: 28 }}>
               <button type="button" className="btn btn-ghost" onClick={() => setShown((n) => n + PAGE)}>

@@ -6,6 +6,8 @@ export default defineConfig({
   build: {
     target: 'es2019',
     cssCodeSplit: true,
+    // Read by scripts/prerender.mjs to preload each page's own chunk.
+    manifest: true,
     rollupOptions: {
       output: {
         manualChunks: {

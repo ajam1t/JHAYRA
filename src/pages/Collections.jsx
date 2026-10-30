@@ -138,6 +138,7 @@ export default function Collections() {
   if (!c)
     return (
       <div className="wrap section center">
+        <Seo title="Collection Not Found" path="/collections" noindex />
         <h1 className="h2">Collection not found</h1>
         <Link to="/collections" className="btn" style={{ marginTop: 20 }}>
           All collections

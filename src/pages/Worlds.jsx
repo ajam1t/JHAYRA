@@ -1090,6 +1090,7 @@ export default function Worlds() {
   if (!w)
     return (
       <div className="wrap section center">
+        <Seo title="World Not Found" path="/worlds" noindex />
         <h1 className="h2">World not found</h1>
         <Link to="/worlds" className="btn" style={{ marginTop: 20 }}>
           All worlds

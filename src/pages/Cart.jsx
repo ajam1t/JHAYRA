@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import '../styles/bag.css';
 import { Link, useNavigate } from 'react-router-dom';
 import Icon, { WhatsAppGlyph } from '../components/Icon';
 import Frame from '../components/Frame';

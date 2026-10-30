@@ -24,7 +24,7 @@ import { SignatureInvite } from '../components/Layout';
 import { EventBanner, EventHeroAccent, EventPicks } from '../components/EventExperience';
 import { useToast } from '../state/store';
 import { daysUntil, orderBy } from '../lib/festivals';
-import { money, SITE, waLink } from '../lib/site';
+import { money, SITE, waLink, safePath } from '../lib/site';
 import { BRAND } from '../lib/brand';
 import { COLOURS, MIN_PRICE, SIZES } from '../lib/frames';
 import { photoHandoff, readPhoto } from '../lib/upload';
@@ -134,10 +134,10 @@ function FestivalHero({ festival }) {
           <p className="lead">{festival.lead}</p>
           <CouponChip code={festival.coupon} offer={festival.offer} />
           <div className="row fx-ctas">
-            <Link to={festival.cta.to} className="btn btn-gold btn-lg">
+            <Link to={safePath(festival.cta.to)} className="btn btn-gold btn-lg">
               {festival.cta.label} <Icon name="arrow" size={18} />
             </Link>
-            <Link to={festival.cta2.to} className="btn btn-ghost-light btn-lg">
+            <Link to={safePath(festival.cta2.to)} className="btn btn-ghost-light btn-lg">
               {festival.cta2.label}
             </Link>
           </div>
@@ -173,7 +173,7 @@ function FestivalPicks({ festival, products, categories }) {
               Made for <em>this {festival.name}</em>
             </h2>
           </div>
-          <Link to={festival.cta.to} className="link">
+          <Link to={safePath(festival.cta.to)} className="link">
             See everything <Icon name="arrow" size={16} />
           </Link>
         </div>

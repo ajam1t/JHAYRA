@@ -126,6 +126,7 @@ export default function Journal() {
   if (!a)
     return (
       <div className="wrap section center">
+        <Seo title="Article Not Found" path="/journal" noindex />
         <h1 className="h2">Article not found</h1>
         <Link to="/journal" className="btn" style={{ marginTop: 20 }}>
           All articles

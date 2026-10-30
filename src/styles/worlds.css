@@ -787,7 +787,7 @@
 }
 .d-gallery-light {
   position: absolute;
-  inset: -40px -20px auto;
+  inset: -40px 0 auto;
   height: 160px;
   background: radial-gradient(50% 60% at 50% 0%, rgba(255, 236, 200, 0.75), transparent 70%);
   pointer-events: none;

@@ -166,3 +166,12 @@
   .m-float, .m-shimmer, .m-pop, .m-morph, .m-ripple-ink { animation: none !important; }
   .m-tilt, .m-magnetic, .m-parallax { transform: none !important; }
 }
+
+/* First view: visible from the first frame, gliding into place (no fade from
+   transparent, which would hold back the page's largest paint). */
+.m-now,
+.m-now.m-stagger > * { transition: none; animation: m-now 0.7s var(--m-ease) both; animation-delay: var(--d, 0s); }
+.m-now.m-stagger > * { animation-delay: calc(var(--d, 0s) + min(var(--i, 0), 10) * 0.06s); }
+.m-now.m-stagger { animation: none; }
+@keyframes m-now { from { transform: translateY(12px); } }
+@media (prefers-reduced-motion: reduce) { .m-now, .m-now.m-stagger > * { animation: none; } }

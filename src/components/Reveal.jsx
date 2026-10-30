@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 let io;
 function observer() {
@@ -18,11 +18,20 @@ function observer() {
 
 export function useReveal() {
   const ref = useRef(null);
+  // Already on screen when it mounts (the first view of a page): show it at
+  // once with a slide-only entrance, so headlines are never invisible while
+  // the page loads. Further down, the usual fade-in on scroll applies.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof window === 'undefined') return;
+    const r = el.getBoundingClientRect();
+    if (r.top < window.innerHeight && r.bottom > 0) el.classList.add('in', 'm-now');
+  }, []);
   useEffect(() => {
     const el = ref.current;
     const o = observer();
     if (!el) return;
-    if (!o) {
+    if (!o || el.classList.contains('m-now')) {
       el.classList.add('in');
       return;
     }

@@ -12,7 +12,7 @@ import { useToast, saveLocalOrder } from '../state/store';
 import { useFestival } from '../state/festival';
 import { useActiveCampaign } from '../lib/campaigns';
 import { founderEligible, useSignature } from '../lib/signature';
-import { money, waLink, deliveryWindow, SITE } from '../lib/site';
+import { money, waLink, deliveryWindow, SITE, mobile10 } from '../lib/site';
 import { BRAND } from '../lib/brand';
 
 function loadRazorpay() {
@@ -194,7 +194,7 @@ export default function Checkout() {
   const validate = () => {
     const e = {};
     if (!d.name.trim()) e.name = 'Please enter your full name';
-    if (d.mobile.replace(/\D/g, '').length !== 10) e.mobile = 'Mobile number must be 10 digits';
+    if (!/^[6-9]\d{9}$/.test(mobile10(d.mobile))) e.mobile = 'Please enter a valid 10-digit mobile number';
     if (d.email && !/^\S+@\S+\.\S+$/.test(d.email)) e.email = 'Please check this email';
     if (!/^\d{6}$/.test(d.pin)) e.pin = 'Enter a valid 6-digit pincode';
     if (!d.address.trim()) e.address = 'Please enter your address';
@@ -267,7 +267,7 @@ export default function Checkout() {
           items,
           customer: {
             name: d.name.trim(),
-            mobile: d.mobile.trim(),
+            mobile: mobile10(d.mobile),
             email: d.email.trim() || null,
             address: d.address.trim(),
             city: d.city.trim(),
@@ -293,7 +293,7 @@ export default function Checkout() {
         name: 'JHAYRA',
         description: 'Handcrafted frames & wall art',
         image: SITE.ogImage,
-        prefill: { name: d.name.trim(), email: d.email.trim(), contact: d.mobile.trim() },
+        prefill: { name: d.name.trim(), email: d.email.trim(), contact: mobile10(d.mobile) },
         notes: giftInfo ? { gift: 'yes' } : undefined,
         theme: { color: '#B68D40' },
         modal: {
@@ -391,7 +391,7 @@ export default function Checkout() {
               </div>
               <div className="field">
                 <label htmlFor="ck-mobile">Mobile (for WhatsApp updates)</label>
-                <input id="ck-mobile" className="input" inputMode="tel" autoComplete="tel-national" maxLength={14} {...f('mobile')} />
+                <input id="ck-mobile" className="input" inputMode="tel" autoComplete="tel-national" maxLength={16} {...f('mobile')} />
                 {errors.mobile && <small className="err">{errors.mobile}</small>}
               </div>
               <div className="field">

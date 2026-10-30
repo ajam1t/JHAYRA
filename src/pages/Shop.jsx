@@ -361,7 +361,7 @@ function ShopTheLook({ products }) {
             {look.map((p, i) => (
               <li key={p.id}>
                 <span className="sh-look-n">{i + 1}</span>
-                <Link to={`/product/${p.id}`} className="sh-look-thumb">
+                <Link to={`/product/${p.id}`} className="sh-look-thumb" aria-label={p.name}>
                   <Img src={p.thumbnail} alt="" sizes="56px" width={160} />
                 </Link>
                 <span className="sh-look-info">
@@ -543,7 +543,9 @@ export default function Shop() {
   const frame = finishes.find((c) => c.slug === f.finish);
   const showSize = f.size || f.price ? okSizes[0] : null;
   const seo = CATEGORY_SEO[f.category];
-  const title = f.q ? `Results for “${f.q}”` : cat ? seo?.h1 || cat.name : room ? `Wall art for your ${room.label.toLowerCase()}` : null;
+  // /shop/<slug> for a category that doesn't exist (renamed or removed).
+  const lostCat = !!f.category && !!categories && !cat;
+  const title = lostCat ? 'This category has moved' : f.q ? `Results for “${f.q}”` : cat ? seo?.h1 || cat.name : room ? `Wall art for your ${room.label.toLowerCase()}` : null;
   const faq = cat ? categoryFaq(seo?.h1 || cat.name, { sizes: tables?.sizes, colours: (tables?.colours || []).filter((c) => finishes.some((x) => x.slug === c.slug)) }) : null;
   const pagePath = f.category ? `/shop/${f.category}` : room ? `/shop?room=${room.id}` : '/shop';
   const jsonLd = cat
@@ -560,7 +562,7 @@ export default function Shop() {
         title={cat ? seo?.title || `${cat.name} Frames & Wall Art` : room ? `${room.label} Wall Art — Framed Art Ideas` : 'Buy Framed Wall Art & Personalised Photo Frames Online in India'}
         description={seo?.description || cat?.description || room?.blurb || `Shop handcrafted framed wall art and personalised photo frames online — by room, style and mood, in four sizes and black, gold or brown frames. Free delivery across India.`}
         path={pagePath}
-        noindex={!!f.q}
+        noindex={!!f.q || lostCat}
         jsonLd={jsonLd}
       />
       <section className={`sh-intro ${landing ? 'sh-intro-land' : ''}`}>

@@ -17,6 +17,7 @@ import Gate, { GATE_KEY } from './Gate';
 import { FESTIVALS, FESTIVALS_PATH, saveFestivals } from '../lib/festivals';
 import { CAMPAIGNS_PATH, DEFAULT_CAMPAIGNS, saveCampaigns } from '../lib/campaigns';
 import { TEMPLATES_PATH, saveTemplates } from '../lib/templates';
+import { SIGNATURE_PATH, DEFAULT_SIGNATURE, saveSignature } from '../lib/signature';
 import seedTemplates from '../templates.json';
 
 // The storefront reads its editable settings from Supabase Storage. Until an
@@ -35,6 +36,7 @@ async function ensureSiteConfig() {
     [FESTIVALS_PATH, () => saveFestivals(FESTIVALS)],
     [CAMPAIGNS_PATH, () => saveCampaigns(DEFAULT_CAMPAIGNS)],
     [TEMPLATES_PATH, () => saveTemplates(seedTemplates)],
+    [SIGNATURE_PATH, () => saveSignature(DEFAULT_SIGNATURE)],
   ];
   for (const [path, save] of jobs) if (await missing(path)) await save().catch(() => {});
 }

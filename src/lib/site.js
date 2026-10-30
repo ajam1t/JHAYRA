@@ -40,3 +40,10 @@ export function deliveryTimeline(from = new Date()) {
   const fmt = (d) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
   return { placed: fmt(from), ship: [fmt(addBiz(from, 1)), fmt(addBiz(from, 2))], arrive: [fmt(addBiz(from, 6)), fmt(addBiz(from, 9))] };
 }
+
+// Admin-entered link targets: only same-site paths are followed (never
+// javascript:, protocol-relative or external URLs); anything else goes home.
+export const safePath = (to) => (typeof to === 'string' && /^\/(?!\/|\\)/.test(to.trim()) ? to.trim() : '/');
+
+// Indian mobile as 10 digits: accepts +91 / 91 / 0 prefixes, spaces and dashes.
+export const mobile10 = (v = '') => String(v).replace(/\D/g, '').replace(/^(?:91|0)(?=\d{10}$)/, '');
