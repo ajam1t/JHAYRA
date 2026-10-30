@@ -141,8 +141,10 @@
   transform: scaleY(var(--p, 0));
   transition: transform 0.8s var(--m-ease);
 }
-.m-story-step { position: relative; z-index: 1; display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; opacity: 0.45; transition: opacity 0.5s; }
+.m-story-step { position: relative; z-index: 1; display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; transition: transform 0.5s var(--ease); }
 .m-story-step.on { opacity: 1; }
+.m-story-step:not(.on) { transform: translateY(4px); }
+.m-story-step:not(.on) .m-story-n { opacity: 0.55; }
 .m-story-n {
   width: 28px;
   height: 28px;
