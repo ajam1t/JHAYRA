@@ -98,7 +98,7 @@ function Login() {
           </div>
           <label className="gt-field">
             <span>Mobile number or email</span>
-            <input type="text" inputMode="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="98765 43210" autoFocus />
+            <input type="text" inputMode="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
           </label>
           <label className="gt-field">
             <span>Password</span>
