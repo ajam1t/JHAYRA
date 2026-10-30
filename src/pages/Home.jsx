@@ -18,6 +18,8 @@ import { ROOMS } from '../lib/rooms';
 import { HOME_FAQ } from '../lib/faq';
 import { useFestival } from '../state/festival';
 import { useActiveCampaign } from '../lib/campaigns';
+import { useSignature } from '../lib/signature';
+import { SignatureInvite } from '../components/Layout';
 import { EventBanner, EventHeroAccent, EventPicks } from '../components/EventExperience';
 import { useToast } from '../state/store';
 import { daysUntil, orderBy } from '../lib/festivals';
@@ -1028,6 +1030,17 @@ function Faq() {
 }
 
 /* ── Final call to action ─────────────────────────────────────────── */
+// Invitation to the Signature Experience, shown while it is switched on.
+function SignatureHome() {
+  const sig = useSignature();
+  if (sig.enabled === false) return null;
+  return (
+    <section className="wrap sg-home" aria-label="The Jhayra Signature Experience">
+      <SignatureInvite className="sg-strip-card" />
+    </section>
+  );
+}
+
 export default function Home() {
   const festival = useFestival();
   const campaign = useActiveCampaign();
@@ -1074,6 +1087,7 @@ export default function Home() {
       <LazyMount minHeight={900}>
         <Bestsellers products={products} />
       </LazyMount>
+      <SignatureHome />
       <Faq />
     </>
   );

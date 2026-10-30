@@ -30,7 +30,7 @@ const MENU = [
   ['Shop', [['/shop', 'All Wall Art'], ['/shop?room=living', 'Living Room'], ['/shop?room=bedroom', 'Bedroom'], ['/shop?room=office', 'Office'], ['/shop?room=dining', 'Dining Room'], ['/customize', 'Personalised Frames']]],
   ['Create', [['/customize', 'Create Your Own Art'], ['/customize/photo', 'Upload Your Photo'], ['/visualise', 'Visualise on Your Wall'], ['/wall-planner', 'Plan a Gallery Wall']]],
   ['Celebrations', [['/celebrations', 'All Celebrations'], ['/worlds/festivals', 'Festivals'], ['/worlds/wedding', 'Weddings'], ['/customize?moment=anniversary', 'Anniversaries'], ['/customize?moment=birthday', 'Birthdays'], ['/collections/art-for-gifting', 'Gifting']]],
-  ['Discover', [['/gift-finder', 'Gift Finder'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/shop?sort=new', 'New Arrivals'], ['/collections', 'Collections'], ['/worlds', 'Worlds'], ['/journal', 'Inspiration Journal']]],
+  ['Discover', [['/signature-experience', 'Signature Experience ✦'], ['/gift-finder', 'Gift Finder'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/shop?sort=new', 'New Arrivals'], ['/collections', 'Collections'], ['/worlds', 'Worlds'], ['/journal', 'Inspiration Journal']]],
   ['About', [['/about', 'Our Story'], ['/contact', 'Contact'], ['/support', 'Help & FAQs'], ['/orders', 'My Orders'], ['/wishlist', 'Wishlist'], ['/corporate', 'Corporate Gifting']]],
 ];
 
@@ -130,6 +130,21 @@ function Header({ onMenu, menuOpen }) {
 // Slim strip under the header. On the homepage it carries the live campaign
 // (e.g. Diwali) when there is one; everywhere else it invites people to the
 // Signature Experience.
+export function SignatureInvite({ className = '' }) {
+  return (
+      <Link to="/signature-experience" className={`sg-strip ${className}`} aria-label="The Jhayra Signature Experience — discover the experience">
+        <span className="sg-strip-title">
+          <b>The Jhayra</b>
+          <em>Signature Experience</em>
+        </span>
+        <span className="sg-strip-sub">Artistry · Exclusivity · Personal Service</span>
+        <span className="sg-strip-cta">
+          <span>Discover the Experience</span> <Icon name="arrow" size={13} stroke={2} />
+        </span>
+      </Link>
+  );
+}
+
 function TopStrip() {
   const { pathname } = useLocation();
   const c = useActiveCampaign();
@@ -156,18 +171,7 @@ function TopStrip() {
     );
   }
   return (
-    sig.enabled !== false && sig.items.some((i) => i.enabled !== false) && (
-      <Link to="/signature-experience" className="sg-strip" aria-label="The Jhayra Signature Experience — discover the experience">
-        <span className="sg-strip-title">
-          <b>The Jhayra</b>
-          <em>Signature Experience</em>
-        </span>
-        <span className="sg-strip-sub">Artistry · Exclusivity · Personal Service</span>
-        <span className="sg-strip-cta">
-          <span>Discover the Experience</span> <Icon name="arrow" size={13} stroke={2} />
-        </span>
-      </Link>
-    )
+    sig.enabled !== false && <SignatureInvite />
   );
 }
 
@@ -530,7 +534,7 @@ function Footer() {
   const cols = [
     ['Shop', [['/shop', 'All wall art'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/collections', 'Collections'], ['/customize', 'Create your own'], ['/gift-finder', 'Gift finder'], ['/corporate', 'Corporate gifting']]],
     ['Help', [['/support', 'Help & FAQs'], ['/orders', 'Track my order'], ['/shipping-policy', 'Shipping'], ['/refund', 'Returns & refunds'], ['/contact', 'Contact us']]],
-    ['Jhayra', [['/about', 'About us'], ['/worlds', 'Worlds'], ['/journal', 'Journal'], ['/visualise', 'Visualise']]],
+    ['Jhayra', [['/signature-experience', 'Signature'], ['/about', 'About us'], ['/worlds', 'Worlds'], ['/journal', 'Journal'], ['/visualise', 'Visualise']]],
   ];
   return (
     <footer className="footer">

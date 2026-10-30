@@ -531,7 +531,7 @@ export default function Shop() {
       <section className={`sh-intro ${landing ? 'sh-intro-land' : ''}`}>
         <div className="wrap sh-intro-grid">
           <div>
-            {landing && <span className="sh-eyebrow">The JHAYRA gallery · {products?.length || ''} designs</span>}
+            {landing && <span className="sh-eyebrow">The JHAYRA gallery</span>}
             <Motion as="h1" type="blur" className="sh-title">
               {title || (
                 <>
@@ -539,9 +539,11 @@ export default function Shop() {
                 </>
               )}
             </Motion>
-            <Motion as="p" type="fade" delay={0.1} className="sh-lead">
-              {cat?.description || room?.blurb || '4 sizes · black, gold & wood frames · handcrafted to order · free delivery across India.'}
-            </Motion>
+            {(cat?.description || room?.blurb) && (
+              <Motion as="p" type="fade" delay={0.1} className="sh-lead">
+                {cat?.description || room?.blurb}
+              </Motion>
+            )}
             <form
               className="sh-search"
               role="search"
