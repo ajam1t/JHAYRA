@@ -4,12 +4,80 @@ import { supabase } from '../lib/supabase';
 import { money } from '../lib/site';
 import { invalidateCatalog } from '../lib/catalog';
 import { optimized } from '../lib/img';
+import { getMaster, uploadMaster, downloadPrivate } from './printMaster';
 
 const slugify = (s) =>
   s
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
+
+// Your original, high-resolution artwork for printing this product. Stored
+// privately (never shown on the website); used by Admin → Photos & print files.
+function PrintMaster({ pid, name }) {
+  const [m, setM] = useState(undefined);
+  const [size, setSize] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const load = async () => {
+    const x = await getMaster(pid);
+    setM(x);
+    setSize(null);
+    if (x) {
+      const { data } = await supabase.storage.from('customer-artwork').createSignedUrl(x.path, 600);
+      if (data?.signedUrl) {
+        const im = new Image();
+        im.onload = () => setSize([im.naturalWidth, im.naturalHeight]);
+        im.src = data.signedUrl;
+      }
+    }
+  };
+  useEffect(() => {
+    load();
+  }, [pid]); // eslint-disable-line react-hooks/exhaustive-deps
+  const add = async (file) => {
+    if (!file) return;
+    setBusy(true);
+    setErr('');
+    try {
+      await uploadMaster(pid, file);
+      await load();
+    } catch (e) {
+      setErr(e.message);
+    }
+    setBusy(false);
+  };
+  const slug = (name || 'artwork').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  return (
+    <div className="ad-card">
+      <h2>HD print file</h2>
+      <p className="ad-muted">Your original high-resolution artwork for printing this product — kept private, never shown on the website. It appears in Admin → Photos &amp; print files for every order of this product. For sharp prints aim for about 3600×5400 px (24 × 36 in at 150 dpi); A4 needs about 1500×2000 px.</p>
+      {err && <div className="ad-err">{err}</div>}
+      {m === undefined ? (
+        <p className="ad-muted">Checking…</p>
+      ) : m ? (
+        <p>
+          <b>Added</b> {new Date(m.created).toLocaleDateString('en-IN', { dateStyle: 'medium' })}
+          {m.size ? ` · ${(m.size / 1048576).toFixed(1)} MB` : ''}
+          {size ? ` · ${size[0]}×${size[1]} px` : ''}
+        </p>
+      ) : (
+        <p className="ad-muted">No HD print file yet — the website artwork will be used for printing.</p>
+      )}
+      <div className="ad-toolbar">
+        <label className="ad-btn ad-btn-primary">
+          {busy ? 'Uploading…' : m ? 'Replace HD file' : 'Add HD file'}
+          <input type="file" accept="image/*,.tif,.tiff" hidden onChange={(e) => add(e.target.files?.[0])} />
+        </label>
+        {m && (
+          <button type="button" className="ad-btn" onClick={() => downloadPrivate(m.path, `${slug}_print-file.${m.path.split('.').pop()}`).catch((e) => setErr(e.message))}>
+            Download
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function ProductList() {
   const [rows, setRows] = useState(null);
@@ -350,6 +418,7 @@ export function ProductForm() {
               </button>
             )}
           </div>
+          <PrintMaster pid={id} name={f.name} />
           <div className="ad-card">
             <div className="ad-row-between">
               <h2>Photos</h2>

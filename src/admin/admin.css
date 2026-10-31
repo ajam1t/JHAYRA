@@ -1881,3 +1881,9 @@
 .ph-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .ph-photo figcaption { display: grid; gap: 4px; padding: 10px; }
 .ph-photo figcaption .ad-btn { justify-content: center; margin-top: 4px; }
+.ph-dpi { font-weight: 600; font-size: 12px; }
+.ph-dpi.ok { color: #2f7a46; }
+.ph-dpi.warn { color: #9a6a12; }
+.ph-dpi.bad { color: #b3261e; }
+.ph-empty .ph-thumb { color: #a39a88; border-bottom: 1px dashed rgba(0, 0, 0, 0.12); }
+.ph-photo label.ad-btn { justify-content: center; cursor: pointer; }
