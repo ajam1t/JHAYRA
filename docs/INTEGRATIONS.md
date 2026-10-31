@@ -123,7 +123,7 @@ Recommendations would get sharper with product **tags** in Admin → Products, e
 | Personal gift messages | Live: the free gift card at checkout (to, from, message, hide price). `/checkout?gift=1` opens it. |
 | Priority delivery | Not bookable online: no option, fee or date logic exists in checkout or the payment function. The card sends a WhatsApp enquiry. Needs a delivery-tier table, pincode serviceability and a fee passed to `create-razorpay-order`. |
 | Founder delivery | WhatsApp request only, clearly marked "not confirmed until we accept". No location list or booking system exists. |
-| Art concierge | WhatsApp (+91 84464 40469). |
+| Art concierge | WhatsApp (+91 70707 28989). |
 
 ## Reviews
 

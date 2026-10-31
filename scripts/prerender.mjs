@@ -103,7 +103,7 @@ const links = (list) => list.map(([u, l]) => `<a href="${u}">${esc(l)}</a>`).joi
 const chrome = (main) =>
   `<header><p><a href="/"><strong>JHAYRA</strong></a> — Crafting Memories Into Art</p><nav aria-label="Main">${links(NAV)}</nav></header>` +
   `<main>${main}</main>` +
-  `<footer><nav aria-label="Help">${links(FOOT)}</nav><p>JHAYRA · framed wall art and personalised photo frames, handcrafted to order in India · WhatsApp <a href="https://wa.me/918446440469">+91 84464 40469</a> · <a href="mailto:hello@jhayra.in">hello@jhayra.in</a> · <a href="https://www.instagram.com/thejhayra/">Instagram @thejhayra</a></p></footer>`;
+  `<footer><nav aria-label="Help">${links(FOOT)}</nav><p>JHAYRA · framed wall art and personalised photo frames, handcrafted to order in India · WhatsApp <a href="https://wa.me/917070728989">+91 70707 28989</a> · <a href="mailto:hello@jhayra.in">hello@jhayra.in</a> · <a href="https://www.instagram.com/thejhayra/">Instagram @thejhayra</a></p></footer>`;
 const crumbs = (items) => `<nav aria-label="Breadcrumb">${items.map(([l, u], i) => (i === items.length - 1 ? esc(l) : `<a href="${u}">${esc(l)}</a>`)).join(' / ')}</nav>`;
 const faqHtml = (items, title = 'Frequently asked questions') => (items?.length ? `<h2>${esc(title)}</h2>${items.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}` : '');
 const faqLd = (items) => ({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) });
@@ -214,7 +214,7 @@ const STATIC = [
   ['/worlds', 'Worlds — Divine Art, Gen Z Quotes, Scenery & More | JHAYRA', 'JHAYRA worlds: Gen Z and desi quotes, divine art for every faith, festivals, scenery, Mithila heritage, Vastu, sports, city love, kids’ name boards and more.'],
   ['/journal', 'Wall Art Ideas & Framing Guides — JHAYRA Journal', 'Practical guides: gallery wall planning, how high to hang art and what size to choose, styling by room, personalised gift ideas and framed art care.'],
   ['/about', 'About JHAYRA — Our Story Since 2017', 'JHAYRA makes framed wall art and personalised photo frames, handcrafted to order in India since 2017. Meet the founder and how every piece is made.'],
-  ['/contact', 'Contact JHAYRA', 'WhatsApp +91 84464 40469, email hello@jhayra.in or Instagram @thejhayra — talk to a real person.'],
+  ['/contact', 'Contact JHAYRA', 'WhatsApp +91 70707 28989, email hello@jhayra.in or Instagram @thejhayra — talk to a real person.'],
   ['/support', 'Help & FAQ — Delivery, Sizes, Photos & Payments | JHAYRA', 'Answers to common questions: delivery times, sizes and frames, photo quality, payments, damaged orders and bulk orders.'],
   ['/corporate', 'Corporate Gifting — Personalised Wall Art in Bulk | JHAYRA', 'Branded, personalised frames for employee milestones, client thank-yous and festive gifting.'],
 ];
@@ -271,9 +271,9 @@ const BODIES = {
     `<h1>About JHAYRA</h1><p>JHAYRA — Crafting Memories Into Art — was founded in 2017 by Sandeep Jha with one idea: the moments people love most deserve a place on their walls, not just on their phones.</p>` +
     `<h2>What we make</h2><p>Framed wall art — devotional, nature, abstract, modern, Vastu and more — and personalised photo frames that customers design live on this website with their own photos, names and dates.</p>` +
     `<h2>How every piece is made</h2>${shopFacts}<p>Each order is printed, framed, quality-checked and packed for its journey. If anything arrives damaged or not as ordered, we replace it — see our <a href="/replacement-policy">replacement promise</a>.</p>` +
-    `<h2>Talk to us</h2><p>WhatsApp <a href="https://wa.me/918446440469">+91 84464 40469</a>, email <a href="mailto:hello@jhayra.in">hello@jhayra.in</a> or Instagram <a href="https://www.instagram.com/thejhayra/">@thejhayra</a>.</p>`,
+    `<h2>Talk to us</h2><p>WhatsApp <a href="https://wa.me/917070728989">+91 70707 28989</a>, email <a href="mailto:hello@jhayra.in">hello@jhayra.in</a> or Instagram <a href="https://www.instagram.com/thejhayra/">@thejhayra</a>.</p>`,
   '/contact': () =>
-    `<h1>Contact JHAYRA</h1><p>Talk to a real person about an order, a custom size, a bulk order or help choosing a design.</p><ul><li>WhatsApp / phone: <a href="https://wa.me/918446440469">+91 84464 40469</a></li><li>Email: <a href="mailto:hello@jhayra.in">hello@jhayra.in</a></li><li>Instagram: <a href="https://www.instagram.com/thejhayra/">@thejhayra</a></li></ul><p>Hours: Monday–Saturday 9:00 AM – 7:00 PM, Sunday 10:00 AM – 4:00 PM (India time).</p>`,
+    `<h1>Contact JHAYRA</h1><p>Talk to a real person about an order, a custom size, a bulk order or help choosing a design.</p><ul><li>WhatsApp / phone: <a href="https://wa.me/917070728989">+91 70707 28989</a></li><li>Email: <a href="mailto:hello@jhayra.in">hello@jhayra.in</a></li><li>Instagram: <a href="https://www.instagram.com/thejhayra/">@thejhayra</a></li></ul><p>Hours: Monday–Saturday 9:00 AM – 7:00 PM, Sunday 10:00 AM – 4:00 PM (India time).</p>`,
   '/collections': () => `<h1>Collections</h1><p>Curated JHAYRA collections and every category in the shop.</p><h2>Categories</h2><ul>${catLinks}</ul>`,
   '/journal': () => `<h1>Wall art ideas &amp; framing guides</h1><p>Practical guides from JHAYRA on choosing, sizing, hanging and gifting wall art.</p><ul>${ARTICLE_LIST.map((a) => `<li><a href="/journal/${a.slug}">${esc(a.title)}</a> — ${esc(a.dek)}</li>`).join('')}</ul>`,
 };
@@ -497,7 +497,7 @@ ${usedCats.map((c) => `- [${CATEGORY_SEO[c.slug]?.h1 || c.name}](${SITE}/shop/${
 - [Replacement promise](${SITE}/replacement-policy)
 
 ## Contact
-- WhatsApp / phone: +91 84464 40469
+- WhatsApp / phone: +91 70707 28989
 - Email: hello@jhayra.in
 - Instagram: https://www.instagram.com/thejhayra/
 `,

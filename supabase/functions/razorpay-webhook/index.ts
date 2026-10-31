@@ -14,7 +14,7 @@ async function hmacSHA256(message: string, secret: string): Promise<string> {
 
 
 // WhatsApp alert to the owner for each newly paid order (CallMeBot). Needs the
-// secrets CALLMEBOT_PHONE (e.g. 918446440469) and CALLMEBOT_APIKEY; without
+// secrets CALLMEBOT_PHONE (e.g. 917070728989) and CALLMEBOT_APIKEY; without
 // them it does nothing. Never blocks or fails the payment flow.
 async function notifyOwner(supabase: ReturnType<typeof createClient>, orderId: string) {
   const phone = Deno.env.get('CALLMEBOT_PHONE');

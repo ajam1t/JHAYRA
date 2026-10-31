@@ -19,12 +19,12 @@ export const ORGANIZATION = {
   logo: `${SITE_URL}/icon-512.png`,
   image: `${SITE_URL}/og-image.jpg`,
   email: 'hello@jhayra.in',
-  telephone: '+91-84464-40469',
+  telephone: '+91-70707-28989',
   foundingDate: '2017',
   founder: { '@type': 'Person', name: 'Sandeep Jha' },
   areaServed: { '@type': 'Country', name: 'India' },
   sameAs: ['https://www.instagram.com/thejhayra/'],
-  contactPoint: [{ '@type': 'ContactPoint', contactType: 'customer service', telephone: '+91-84464-40469', email: 'hello@jhayra.in', areaServed: 'IN' }],
+  contactPoint: [{ '@type': 'ContactPoint', contactType: 'customer service', telephone: '+91-70707-28989', email: 'hello@jhayra.in', areaServed: 'IN' }],
 };
 
 export const WEBSITE = {
