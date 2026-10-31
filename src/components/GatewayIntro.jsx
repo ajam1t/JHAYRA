@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { loadProducts } from '../lib/catalog';
 import { optimized } from '../lib/img';
 import { supabase } from '../lib/supabase';
-import { createIntroSound } from '../lib/introSound';
 import '../styles/gateway.css';
 
 // The chunk has loaded: the pre-paint failsafe in index.html stands down.
@@ -16,22 +15,14 @@ if (typeof window !== 'undefined') window.__jhIntro = true;
    One timeline drives every scene; each step adds a class, CSS does the motion.
    ───────────────────────────────────────────────────────────────────────── */
 const STEPS = [
-  ['approach', 60],
-  ['lock', 1300],
-  ['trace', 1650],
-  ['glow', 2250],
-  ['turn', 2500],
-  ['open', 3100],
-  ['through', 4050],
-  ['living', 4250],
-  ['focus', 4900],
-  ['bedroom', 5900],
-  ['dining', 6850],
-  ['hall', 7800],
-  ['brand', 8700],
-  ['dissolve', 9950],
+  ['focus', 650],
+  ['bedroom', 1650],
+  ['dining', 2600],
+  ['hall', 3550],
+  ['brand', 4450],
+  ['dissolve', 5700],
 ];
-const END_AT = 10750;
+const END_AT = 6500;
 
 // Real room photographs in the project. Frame slots are centre x/y and width,
 // as shares of the photo; height follows each artwork's own proportions.
@@ -140,113 +131,9 @@ function Photo({ src, w, h, className, onSize }) {
   return <canvas ref={ref} className={className} width={w} height={h} aria-hidden="true" />;
 }
 
-/* ── Gate leaf, drawn as architecture: wood, raised panels, gold inlay ── */
-function Leaf({ W, side }) {
-  const H = 1000;
-  const id = `gl${side}${W}`;
-  const fanCx = W / 2;
-  const top = { x: 44, y: 58, w: W - 88, h: 372 };
-  const bot = { x: 44, y: 566, w: W - 88, h: 376 };
-  const rays = 13;
-  return (
-    <svg className="gx-leaf-svg" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
-      <defs>
-        <linearGradient id={`${id}w`} x1="0" y1="0" x2="1" y2="0.15">
-          <stop offset="0" stopColor="#2a1e16" />
-          <stop offset="0.45" stopColor="#3a2a1e" />
-          <stop offset="1" stopColor="#21170f" />
-        </linearGradient>
-        <linearGradient id={`${id}g`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#7b5d2a" />
-          <stop offset="0.42" stopColor="#e6cf98" />
-          <stop offset="0.6" stopColor="#b89a60" />
-          <stop offset="1" stopColor="#6c5022" />
-        </linearGradient>
-        <linearGradient id={`${id}p`} x1="0" y1="0" x2="0.3" y2="1">
-          <stop offset="0" stopColor="#3d2c20" />
-          <stop offset="1" stopColor="#1d140e" />
-        </linearGradient>
-        <radialGradient id={`${id}j`} cx="0.5" cy="1" r="0.95">
-          <stop offset="0" stopColor="#120c08" />
-          <stop offset="1" stopColor="#21170f" />
-        </radialGradient>
-        <filter id={`${id}n`} x="0" y="0" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.012 0.42" numOctaves="2" seed="7" />
-          <feColorMatrix values="0 0 0 0 0.08  0 0 0 0 0.05  0 0 0 0 0.03  0 0 0 0.55 0" />
-        </filter>
-        <clipPath id={`${id}c`}>
-          <path d={`M${top.x} ${top.y + top.h} V${top.y + 120} Q${top.x} ${top.y} ${fanCx} ${top.y} Q${top.x + top.w} ${top.y} ${top.x + top.w} ${top.y + 120} V${top.y + top.h} Z`} />
-        </clipPath>
-      </defs>
-      <rect width={W} height={H} fill={`url(#${id}w)`} />
-      <rect width={W} height={H} filter={`url(#${id}n)`} opacity="0.9" />
-      {/* stiles and rails */}
-      <rect x="12" y="12" width={W - 24} height={H - 24} fill="none" stroke={`url(#${id}g)`} strokeWidth="3" />
-      <rect x="24" y="24" width={W - 48} height={H - 48} fill="none" stroke="#b89a60" strokeOpacity="0.45" strokeWidth="1" />
-      {/* upper panel: arched jaali screen in gold */}
-      <path d={`M${top.x} ${top.y + top.h} V${top.y + 120} Q${top.x} ${top.y} ${fanCx} ${top.y} Q${top.x + top.w} ${top.y} ${top.x + top.w} ${top.y + 120} V${top.y + top.h} Z`} fill={`url(#${id}j)`} stroke={`url(#${id}g)`} strokeWidth="2.5" />
-      <g clipPath={`url(#${id}c)`} stroke={`url(#${id}g)`} fill="none" strokeOpacity="0.9">
-        {Array.from({ length: rays }, (_, i) => {
-          const a = Math.PI * (i / (rays - 1));
-          const r = top.h * 1.25;
-          return <line key={i} x1={fanCx} y1={top.y + top.h} x2={fanCx - Math.cos(a) * r} y2={top.y + top.h - Math.sin(a) * r} strokeWidth="1.3" />;
-        })}
-        {[0.28, 0.5, 0.72, 0.95].map((k) => (
-          <circle key={k} cx={fanCx} cy={top.y + top.h} r={top.h * k} strokeWidth={k === 0.5 ? 2.2 : 1.1} />
-        ))}
-        <circle cx={fanCx} cy={top.y + top.h} r={top.h * 0.13} fill="#b89a60" fillOpacity="0.25" strokeWidth="2" />
-      </g>
-      {/* middle rail with studs */}
-      <rect x="24" y="458" width={W - 48} height="84" fill="#1c130d" opacity="0.55" />
-      <line x1="24" y1="458" x2={W - 24} y2="458" stroke="#b89a60" strokeOpacity="0.6" />
-      <line x1="24" y1="542" x2={W - 24} y2="542" stroke="#b89a60" strokeOpacity="0.6" />
-      {Array.from({ length: Math.floor((W - 120) / 46) }, (_, i) => (
-        <circle key={i} cx={52 + i * 46} cy="500" r="4.2" fill={`url(#${id}g)`} />
-      ))}
-      {/* lower raised panel with gold inlay */}
-      <rect x={bot.x} y={bot.y} width={bot.w} height={bot.h} fill={`url(#${id}p)`} />
-      <path d={`M${bot.x} ${bot.y} h${bot.w} l-16 16 h${-(bot.w - 32)} v${bot.h - 32} l-16 16 Z`} fill="#ffffff" opacity="0.05" />
-      <path d={`M${bot.x + bot.w} ${bot.y + bot.h} h${-bot.w} l16 -16 h${bot.w - 32} v${-(bot.h - 32)} l16 -16 Z`} fill="#000" opacity="0.28" />
-      <rect x={bot.x + 34} y={bot.y + 34} width={bot.w - 68} height={bot.h - 68} fill="none" stroke={`url(#${id}g)`} strokeWidth="1.6" />
-      <rect x={bot.x + 44} y={bot.y + 44} width={bot.w - 88} height={bot.h - 88} fill="none" stroke="#b89a60" strokeOpacity="0.35" strokeWidth="0.8" />
-      <g transform={`translate(${W / 2} ${bot.y + bot.h / 2})`} stroke={`url(#${id}g)`} fill="none" strokeWidth="1.6">
-        <path d="M0 -58 L34 0 L0 58 L-34 0 Z" />
-        <path d="M0 -36 L20 0 L0 36 L-20 0 Z" fill="#b89a60" fillOpacity="0.18" />
-        <circle r="6" fill="#d9bf86" stroke="none" />
-      </g>
-      {/* pull handle near the meeting edge, split around the lock */}
-      {[
-        [300, 140],
-        [560, 140],
-      ].map(([y, h]) => (
-        <g key={y}>
-          <rect x={W - 46} y={y} width="12" height={h} rx="6" fill={`url(#${id}g)`} />
-          <rect x={W - 43} y={y + 8} width="3" height={h - 16} rx="1.5" fill="#fff6dc" opacity="0.55" />
-        </g>
-      ))}
-    </svg>
-  );
-}
-
-/* The lock: brass medallion with the official JHAYRA monogram engraved.
-   Each gate leaf carries one half, so when the gates part the lock parts too. */
-function LockHalf() {
-  return (
-    <div className="gx-lock" aria-hidden="true">
-      <span className="gx-bolt" />
-      <span className="gx-ring" />
-      <span className="gx-dial">
-        <span className="gx-dial-face" />
-        <img className="gx-mono" src="/logo-mark-lg.webp" alt="" width="541" height="480" decoding="async" />
-        <span className="gx-trace" />
-        <span className="gx-notch" />
-      </span>
-    </div>
-  );
-}
-
 function ArtFrame({ slot, p, room }) {
   const [ratio, setRatio] = useState(1.414);
+  const [shown, setShown] = useState(false);
   if (!p) return null;
   const finish = FINISH[p.category] || 'black';
   // Sizes in units of the photo's width: moulding 4.5% of the frame, artwork
@@ -256,9 +143,9 @@ function ArtFrame({ slot, p, room }) {
   const wPct = slot.w * 100;
   const hPct = ((outerH * room.w) / room.h) * 100;
   return (
-    <figure className={`gx-frame f-${finish} ${slot.hero ? 'hero' : ''}`} style={{ left: `${slot.x * 100 - wPct / 2}%`, top: `${slot.y * 100 - hPct / 2}%`, width: `${wPct}%`, height: `${hPct}%`, padding: `${pad * 100}%` }}>
+    <figure className={`gx-frame f-${finish} ${slot.hero ? 'hero' : ''}`} style={{ left: `${slot.x * 100 - wPct / 2}%`, top: `${slot.y * 100 - hPct / 2}%`, width: `${wPct}%`, height: `${hPct}%`, padding: `${pad * 100}%`, ...(shown ? {} : { opacity: 0 }) }}>
       <span className="gx-frame-in">
-        <Photo className="gx-art" src={optimized(p.thumbnail, slot.hero ? 560 : 360)} w={1000} h={1414} onSize={(nw, nh) => setRatio(nh / nw)} />
+        <Photo className="gx-art" src={optimized(p.thumbnail, slot.hero ? 560 : 360)} w={1000} h={1414} onSize={(nw, nh) => (setRatio(nh / nw), setShown(true))} />
         <span className="gx-glass" />
       </span>
     </figure>
@@ -361,15 +248,11 @@ export default function GatewayIntro(props) {
 function Gateway({ onDone }) {
   const navigate = useNavigate();
   const stage = useStage();
-  const [reached, setReached] = useState(() => new Set());
+  const [reached, setReached] = useState(() => new Set(['open', 'through']));
   const [art, setArt] = useState(null);
-  const [sound, setSound] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const timers = useRef([]);
-  const audio = useRef(null);
   const finished = useRef(false);
-  const cam = useRef(null);
-  const portal = useRef(null);
 
   const has = (k) => reached.has(k);
 
@@ -377,7 +260,6 @@ function Gateway({ onDone }) {
     if (finished.current) return;
     finished.current = true;
     timers.current.forEach(clearTimeout);
-    audio.current?.stop();
     onDone();
   }, [onDone]);
 
@@ -389,30 +271,34 @@ function Gateway({ onDone }) {
       timers.current = [];
       document.documentElement.classList.remove('jh-intro');
       setLeaving(fast ? 'fast' : 'slow');
-      audio.current?.fade();
       timers.current.push(setTimeout(finish, fast ? 520 : 800));
     },
     [finish]
   );
 
+  // Start once the living room and its three artworks are ready (max ~2s),
+  // so the first thing anyone sees is the finished room, never empty frames.
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), 2200);
+    // Absolute failsafe: nobody stays behind the intro.
+    const hard = setTimeout(finish, END_AT + 6000);
+    return () => (clearTimeout(t), clearTimeout(hard));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // The timeline.
   useEffect(() => {
+    if (!ready) return;
     STEPS.forEach(([k, t]) =>
       timers.current.push(
         setTimeout(() => {
           setReached((r) => new Set(r).add(k));
-          audio.current?.cue(k);
           if (k === 'dissolve') leave(false);
         }, t)
       )
     );
-    // Absolute failsafe: nobody stays behind the intro.
-    const hard = setTimeout(finish, END_AT + 4000);
-    return () => {
-      timers.current.forEach(clearTimeout);
-      clearTimeout(hard);
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => timers.current.forEach(clearTimeout);
+  }, [ready]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Real products, and the admin on/off switch.
   useEffect(() => {
@@ -423,6 +309,8 @@ function Gateway({ onDone }) {
         const picked = pickArt(list);
         setArt(picked);
         picked.flat().forEach((p) => p && (new Image().src = optimized(p.thumbnail, 360)));
+        const load = (src) => new Promise((r) => { const i = new Image(); i.onload = i.onerror = r; i.src = src; });
+        Promise.all([load(ROOMS[0].src), ...ROOMS[0].slots.map((sl, i) => picked[0][i] && load(optimized(picked[0][i].thumbnail, sl.hero ? 560 : 360)))]).then(() => live && setReady(true));
       })
       .catch(() => {});
     ROOMS.forEach((r) => (new Image().src = r.src));
@@ -447,19 +335,7 @@ function Gateway({ onDone }) {
     };
   }, [leave]);
 
-  // Camera origin = the lock, measured from the real layout.
-  useEffect(() => {
-    const c = cam.current;
-    const p = portal.current;
-    if (!c || !p) return;
-    const door = p.querySelector('.gx-door');
-    const rc = c.getBoundingClientRect();
-    const rd = door.getBoundingClientRect();
-    c.style.setProperty('--ox', `${rd.left + rd.width / 2 - rc.left}px`);
-    c.style.setProperty('--oy', `${rd.top + rd.height / 2 - rc.top}px`);
-  }, [stage]);
-
-  // Page underneath stays put and out of reach until the gates have opened.
+  // Page underneath stays put and out of reach while the opening plays.
   useEffect(() => {
     const root = document.getElementById('root');
     document.documentElement.classList.add('jh-intro-run');
@@ -473,12 +349,6 @@ function Gateway({ onDone }) {
     };
   }, [leave]);
 
-  const toggleSound = () => {
-    if (!audio.current) audio.current = createIntroSound();
-    const on = !sound;
-    setSound(on);
-    audio.current.setOn(on, [...reached]);
-  };
 
   const explore = (id) => {
     leave(true);
@@ -521,51 +391,7 @@ function Gateway({ onDone }) {
         </div>
       </div>
 
-      {/* ── The estate entrance ── */}
-      <div className="gx-gate-world">
-        <div className="gx-cam" ref={cam}>
-          <div className="gx-wall" />
-          <div className="gx-floor" />
-          <div className="gx-entrance" ref={portal}>
-            <div className="gx-pillar l">
-              <i className="gx-sconce" />
-            </div>
-            <div className="gx-casing">
-              <div className="gx-arch">
-                <div className="gx-fan" />
-              </div>
-              <div className="gx-door">
-                <div className="gx-inside">
-                  <Photo className="gx-inside-photo" src="/rooms/hero-living.webp" w={1024} h={922} />
-                </div>
-                <div className="gx-spill" />
-                <div className="gx-leaf l">
-                  <Leaf W={stage.leafW} side="l" />
-                  <LockHalf />
-                </div>
-                <div className="gx-leaf r">
-                  <Leaf W={stage.leafW} side="r" />
-                  <LockHalf />
-                </div>
-              </div>
-            </div>
-            <div className="gx-pillar r">
-              <i className="gx-sconce" />
-            </div>
-          </div>
-          <div className="gx-pool" />
-        </div>
-        <div className="gx-vignette" />
-      </div>
-
       <div className="gx-ui">
-        <button type="button" className="gx-btn gx-sound" onClick={toggleSound} aria-pressed={sound} aria-label={sound ? 'Turn sound off' : 'Turn sound on'}>
-          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-            <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" />
-            {sound ? <path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /> : <path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />}
-          </svg>
-          <span>Sound</span>
-        </button>
         <button type="button" className="gx-btn gx-skip" onClick={() => leave(true)}>
           Skip intro <span aria-hidden="true">→</span>
         </button>
