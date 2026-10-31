@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Component, lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Icon, { InstagramLogo, WhatsAppGlyph } from './Icon';
 import Frame from './Frame';
@@ -15,6 +15,27 @@ import { useFestival } from '../state/festival';
 import { useActiveCampaign } from '../lib/campaigns';
 import { useSignature } from '../lib/signature';
 import { EventStrip } from './EventExperience';
+
+// Cinematic opening: decided before first paint by the script in index.html.
+// Its code only downloads when it will actually play.
+const INTRO = typeof document !== 'undefined' && document.documentElement.classList.contains('jh-intro');
+const GatewayIntro = INTRO ? lazy(() => import('./GatewayIntro')) : null;
+// If the opening can't load or breaks, the visitor simply gets the homepage.
+class IntroGuard extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch() {
+    document.documentElement.classList.remove('jh-intro', 'jh-intro-run');
+    const root = document.getElementById('root');
+    if (root) root.inert = false;
+    this.props.onDone();
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 // Desktop header. Visualise stays one tap away from product pages, Create
 // and the menu rather than taking a permanent slot here.
@@ -682,6 +703,8 @@ function WhatsAppFab() {
 
 export default function Layout() {
   const [menu, setMenu] = useState(false);
+  const [intro, setIntro] = useState(INTRO);
+  const endIntro = useCallback(() => setIntro(false), []);
   const closeMenu = useCallback(() => setMenu(false), []);
   const { pathname } = useLocation();
   const { setDrawerOpen } = useCart();
@@ -718,6 +741,13 @@ export default function Layout() {
       {menu && <MenuSheet onClose={closeMenu} />}
       <CartDrawer />
       <SearchPalette />
+      {intro && GatewayIntro && (
+        <IntroGuard onDone={endIntro}>
+          <Suspense fallback={null}>
+            <GatewayIntro onDone={endIntro} />
+          </Suspense>
+        </IntroGuard>
+      )}
     </>
   );
 }

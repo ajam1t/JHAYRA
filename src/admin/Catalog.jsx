@@ -194,10 +194,54 @@ export function FrameOptions() {
   );
 }
 
+// The cinematic gateway (gate → lock → rooms → homepage). Stored as a small
+// public file the website reads; on by default.
+const INTRO_PATH = 'site-config/intro.json';
+function IntroSwitch() {
+  const [on, setOn] = useState(null);
+  const [msg, setMsg] = useState('');
+  useEffect(() => {
+    const { data } = supabase.storage.from('product-images').getPublicUrl(INTRO_PATH);
+    fetch(`${data.publicUrl}?t=${Date.now()}`)
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((c) => setOn(c?.enabled !== false))
+      .catch(() => setOn(true));
+  }, []);
+  const save = async (v) => {
+    setMsg('');
+    const blob = new Blob([JSON.stringify({ enabled: v, updated_at: new Date().toISOString() })], { type: 'application/json' });
+    const { error } = await supabase.storage.from('product-images').upload(INTRO_PATH, blob, { upsert: true, contentType: 'application/json', cacheControl: '60' });
+    if (error) return setMsg(error.message);
+    setOn(v);
+    try {
+      v ? localStorage.removeItem('jh_intro_off') : localStorage.setItem('jh_intro_off', '1');
+    } catch {}
+    setMsg(v ? 'On — new visitors see the opening once per visit.' : 'Off — visitors go straight to the homepage.');
+  };
+  return (
+    <div className="ad-card ad-intro">
+      <div className="ad-row-between">
+        <div>
+          <h2>Cinematic opening</h2>
+          <p className="ad-muted">The gate with the JHAYRA lock opens into a home showing your bestsellers, then reveals the homepage. Shown once per visit, homepage only; visitors can skip it any time.</p>
+        </div>
+        <label className="ad-check">
+          <input type="checkbox" disabled={on === null} checked={!!on} onChange={(e) => save(e.target.checked)} /> {on === null ? 'Loading…' : on ? 'On' : 'Off'}
+        </label>
+      </div>
+      {msg && <div className="ad-ok">{msg}</div>}
+      <a className="ad-btn" href="/?intro=1" target="_blank" rel="noreferrer">
+        Preview the opening ↗
+      </a>
+    </div>
+  );
+}
+
 export function HomepageCollections() {
   return (
     <>
       <h1 className="ad-h1">Homepage collections</h1>
+      <IntroSwitch />
       <TableEditor
         table="homepage_collections"
         title="“Every wall has a story” tiles"

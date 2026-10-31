@@ -1,0 +1,853 @@
+/* ═══════════ JHAYRA — cinematic gateway ═══════════════════════════════════
+   Timeline classes (s-*) are added in order by GatewayIntro.jsx.
+   Only transform, opacity and short-lived filters animate. */
+html.jh-intro-run,
+html.jh-intro-run body {
+  overflow: hidden;
+}
+html.jh-intro-run {
+  scrollbar-gutter: stable;
+}
+.gx {
+  --espresso: #211c17;
+  --ivory: #f7f2e9;
+  --gold: #b89a60;
+  --gold-hi: #c6a96f;
+  --ease-cine: cubic-bezier(0.65, 0, 0.25, 1);
+  position: fixed;
+  inset: 0;
+  z-index: 2147483001;
+  overflow: hidden;
+  background: #120d09;
+  color: var(--ivory);
+  contain: strict;
+  transition: opacity 0.8s ease, transform 0.9s var(--ease-cine);
+}
+.gx.leaving {
+  opacity: 0;
+  transform: scale(1.03);
+  pointer-events: none;
+}
+.gx.leaving.fast {
+  transition-duration: 0.45s;
+}
+
+/* ── Gate world ─────────────────────────────────────────────────────────── */
+.gx-gate-world {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  animation: gxFadeUp 0.9s ease both;
+  transition: opacity 0.7s ease 0.15s;
+}
+@keyframes gxFadeUp {
+  from {
+    opacity: 0;
+  }
+}
+.gx.s-through .gx-gate-world {
+  opacity: 0;
+  pointer-events: none;
+}
+.gx-cam {
+  position: absolute;
+  inset: 0;
+  transform-origin: var(--ox, 50%) var(--oy, 52%);
+  transform: scale(0.94);
+  transition: transform 1.4s var(--ease-cine);
+  will-change: transform;
+}
+.gx.s-approach .gx-cam {
+  transform: scale(1.04);
+}
+.gx.s-lock .gx-cam {
+  transform: scale(2.15);
+  transition-duration: 1.35s;
+}
+.portrait.gx.s-lock .gx-cam {
+  transform: scale(2.35);
+}
+.gx.s-open .gx-cam {
+  transform: scale(1.32);
+  transition-duration: 1.2s;
+}
+.portrait.gx.s-open .gx-cam {
+  transform: scale(1.02);
+}
+.gx.s-through .gx-cam {
+  transform: scale(4.2);
+  transition: transform 0.95s cubic-bezier(0.55, 0, 0.75, 0.4);
+}
+
+/* Stone wall with warm wash */
+.gx-wall {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 55% at 50% 46%, rgba(184, 154, 96, 0.16), transparent 70%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0 1px, transparent 1px 86px),
+    repeating-linear-gradient(90deg, rgba(255, 235, 200, 0.025) 0 1px, transparent 1px 170px),
+    linear-gradient(180deg, #2a221b 0%, #1e1813 62%, #15100c 100%);
+}
+.gx-floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22%;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 30%),
+    repeating-linear-gradient(90deg, rgba(255, 240, 210, 0.04) 0 1px, transparent 1px 120px),
+    linear-gradient(180deg, #2b231c, #17110d);
+  transform-origin: top;
+}
+.gx-pool {
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  width: calc(var(--gw) * 1.6);
+  height: 18%;
+  transform: translateX(-50%);
+  background: radial-gradient(50% 50% at 50% 30%, rgba(255, 214, 150, 0.5), transparent 70%);
+  opacity: 0.12;
+  transition: opacity 1.2s ease;
+  pointer-events: none;
+}
+.gx.s-open .gx-pool {
+  opacity: 0.9;
+}
+.gx-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(75% 70% at 50% 48%, transparent 45%, rgba(5, 3, 2, 0.75) 100%);
+  pointer-events: none;
+}
+
+/* Entrance: pillars + stone casing + arched fanlight + double gate */
+.gx-entrance {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -52%);
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+}
+.gx-casing {
+  position: relative;
+  padding: calc(var(--gw) * 0.035) calc(var(--gw) * 0.04) 0;
+  background: linear-gradient(90deg, #3a3027, #4a3e33 30%, #3a3027 50%, #4a3e33 70%, #352b23);
+  box-shadow:
+    inset 0 0 0 1px rgba(198, 169, 111, 0.35),
+    inset 0 0 0 calc(var(--gw) * 0.012) rgba(0, 0, 0, 0.25),
+    0 40px 80px rgba(0, 0, 0, 0.6);
+  border-radius: calc(var(--gw) * 0.55) calc(var(--gw) * 0.55) 0 0 / calc(var(--gw) * 0.36) calc(var(--gw) * 0.36) 0 0;
+}
+.gx-arch {
+  position: relative;
+  width: var(--gw);
+  height: calc(var(--gw) * 0.3);
+  border-radius: calc(var(--gw) * 0.5) calc(var(--gw) * 0.5) 0 0 / calc(var(--gw) * 0.3) calc(var(--gw) * 0.3) 0 0;
+  overflow: hidden;
+  background: radial-gradient(70% 120% at 50% 100%, #5a3d1d, #241912 70%);
+  box-shadow: inset 0 0 0 2px rgba(198, 169, 111, 0.6);
+  transition: background 1.2s ease, box-shadow 1.2s ease;
+}
+.gx.s-open .gx-arch {
+  background: radial-gradient(70% 120% at 50% 100%, #fff1cf, #e7c78b 45%, #8a6331 90%);
+  box-shadow: inset 0 0 0 2px rgba(198, 169, 111, 0.9), 0 0 50px rgba(255, 210, 140, 0.45);
+}
+/* sun-ray glazing bars in gold */
+.gx-fan {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 100%, transparent 0 18%, #c6a96f 18% 19.4%, transparent 19.4% 58%, #b89a60 58% 59.2%, transparent 59.2%),
+    repeating-conic-gradient(from -90deg at 50% 100%, #b89a60 0deg 1.4deg, transparent 1.4deg 15deg);
+  -webkit-mask: linear-gradient(#000, #000);
+  mask: linear-gradient(#000, #000);
+  opacity: 0.95;
+}
+.gx-door {
+  position: relative;
+  width: var(--gw);
+  height: var(--gh);
+  display: flex;
+  perspective: calc(var(--gw) * 3.2);
+  perspective-origin: 50% 50%;
+  background: #0b0806;
+  box-shadow: inset 0 0 0 2px rgba(198, 169, 111, 0.55);
+}
+.gx-inside {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.9s ease 0.2s;
+}
+.gx-inside-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 40%;
+  transform: scale(1.25);
+  filter: brightness(1.25) saturate(0.95) blur(1.5px);
+  transition: transform 1.6s var(--ease-cine), filter 1.4s ease;
+}
+.gx.s-open .gx-inside {
+  opacity: 1;
+}
+.gx.s-open .gx-inside-photo {
+  transform: scale(1.08);
+  filter: brightness(1.08) saturate(1) blur(0);
+}
+.gx-spill {
+  position: absolute;
+  inset: -30% -40%;
+  background: radial-gradient(40% 45% at 50% 50%, rgba(255, 236, 196, 0.95), rgba(255, 214, 150, 0.35) 45%, transparent 72%);
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 1s ease 0.15s;
+  pointer-events: none;
+  z-index: 1;
+}
+.gx.s-open .gx-spill {
+  opacity: 0.75;
+}
+.gx.s-through .gx-spill {
+  opacity: 1;
+}
+
+.gx-leaf {
+  position: relative;
+  z-index: 2;
+  width: 50%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 1.55s cubic-bezier(0.6, 0.02, 0.22, 1);
+  will-change: transform;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+.gx-leaf.l {
+  transform-origin: 0 50%;
+}
+.gx-leaf.r {
+  transform-origin: 100% 50%;
+}
+.gx-leaf.r .gx-leaf-svg {
+  transform: scaleX(-1);
+}
+.gx-leaf::after {
+  /* light raking across the panels as they swing */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.35), transparent 40%, rgba(255, 220, 160, 0.06));
+  pointer-events: none;
+  transition: opacity 1.4s ease;
+}
+.gx-leaf.r::after {
+  transform: scaleX(-1);
+}
+.gx.s-open .gx-leaf.l {
+  transform: rotateY(104deg);
+}
+.gx.s-open .gx-leaf.r {
+  transform: rotateY(-104deg);
+}
+.gx-leaf-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Pillars with fluting, capital and a warm sconce */
+.gx-pillar {
+  position: relative;
+  width: calc(var(--gw) * 0.17);
+  height: calc(var(--gh) + var(--gw) * 0.42);
+  background:
+    linear-gradient(180deg, #5b4b3c 0 4%, #2d241c 4% 6%, transparent 6%),
+    repeating-linear-gradient(90deg, #3a3027 0 6%, #4d4034 6% 10%, #2c241d 10% 14.3%),
+    #362c24;
+  box-shadow:
+    inset 0 0 0 1px rgba(198, 169, 111, 0.22),
+    0 30px 60px rgba(0, 0, 0, 0.55);
+}
+.gx-pillar::before {
+  content: '';
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  top: 0;
+  height: 5%;
+  background: linear-gradient(180deg, #6a5847, #3b3027);
+  box-shadow: 0 2px 0 rgba(198, 169, 111, 0.45);
+}
+.gx-sconce {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  width: 26%;
+  aspect-ratio: 1 / 1.7;
+  transform: translateX(-50%);
+  border-radius: 40% 40% 12% 12%;
+  background: linear-gradient(180deg, #fff3d4, #f1c983 60%, #b7853f);
+  box-shadow: 0 0 22px 8px rgba(255, 200, 120, 0.55), 0 0 90px 40px rgba(255, 190, 110, 0.18);
+  animation: gxFlicker 3.2s ease-in-out infinite;
+}
+.gx-sconce::after {
+  content: '';
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  bottom: -14%;
+  height: 16%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #7b5d2a, #e6cf98, #8a6a32);
+}
+.portrait .gx-pillar {
+  width: calc(var(--gw) * 0.09);
+}
+.portrait .gx-sconce {
+  width: 46%;
+}
+@keyframes gxFlicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.86;
+  }
+  60% {
+    opacity: 0.96;
+  }
+}
+
+/* ── The lock ───────────────────────────────────────────────────────────── */
+.gx-lock {
+  --d: calc(var(--gw) * 0.24);
+  position: absolute;
+  top: 50%;
+  width: var(--d);
+  height: var(--d);
+  margin-top: calc(var(--d) / -2);
+  pointer-events: none;
+}
+.portrait .gx-lock {
+  --d: calc(var(--gw) * 0.3);
+}
+.gx-leaf.l .gx-lock {
+  right: calc(var(--d) / -2);
+  clip-path: inset(-50% 50% -50% -50%);
+}
+.gx-leaf.r .gx-lock {
+  left: calc(var(--d) / -2);
+  clip-path: inset(-50% -50% -50% 50%);
+}
+.gx-bolt {
+  position: absolute;
+  top: 50%;
+  left: -32%;
+  right: -32%;
+  height: 13%;
+  margin-top: -6.5%;
+  border-radius: 99px;
+  background: linear-gradient(180deg, #f1dca8, #b89a60 45%, #6c5022);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+  transform-origin: 0 50%;
+  transition: transform 0.45s cubic-bezier(0.5, 0, 0.2, 1) 0.35s;
+}
+.gx.s-turn .gx-bolt {
+  transform: scaleX(0.42);
+}
+.gx-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 246, 220, 0.85), transparent 28%),
+    conic-gradient(from 210deg, #6c5022, #e6cf98, #9c7c42, #f6e6bb, #7b5d2a, #c6a96f, #6c5022);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.65),
+    inset 0 0 0 2px rgba(60, 40, 15, 0.6),
+    inset 0 0 0 calc(var(--d) * 0.04) rgba(255, 240, 200, 0.15);
+}
+.gx-dial {
+  position: absolute;
+  inset: 11%;
+  border-radius: 50%;
+  overflow: hidden;
+  transform: rotate(0deg);
+  transition: transform 0.6s cubic-bezier(0.45, -0.35, 0.25, 1.35);
+}
+.gx.s-turn .gx-dial {
+  transform: rotate(-90deg);
+}
+.gx-dial-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 240, 205, 0.32), transparent 45%),
+    radial-gradient(circle at 50% 50%, #5c4421, #3a2a15 70%, #2a1e0f);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.75), inset 0 -2px 4px rgba(255, 230, 170, 0.18);
+}
+/* engraved: dark recess with a bright lower lip; fills with light on unlock */
+.gx-mono {
+  position: absolute;
+  inset: 16%;
+  width: 68%;
+  height: 68%;
+  object-fit: contain;
+  filter: grayscale(1) brightness(0.32) contrast(1.6) drop-shadow(0 1px 0 rgba(255, 228, 170, 0.45)) drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.7));
+  transition: filter 0.7s ease;
+}
+.gx.s-glow .gx-mono {
+  filter: grayscale(0) brightness(1.12) contrast(1.05) drop-shadow(0 0 6px rgba(255, 214, 140, 0.85)) drop-shadow(0 0 2px rgba(255, 240, 200, 0.9));
+}
+.gx-trace {
+  position: absolute;
+  inset: 16%;
+  -webkit-mask: url('/logo-mark-lg.webp') center / contain no-repeat;
+  mask: url('/logo-mark-lg.webp') center / contain no-repeat;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 244, 214, 0.2) 44%, #fff4d6 50%, rgba(255, 244, 214, 0.2) 56%, transparent 62%) 0 0 / 300% 300%;
+  background-position: 120% 120%;
+  opacity: 0;
+}
+.gx.s-trace .gx-trace {
+  animation: gxTrace 0.95s cubic-bezier(0.45, 0, 0.3, 1) forwards;
+}
+@keyframes gxTrace {
+  0% {
+    opacity: 1;
+    background-position: 120% 120%;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    background-position: -20% -20%;
+  }
+}
+.gx-notch {
+  position: absolute;
+  top: 4%;
+  left: 50%;
+  width: 4%;
+  height: 9%;
+  margin-left: -2%;
+  border-radius: 2px;
+  background: #f1dca8;
+  box-shadow: 0 0 6px rgba(255, 220, 160, 0.8);
+}
+
+/* ── The house ─────────────────────────────────────────────────────────── */
+.gx-house {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--espresso);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.gx.s-open .gx-house {
+  opacity: 1;
+}
+.gx-room {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+}
+.gx-room.on,
+.gx-room.off {
+  visibility: visible;
+}
+.gx-room.on {
+  opacity: 1;
+  z-index: 2;
+  animation: gxWhipIn 0.5s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+.gx-room.on.first {
+  animation: gxDolly 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.gx-room.on.final {
+  animation: gxFinal 1.2s var(--ease-cine) both;
+}
+.gx-room.off {
+  z-index: 1;
+  opacity: 1;
+  animation: gxWhipOut 0.45s cubic-bezier(0.6, 0, 0.8, 0.4) both;
+}
+@keyframes gxDolly {
+  from {
+    transform: scale(1.18);
+    filter: blur(8px) brightness(1.5);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes gxWhipIn {
+  from {
+    opacity: 0.35;
+    transform: translateX(12%) scale(1.03);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes gxWhipOut {
+  to {
+    opacity: 0;
+    transform: translateX(-12%) scale(1.02);
+    filter: blur(6px);
+  }
+}
+@keyframes gxFinal {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.gx-photo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(calc(-50% + var(--x0)), calc(-50% + var(--y0)));
+}
+.gx-room.on .gx-photo {
+  animation: gxPan 2.6s cubic-bezier(0.3, 0, 0.3, 1) forwards;
+}
+.gx-room.on.first .gx-photo {
+  animation-duration: 2.2s;
+}
+.gx-room.on.final .gx-photo {
+  animation: gxWide 1.6s var(--ease-cine) forwards;
+}
+@keyframes gxPan {
+  to {
+    transform: translate(calc(-50% + var(--x1)), calc(-50% + var(--y1))) scale(var(--z1, 1.04));
+  }
+}
+@keyframes gxWide {
+  from {
+    transform: translate(calc(-50% + var(--x1)), calc(-50% + var(--y1))) scale(1.06);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+.gx-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  transition: filter 1.1s ease;
+}
+/* final wide shot: the room settles back softly behind the brand */
+.gx-room.final .gx-photo > * {
+  transition: filter 1.2s ease 0.5s;
+  filter: blur(1.2px);
+}
+/* focus pull: the room softens, the artwork stays crisp */
+.gx-room.focus .gx-bg {
+  filter: blur(2px) brightness(0.9);
+}
+.gx-patch {
+  position: absolute;
+  background:
+    linear-gradient(180deg, rgba(60, 52, 30, 0) 0%, rgba(60, 52, 30, 0.16) 100%),
+    linear-gradient(90deg, #b6b3a5 0%, #b0ad9f 45%, #9e9c8e 80%, #929083 100%);
+  -webkit-mask:
+    linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent),
+    linear-gradient(180deg, transparent, #000 7%, #000 93%, transparent);
+  -webkit-mask-composite: source-in;
+  mask:
+    linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent) intersect,
+    linear-gradient(180deg, transparent, #000 7%, #000 93%, transparent);
+  transform: scale(1.06);
+}
+.gx-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(20, 14, 9, 0.28), transparent 26%, transparent 62%, rgba(20, 14, 9, 0.55));
+}
+
+/* Real JHAYRA frames: moulding, bevel, wall shadow, glass */
+.gx-frame {
+  position: absolute;
+  margin: 0;
+  box-sizing: border-box;
+  border-radius: 1px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.5) inset,
+    2px 10px 18px -4px rgba(30, 20, 10, 0.55),
+    0 2px 4px rgba(30, 20, 10, 0.35);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.6s ease, transform 0.8s var(--ease-cine);
+}
+.gx-room.on .gx-frame,
+.gx-room.off .gx-frame {
+  opacity: 1;
+  transform: none;
+}
+.gx-room.on .gx-frame:nth-of-type(2) {
+  transition-delay: 0.12s;
+}
+.gx-room.on .gx-frame:nth-of-type(3) {
+  transition-delay: 0.22s;
+}
+.gx-frame.f-black {
+  background: linear-gradient(135deg, #3a3631, #141210 45%, #24211d);
+}
+.gx-frame.f-gold {
+  background: linear-gradient(135deg, #8a6a32, #e9d29a 30%, #a8843f 55%, #f0dfae 75%, #7b5d2a);
+}
+.gx-frame.f-walnut {
+  background: linear-gradient(135deg, #6b4a32, #3f2a1c 50%, #5a3d28);
+}
+.gx-frame-in {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #eee6d6;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), inset 2px 2px 5px rgba(0, 0, 0, 0.35);
+}
+.gx-frame-in .gx-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.gx-glass {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.34) 46%, rgba(255, 255, 255, 0.08) 52%, transparent 60%);
+  background-size: 260% 100%;
+  background-position: 130% 0;
+  mix-blend-mode: screen;
+}
+.gx-room.on .gx-frame.hero .gx-glass {
+  animation: gxGlass 1.5s ease-in-out 0.55s both;
+}
+@keyframes gxGlass {
+  to {
+    background-position: -40% 0;
+  }
+}
+.gx-room.focus .gx-frame.hero {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.5) inset,
+    0 18px 34px -8px rgba(30, 20, 10, 0.6),
+    0 0 0 1px rgba(255, 236, 196, 0.35),
+    0 0 60px 6px rgba(255, 226, 170, 0.35);
+}
+
+/* Discreet product label */
+.gx-tag {
+  position: absolute;
+  left: max(20px, 5vw);
+  bottom: max(28px, 8vh);
+  z-index: 3;
+  display: grid;
+  gap: 2px;
+  padding: 12px 18px 12px 16px;
+  border-left: 1px solid var(--gold);
+  background: linear-gradient(90deg, rgba(20, 14, 9, 0.62), rgba(20, 14, 9, 0));
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s ease, transform 0.7s var(--ease-cine);
+}
+.gx-room.on .gx-tag {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.65s;
+}
+.gx-room.final .gx-tag {
+  opacity: 0;
+}
+.gx-tag small {
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #e3cf9f;
+}
+.gx-tag b {
+  font-family: var(--fd, Georgia, serif);
+  font-weight: 400;
+  font-size: clamp(20px, 2.4vw, 30px);
+  line-height: 1.15;
+}
+.gx-tag a {
+  justify-self: start;
+  margin-top: 4px;
+  color: var(--ivory);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(198, 169, 111, 0.7);
+  padding-bottom: 2px;
+}
+.gx-tag a:hover,
+.gx-tag a:focus-visible {
+  color: #fff;
+  border-color: #fff;
+}
+
+/* ── Brand reveal ─────────────────────────────────────────────────────── */
+.gx-brand {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-content: end center;
+  justify-items: center;
+  text-align: center;
+  padding: 0 24px max(64px, 11vh);
+  background: linear-gradient(0deg, rgba(20, 14, 9, 0.92) 0%, rgba(20, 14, 9, 0.72) 34%, rgba(20, 14, 9, 0.18) 64%, rgba(20, 14, 9, 0.05));
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.9s ease;
+}
+.gx.s-brand .gx-brand {
+  opacity: 1;
+  visibility: visible;
+}
+.gx-brand img {
+  width: clamp(64px, 6.5vw, 96px);
+  height: auto;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.5));
+  opacity: 0;
+  transform: translateY(10px) scale(0.94);
+  transition: opacity 0.8s ease 0.1s, transform 1s var(--ease-cine) 0.1s;
+}
+.gx-brand h2 {
+  margin: 14px 0 0;
+  font-family: var(--fb, 'Inter Tight', system-ui, sans-serif);
+  font-weight: 600;
+  font-size: clamp(34px, 6vw, 72px);
+  letter-spacing: 0.42em;
+  margin-right: -0.42em;
+  line-height: 1;
+}
+.gx-brand h2 span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.6s ease, transform 0.8s var(--ease-cine);
+  transition-delay: calc(0.3s + var(--i) * 0.06s);
+}
+.gx-tagline {
+  margin: 14px 0 0;
+  font-family: var(--fd, Georgia, serif);
+  font-style: italic;
+  font-size: clamp(18px, 2.2vw, 26px);
+  color: #ecd9ab;
+}
+.gx-line {
+  margin: 10px 0 0;
+  font-size: clamp(13px, 1.2vw, 15px);
+  letter-spacing: 0.06em;
+  color: rgba(247, 242, 233, 0.82);
+}
+.gx-tagline,
+.gx-line {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.7s ease, transform 0.8s var(--ease-cine);
+}
+.gx-tagline {
+  transition-delay: 0.75s;
+}
+.gx-line {
+  transition-delay: 0.95s;
+}
+.gx.s-brand .gx-brand img,
+.gx.s-brand .gx-brand h2 span,
+.gx.s-brand .gx-tagline,
+.gx.s-brand .gx-line {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Controls ─────────────────────────────────────────────────────────── */
+.gx-ui {
+  position: absolute;
+  z-index: 6;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 10px;
+}
+.gx-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(198, 169, 111, 0.55);
+  background: rgba(20, 14, 9, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--ivory);
+  font: 500 13px/1 var(--fb, system-ui, sans-serif);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.gx-btn:hover,
+.gx-btn:focus-visible {
+  background: rgba(40, 30, 20, 0.8);
+  border-color: var(--gold-hi);
+}
+.gx-btn:focus-visible {
+  outline: 2px solid var(--gold-hi);
+  outline-offset: 2px;
+}
+.gx-sound[aria-pressed='true'] {
+  border-color: var(--gold-hi);
+  color: #f3dfae;
+}
+.portrait .gx-btn span {
+  font-size: 12px;
+}
+.portrait .gx-tag {
+  left: 16px;
+  right: 16px;
+  bottom: 84px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx *,
+  .gx {
+    animation: none !important;
+    transition-duration: 0.01s !important;
+  }
+}

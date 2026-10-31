@@ -28,6 +28,22 @@
     <link rel="preload" as="fetch" href="/data/catalog.json" crossorigin="anonymous" />
     <link rel="preconnect" href="https://wsrv.nl" crossorigin />
     <link rel="preconnect" href="https://gwxdzemazqontjobqnyy.supabase.co" crossorigin />
+    <style>html.jh-intro,html.jh-intro body{overflow:hidden}html.jh-intro{scrollbar-gutter:stable}html.jh-intro body::before{content:"";position:fixed;inset:0;z-index:2147483000;background:#120d09}</style>
+    <script>
+      /* Cinematic opening: first page of the session, homepage only, people (not crawlers), motion allowed, not switched off. ?intro=1 forces it, ?nointro skips it. */
+      (function () {
+        try {
+          var d = document.documentElement, q = location.search, s = sessionStorage, first = !s.getItem('jh_v');
+          s.setItem('jh_v', '1');
+          if (/[?&]nointro/.test(q)) return;
+          var force = /[?&]intro=1/.test(q);
+          var ok = force || (first && location.pathname === '/' && !/bot|crawl|spider|slurp|lighthouse|headless|facebookexternalhit|whatsapp|preview|pagespeed/i.test(navigator.userAgent) && !matchMedia('(prefers-reduced-motion: reduce)').matches && localStorage.getItem('jh_intro_off') !== '1');
+          if (!ok) return;
+          d.classList.add('jh-intro');
+          setTimeout(function () { if (!window.__jhIntro) d.classList.remove('jh-intro'); }, 6000);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
