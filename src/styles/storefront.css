@@ -7274,3 +7274,9 @@
 .ck-addr-meter p svg { display: inline-block; vertical-align: -2px; margin-right: 2px; }
 .rcpt.again { animation-delay: 0.2s; }
 .rcpt.done { cursor: pointer; }
+/* Menu footer: same brand logos as the site footer — WhatsApp green, Instagram's own logo */
+.m5-wa { background: #25d366; color: #fff; box-shadow: 0 12px 24px -14px rgba(37, 211, 102, 0.9); }
+.m5-wa svg { color: #fff; }
+.m5-ig { width: 48px; height: 48px; display: grid; place-items: center; flex: none; border-radius: 13px; overflow: hidden; box-shadow: 0 6px 14px rgba(214, 36, 159, 0.28); transition: transform 0.25s; }
+.m5-ig:hover { transform: translateY(-1px); }
+.m5-ig svg { display: block; width: 48px; height: 48px; }

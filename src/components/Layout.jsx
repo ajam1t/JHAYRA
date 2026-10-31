@@ -367,8 +367,8 @@ function MenuSheet({ onClose, returnFocus }) {
           <Link to="/wishlist" onClick={shut} className="m5-ic" aria-label="Wishlist">
             <Icon name="heart" size={18} />
           </Link>
-          <a href={SITE.instagram} target="_blank" rel="noopener noreferrer" className="m5-ic" aria-label="Instagram">
-            <Icon name="instagram" size={18} />
+          <a href={SITE.instagram} target="_blank" rel="noopener noreferrer" className="m5-ig" aria-label="JHAYRA on Instagram">
+            <InstagramLogo size={48} />
           </a>
         </div>
       </aside>
