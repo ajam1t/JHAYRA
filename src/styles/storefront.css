@@ -7232,3 +7232,22 @@
 }
 .sf-hero .gh-room .gh-hud { justify-content: center; }
 .ck-or > span { color: #6b6253; }
+
+/* Desktop: the room picture ends where the left column ends (the floor is
+   trimmed; the frames and sofa stay in place). */
+@media (min-width: 1000px) {
+  .sf-hero.gh { min-height: 0; }
+  .sf-hero .gh-room { align-self: stretch; }
+  .sf-hero .hx-stage { flex: 1 1 0; min-height: 420px; overflow: hidden; }
+}
+@media (min-width: 1000px) {
+  .sf-hero .hx-stage { display: flex; flex-direction: column; justify-content: center; }
+  .sf-hero .hx-stage > .gh-room-inner { flex: none; }
+}
+@media (min-width: 1000px) and (max-width: 1199px) {
+  .sf-hero .hx-stage { flex: none; min-height: 0; }
+}
+@media (min-width: 1200px) {
+  .sf-hero .hx-stage > .gh-room-inner { height: 100%; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+  .sf-hero .hx-stage > .gh-room-inner > .room { flex: none; }
+}

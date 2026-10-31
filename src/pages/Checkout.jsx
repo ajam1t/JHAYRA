@@ -280,6 +280,39 @@ function GiftCard({ gift }) {
   );
 }
 
+// Our own endpoint first (works on networks that block the India Post
+// service), then the India Post service directly.
+async function lookupPin(pin, signal) {
+  const tries = [
+    async () => {
+      const r = await fetch(`/api/pincode?pin=${pin}`, { signal });
+      const j = await r.json();
+      if (j.ok || j.reason === 'not_found') return j;
+      throw new Error('unavailable');
+    },
+    async () => {
+      const res = await (await fetch(`https://api.postalpincode.in/pincode/${pin}`, { signal })).json();
+      const po = res?.[0]?.PostOffice?.[0];
+      if (res?.[0]?.Status === 'Success' && po) return { ok: true, city: po.District || po.Name, state: po.State };
+      if (res?.[0]?.Status === 'Error') return { ok: false, reason: 'not_found' };
+      throw new Error('unavailable');
+    },
+  ];
+  for (const t of tries) {
+    try {
+      return await Promise.race([t(), new Promise((_, no) => setTimeout(() => no(new Error('timeout')), 7000))]);
+    } catch {
+      if (signal.aborted) return { ok: false, reason: 'aborted' };
+    }
+  }
+  return { ok: false, reason: 'unavailable' };
+}
+
+// India Post's pincode zones → state (used only when the lookup is unreachable).
+const PIN3 = { 160: 'Chandigarh', 194: 'Ladakh', 246: 'Uttarakhand', 248: 'Uttarakhand', 249: 'Uttarakhand', 263: 'Uttarakhand', 403: 'Goa', 605: 'Puducherry', 737: 'Sikkim', 744: 'Andaman & Nicobar', 790: 'Arunachal Pradesh', 791: 'Arunachal Pradesh', 792: 'Arunachal Pradesh', 793: 'Meghalaya', 794: 'Meghalaya', 795: 'Manipur', 796: 'Mizoram', 797: 'Nagaland', 798: 'Nagaland', 799: 'Tripura', 814: 'Jharkhand', 815: 'Jharkhand', 816: 'Jharkhand' };
+const PIN2 = { 11: 'Delhi', 12: 'Haryana', 13: 'Haryana', 14: 'Punjab', 15: 'Punjab', 16: 'Punjab', 17: 'Himachal Pradesh', 18: 'Jammu & Kashmir', 19: 'Jammu & Kashmir', 20: 'Uttar Pradesh', 21: 'Uttar Pradesh', 22: 'Uttar Pradesh', 23: 'Uttar Pradesh', 24: 'Uttar Pradesh', 25: 'Uttar Pradesh', 26: 'Uttar Pradesh', 27: 'Uttar Pradesh', 28: 'Uttar Pradesh', 30: 'Rajasthan', 31: 'Rajasthan', 32: 'Rajasthan', 33: 'Rajasthan', 34: 'Rajasthan', 36: 'Gujarat', 37: 'Gujarat', 38: 'Gujarat', 39: 'Gujarat', 40: 'Maharashtra', 41: 'Maharashtra', 42: 'Maharashtra', 43: 'Maharashtra', 44: 'Maharashtra', 45: 'Madhya Pradesh', 46: 'Madhya Pradesh', 47: 'Madhya Pradesh', 48: 'Madhya Pradesh', 49: 'Chhattisgarh', 50: 'Telangana', 51: 'Andhra Pradesh', 52: 'Andhra Pradesh', 53: 'Andhra Pradesh', 56: 'Karnataka', 57: 'Karnataka', 58: 'Karnataka', 59: 'Karnataka', 60: 'Tamil Nadu', 61: 'Tamil Nadu', 62: 'Tamil Nadu', 63: 'Tamil Nadu', 64: 'Tamil Nadu', 67: 'Kerala', 68: 'Kerala', 69: 'Kerala', 70: 'West Bengal', 71: 'West Bengal', 72: 'West Bengal', 73: 'West Bengal', 74: 'West Bengal', 75: 'Odisha', 76: 'Odisha', 77: 'Odisha', 78: 'Assam', 80: 'Bihar', 81: 'Bihar', 82: 'Jharkhand', 83: 'Jharkhand', 84: 'Bihar', 85: 'Bihar' };
+const stateFromPin = (pin) => PIN3[pin.slice(0, 3)] || PIN2[pin.slice(0, 2)] || '';
+
 export default function Checkout() {
   const cart = useCart();
   const toast = useToast();
@@ -339,16 +372,20 @@ export default function Checkout() {
     if (!/^\d{6}$/.test(d.pin)) return setPinState('');
     setPinState('loading');
     const ac = new AbortController();
-    fetch(`https://api.postalpincode.in/pincode/${d.pin}`, { signal: ac.signal })
-      .then((r) => r.json())
-      .then((res) => {
-        const po = res?.[0]?.PostOffice?.[0];
-        if (res?.[0]?.Status === 'Success' && po) {
-          setD((x) => ({ ...x, city: po.District || po.Name || x.city, state: po.State || x.state }));
-          setPinState('ok');
-        } else setPinState('bad');
-      })
-      .catch(() => setPinState(''));
+    lookupPin(d.pin, ac.signal).then((r) => {
+      if (ac.signal.aborted) return;
+      if (r.ok) {
+        setD((x) => ({ ...x, city: r.city || x.city, state: r.state || x.state }));
+        setPinState('ok');
+      } else if (r.reason === 'not_found') setPinState('bad');
+      else {
+        // Lookup service unreachable: fill the state from the pincode's first
+        // digits and let the customer type the city.
+        const st = stateFromPin(d.pin);
+        if (st) setD((x) => ({ ...x, state: x.state || st }));
+        setPinState('manual');
+      }
+    });
     return () => ac.abort();
   }, [d.pin]);
 
@@ -610,6 +647,7 @@ export default function Checkout() {
                   {pinState === 'loading' ? <i className="ck-spin" /> : pinState === 'ok' ? <Icon name="check" size={18} /> : <Icon name="pin" size={18} />}
                 </span>
               </div>
+              {pinState === 'manual' && <small className="muted">Please type your city below{d.state ? ` — we’ve filled in ${d.state}` : ''}.</small>}
               {pinState === 'bad' && <small className="err">We couldn’t find this pincode — please check it, or enter your city and state below.</small>}
               {errors.pin && <small className="err">{errors.pin}</small>}
             </div>
