@@ -219,6 +219,44 @@ export function ProductForm() {
     invalidateCatalog();
   };
 
+  // Size prices: what the website shows and what checkout charges.
+  const [sizePrice, setSizePrice] = useState({});
+  const [priceMsg, setPriceMsg] = useState('');
+  const offeredSizes = tables.size.filter((row) => has('size', row.slug));
+  const priceOf = (row) => {
+    if (sizePrice[row.slug] !== undefined) return sizePrice[row.slug];
+    const o = opts.find((x) => x.option_type === 'size' && x.option_slug === row.slug);
+    return String(o?.price_override != null ? +o.price_override : +row.base_price);
+  };
+  const savePrices = async () => {
+    setErr('');
+    setPriceMsg('');
+    const rows = offeredSizes.map((row) => ({ row, v: Math.round(Number(priceOf(row))) }));
+    const bad = rows.find((r) => !(r.v >= 1));
+    if (bad) return setErr(`Please enter a price for ${bad.row.name}.`);
+    setBusy(true);
+    const results = await Promise.all(
+      rows.map(({ row, v }) =>
+        supabase
+          .from('product_options')
+          .update({ price_override: v === +row.base_price ? null : v })
+          .eq('product_id', id)
+          .eq('option_type', 'size')
+          .eq('option_slug', row.slug)
+      )
+    );
+    const from = Math.min(...rows.map((r) => r.v));
+    const { error: pe } = await supabase.from('products').update({ price: from }).eq('id', id);
+    setBusy(false);
+    const e = results.find((r) => r.error)?.error || pe;
+    if (e) return setErr(e.message);
+    setF((x) => ({ ...x, price: from }));
+    setSizePrice({});
+    await loadOpts(id);
+    invalidateCatalog();
+    setPriceMsg(`Prices saved — live on the website now. Shown as “from ${money(from)}”.`);
+  };
+
   const field = (k, label, props = {}) => (
     <label className="ad-field">
       {label}
@@ -250,7 +288,7 @@ export function ProductForm() {
             </select>
           </label>
           {field('slug', 'Slug')}
-          {field('price', 'From price (₹)', { type: 'number' })}
+          {isNew ? field('price', 'From price (₹)', { type: 'number' }) : field('price', 'From price (₹) — set automatically from the size prices below', { type: 'number', readOnly: true, title: 'Change prices in “Price for each size” below' })}
           {field('compare_price', 'Compare-at price (₹, optional)', { type: 'number' })}
           {field('rating', 'Rating', { type: 'number', step: '0.1', min: 0, max: 5 })}
           {field('review_count', 'Review count', { type: 'number' })}
@@ -281,6 +319,37 @@ export function ProductForm() {
 
       {!isNew && (
         <>
+          <div className="ad-card ad-prices">
+            <h2>Price for each size</h2>
+            <p className="ad-muted">These are the prices customers see and pay. Leave a size at its standard price, or type a different price just for this product.</p>
+            {priceMsg && <div className="ad-ok">{priceMsg}</div>}
+            {!offeredSizes.length ? (
+              <p className="ad-muted">No sizes offered yet — tick sizes under “Options offered” below.</p>
+            ) : (
+              <div className="ad-price-grid">
+                {offeredSizes.map((row) => {
+                  const v = priceOf(row);
+                  const custom = Math.round(Number(v)) !== +row.base_price;
+                  return (
+                    <label key={row.slug} className={`ad-price ${custom ? 'custom' : ''}`}>
+                      <span>
+                        <b>{row.name}</b> <small>{row.dimensions}</small>
+                      </span>
+                      <span className="ad-price-in">
+                        ₹<input className="ad-input" type="number" min={1} inputMode="numeric" value={v} onChange={(e) => setSizePrice((x) => ({ ...x, [row.slug]: e.target.value }))} />
+                      </span>
+                      <small className="ad-muted">{custom ? `Standard ${money(row.base_price)}` : 'Standard price'}</small>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+            {offeredSizes.length > 0 && (
+              <button type="button" className="ad-btn ad-btn-primary" disabled={busy} onClick={savePrices}>
+                {busy ? 'Saving…' : 'Save prices'}
+              </button>
+            )}
+          </div>
           <div className="ad-card">
             <div className="ad-row-between">
               <h2>Photos</h2>

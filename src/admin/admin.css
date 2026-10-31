@@ -1856,3 +1856,11 @@
 .ad-gift-msg { font-size: 1.05rem; }
 .ad-gift-from { text-align: right; font-style: italic; margin-top: 10px !important; }
 .ad-gift .ad-btn { justify-self: start; }
+
+/* Price for each size */
+.ad-price-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin: 12px 0 16px; }
+.ad-price { display: grid; gap: 6px; padding: 12px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.08); background: #fff; }
+.ad-price.custom { border-color: #d9b878; background: #fffaf0; }
+.ad-price small { font-weight: 400; }
+.ad-price-in { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.ad-price-in .ad-input { width: 100%; }
