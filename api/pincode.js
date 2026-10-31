@@ -17,7 +17,9 @@ export default async function handler(req) {
       const list = res?.[0]?.PostOffice || [];
       if (res?.[0]?.Status !== 'Success' || !list.length) return json({ ok: false, reason: 'not_found' });
       const po = list.find((p) => p.DeliveryStatus === 'Delivery') || list[0];
-      return json({ ok: true, city: po.District || po.Name, state: po.State });
+      // Post-office localities under this pincode, so the customer can pick theirs.
+      const areas = [...new Set(list.filter((p) => p.DeliveryStatus === 'Delivery').map((p) => p.Name.replace(/\s*\((?:[^)]*)\)\s*$/, '').trim()))].sort().slice(0, 40);
+      return json({ ok: true, city: po.District || po.Name, state: po.State, areas });
     } catch {
       /* retry once, then give up */
     }

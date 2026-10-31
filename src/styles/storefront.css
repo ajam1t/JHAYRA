@@ -7256,3 +7256,23 @@
 .ck-run-txt { position: absolute; left: 0; right: 0; top: 3px; z-index: 2; text-align: center; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #e7cf9c; }
 .ck-bar .ck-run-txt { top: 2px; font-size: 9.5px; }
 .ck-paybtn.run .ck-truck { margin-top: 5px; }
+
+/* Post office area chips + address completeness */
+.ck-areas { margin: 4px 0 16px; }
+.ck-areas-l { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 8px; color: var(--ink); }
+.ck-areas-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.ck-area-chip { display: inline-flex; align-items: center; gap: 5px; padding: 8px 13px; border-radius: 999px; border: 1px solid #ddd0b4; background: #fffdf8; color: #3b3427; font: inherit; font-size: 13px; cursor: pointer; transition: background 0.2s, border-color 0.2s, transform 0.15s; }
+.ck-area-chip:hover { border-color: #b08a45; }
+.ck-area-chip:active { transform: scale(0.97); }
+.ck-area-chip.on { background: linear-gradient(135deg, #c9a465, #9a7535); border-color: #9a7535; color: #fff; font-weight: 600; box-shadow: 0 4px 12px -6px rgba(154, 117, 53, 0.8); }
+.ck-area-chip.more { background: transparent; border-style: dashed; color: #7a5f30; }
+.ck-addr-meter { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: #fbf6ea; border: 1px solid #ecdfc2; }
+.ck-addr-meter p { margin: 8px 0 0; font-size: 13px; color: #5a5141; line-height: 1.45; }
+.ck-addr-meter p b { color: #3b3427; }
+.ck-addr-bar { height: 6px; border-radius: 6px; background: #ece2cc; overflow: hidden; }
+.ck-addr-bar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #d9b878, #b08a45); transition: width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.ck-addr-meter.full { background: #eef8f0; border-color: #bfe3c9; }
+.ck-addr-meter.full .ck-addr-bar i { background: linear-gradient(90deg, #5fcf86, #2f9e5a); }
+.ck-addr-meter.full p { color: #22673b; }
+.ck-addr-meter.full svg { vertical-align: -2px; }
+.ck-addr-meter p svg { display: inline-block; vertical-align: -2px; margin-right: 2px; }

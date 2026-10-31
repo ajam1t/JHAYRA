@@ -65,8 +65,8 @@ export function AuthProvider({ children }) {
 
   async function checkRole(uid) {
     if (!uid) return setIsAdmin(false);
-    const { data } = await supabase.from('profiles').select('role').eq('id', uid).single();
-    setIsAdmin(data?.role === 'admin');
+    const { data, error } = await supabase.from('profiles').select('role').eq('id', uid).single();
+    if (!error) setIsAdmin(data?.role === 'admin');
   }
 
   useEffect(() => {
@@ -75,9 +75,12 @@ export function AuthProvider({ children }) {
       await checkRole(session?.user?.id);
       setLoading(false);
     });
-    const { data } = supabase.auth.onAuthStateChange(async (_e, session) => {
+    // Never await Supabase calls inside this callback: it runs while the auth
+    // lock is held, so a query here deadlocks every request after a token
+    // refresh (admin pages stuck on "Loading…"). Defer it instead.
+    const { data } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
-      await checkRole(session?.user?.id);
+      setTimeout(() => checkRole(session?.user?.id), 0);
     });
     return () => data.subscription.unsubscribe();
   }, []);

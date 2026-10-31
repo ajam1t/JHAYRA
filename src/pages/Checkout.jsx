@@ -40,7 +40,7 @@ const TIMEOUT = 'timeout';
 const withTimeout = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(TIMEOUT)), ms))]);
 
 const SAVED = 'jhayra_checkout_details';
-const EMPTY = { name: '', mobile: '', email: '', address: '', house: '', area: '', landmark: '', city: '', state: '', pin: '' };
+const EMPTY = { name: '', mobile: '', email: '', address: '', house: '', area: '', po: '', landmark: '', city: '', state: '', pin: '' };
 
 export const JOURNEY = [
   ['Order placed', 'check'],
@@ -305,7 +305,7 @@ async function lookupPin(pin, signal) {
     async () => {
       const res = await (await fetch(`https://api.postalpincode.in/pincode/${pin}`, { signal })).json();
       const po = res?.[0]?.PostOffice?.[0];
-      if (res?.[0]?.Status === 'Success' && po) return { ok: true, city: po.District || po.Name, state: po.State };
+      if (res?.[0]?.Status === 'Success' && po) return { ok: true, city: po.District || po.Name, state: po.State, areas: [...new Set(res[0].PostOffice.filter((p) => p.DeliveryStatus === 'Delivery').map((p) => p.Name))].sort().slice(0, 40) };
       if (res?.[0]?.Status === 'Error') return { ok: false, reason: 'not_found' };
       throw new Error('unavailable');
     },
@@ -344,9 +344,22 @@ export default function Checkout() {
     }
   });
   const [pinState, setPinState] = useState('');
+  const [areas, setAreas] = useState([]);
+  const [allAreas, setAllAreas] = useState(false);
   const [editPlace, setEditPlace] = useState(false);
   // The full address as the workshop and courier read it.
-  const addr = [d.house.trim(), d.area.trim(), d.landmark.trim() && `Near ${d.landmark.trim()}`].filter(Boolean).join(', ');
+  const po = d.po && !d.area.toLowerCase().includes(d.po.toLowerCase()) ? d.po : '';
+  const addr = [d.house.trim(), d.area.trim(), po, d.landmark.trim() && `Near ${d.landmark.trim()}`].filter(Boolean).join(', ');
+  // How complete the address is — couriers find complete addresses first time.
+  const addrChecks = [
+    ['House / flat number', /\d/.test(d.house) && d.house.trim().length >= 3],
+    ['Building or street', d.house.trim().split(/[,\s]+/).filter(Boolean).length >= 3],
+    ['Area / locality', d.area.trim().length >= 3],
+    ...(areas.length > 1 ? [['Post office area', !!d.po]] : []),
+    ['Landmark', d.landmark.trim().length >= 3],
+  ];
+  const addrDone = addrChecks.filter((c) => c[1]).length;
+  const addrMissing = addrChecks.filter((c) => !c[1]).map((c) => c[0]);
   const [errors, setErrors] = useState({});
   const [params] = useSearchParams();
   // ?gift=1 (from the Signature Experience) opens the gift card section.
@@ -386,13 +399,15 @@ export default function Checkout() {
   }, [festival, cart]);
 
   useEffect(() => {
-    if (!/^\d{6}$/.test(d.pin)) return setPinState('');
+    if (!/^\d{6}$/.test(d.pin)) return setPinState(''), setAreas([]);
     setPinState('loading');
     const ac = new AbortController();
     lookupPin(d.pin, ac.signal).then((r) => {
       if (ac.signal.aborted) return;
       if (r.ok) {
-        setD((x) => ({ ...x, city: r.city || x.city, state: r.state || x.state }));
+        setD((x) => ({ ...x, city: r.city || x.city, state: r.state || x.state, po: r.areas?.includes(x.po) ? x.po : r.areas?.length === 1 ? r.areas[0] : '' }));
+        setAreas(r.areas || []);
+        setAllAreas(false);
         setPinState('ok');
       } else if (r.reason === 'not_found') setPinState('bad');
       else {
@@ -677,6 +692,7 @@ export default function Checkout() {
                 <Icon name="pin" size={18} />
                 <div>
                   <b>
+                    {d.po ? `${d.po}, ` : ''}
                     {d.city}
                     {d.state ? `, ${d.state}` : ''}
                   </b>
@@ -703,23 +719,56 @@ export default function Checkout() {
                     </div>
                   </div>
                 )}
+                {areas.length > 1 && (
+                  <div className="ck-areas" role="group" aria-labelledby="ck-areas-l">
+                    <span id="ck-areas-l" className="ck-areas-l">
+                      Your post office area <small className="muted">— tap yours</small>
+                    </span>
+                    <div className="ck-areas-list">
+                      {(allAreas ? areas : areas.slice(0, 8)).map((a) => (
+                        <button key={a} type="button" className={`ck-area-chip ${d.po === a ? 'on' : ''}`} aria-pressed={d.po === a} onClick={() => setD((x) => ({ ...x, po: x.po === a ? '' : a }))}>
+                          {d.po === a && <Icon name="check" size={13} />} {a}
+                        </button>
+                      ))}
+                      {areas.length > 8 && (
+                        <button type="button" className="ck-area-chip more" onClick={() => setAllAreas((v) => !v)}>
+                          {allAreas ? 'Show fewer' : `+${areas.length - 8} more`}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div className="ck-grid">
                   <div className="field span2">
                     <label htmlFor="ck-house">House / flat no., building, street</label>
-                    <input id="ck-house" className="input" autoComplete="address-line1" placeholder="e.g. 12B, Shanti Apartments, MG Road" {...f('house')} />
-                    {errors.house && <small className="err">{errors.house}</small>}
+                    <input id="ck-house" className="input" autoComplete="address-line1" placeholder="e.g. Flat 101, Rajaram Apartments, Station Road" {...f('house')} />
+                    {errors.house ? <small className="err">{errors.house}</small> : <small className="muted">Include your flat or house number and building name.</small>}
                   </div>
                   <div className="field span2">
                     <label htmlFor="ck-area">Area / locality</label>
-                    <input id="ck-area" className="input" autoComplete="address-line2" placeholder="e.g. Boring Road" {...f('area')} />
+                    <input id="ck-area" className="input" autoComplete="address-line2" placeholder="e.g. Anand Nagar, near Station Road" {...f('area')} />
                     {errors.area && <small className="err">{errors.area}</small>}
                   </div>
                   <div className="field span2">
                     <label htmlFor="ck-landmark">
-                      Landmark <span className="muted">(optional)</span>
+                      Landmark <span className="muted">(recommended)</span>
                     </label>
-                    <input id="ck-landmark" className="input" placeholder="e.g. opposite City Hospital" {...f('landmark')} />
+                    <input id="ck-landmark" className="input" placeholder="e.g. opposite City Hospital, behind Shiv Mandir" {...f('landmark')} />
                   </div>
+                </div>
+                <div className={`ck-addr-meter ${addrDone === addrChecks.length ? 'full' : ''}`} aria-live="polite">
+                  <div className="ck-addr-bar" aria-hidden="true">
+                    <i style={{ width: `${(addrDone / addrChecks.length) * 100}%` }} />
+                  </div>
+                  {addrDone === addrChecks.length ? (
+                    <p>
+                      <Icon name="check" size={15} /> <b>Complete address</b> — our courier can deliver without calling you.
+                    </p>
+                  ) : (
+                    <p>
+                      <b>Help our courier find you first time.</b> Add: {addrMissing.join(' · ')}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
