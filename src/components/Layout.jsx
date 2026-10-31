@@ -51,7 +51,15 @@ function useHomeClick(onNavigate) {
 }
 
 function Logo({ onNavigate }) {
-  const onClick = useHomeClick(onNavigate);
+  const { pathname } = useLocation();
+  // On the homepage the logo reloads it fresh (latest event, offers, artwork).
+  const onClick = (e) => {
+    onNavigate?.();
+    if (pathname !== '/' || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    e.preventDefault();
+    window.scrollTo(0, 0);
+    window.location.assign('/');
+  };
   return (
     <Link to="/" className="logo" aria-label="JHAYRA home" onClick={onClick}>
       <img className="logo-mark" src="/logo-mark-88.webp" srcSet="/logo-mark-88.webp 88w, /logo-mark.webp 180w" sizes="44px" alt="" width="44" height="40" fetchpriority="high" />
