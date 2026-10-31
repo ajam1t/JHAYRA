@@ -1864,3 +1864,20 @@
 .ad-price small { font-weight: 400; }
 .ad-price-in { display: flex; align-items: center; gap: 6px; font-weight: 600; }
 .ad-price-in .ad-input { width: 100%; }
+
+/* Photos (print folder) */
+.ph-head p { max-width: 760px; }
+.ph-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin: 14px 0 18px; }
+.ph-search { max-width: 320px; }
+.ph-order { margin-bottom: 16px; }
+.ph-order-head { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 1px solid rgba(0, 0, 0, 0.06); }
+.ph-num { display: inline-flex; align-items: center; gap: 8px; font-size: 17px; }
+.ph-order-act { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.ph-item { padding-top: 14px; }
+.ph-item-name { font-weight: 600; margin-bottom: 10px; }
+.ph-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.ph-photo { margin: 0; border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 12px; overflow: hidden; background: #fff; }
+.ph-thumb { aspect-ratio: 1; background: #f3eee5; display: grid; place-items: center; }
+.ph-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ph-photo figcaption { display: grid; gap: 4px; padding: 10px; }
+.ph-photo figcaption .ad-btn { justify-content: center; margin-top: 4px; }

@@ -11,6 +11,7 @@ import Festivals from './Festivals';
 import Worlds from './Worlds';
 import Campaigns from './Campaigns';
 import Coupons from './Coupons';
+import Photos from './Photos';
 import Dashboard from './Dashboard';
 import SignatureManager from './Signature';
 import { supabase } from '../lib/supabase';
@@ -123,6 +124,7 @@ const NAV = [
     'Sell',
     [
       ['/admin/orders', 'Orders', 'box'],
+      ['/admin/photos', 'Photos (print)', 'download'],
       ['/admin/products', 'Products', 'image'],
       ['/admin/templates', 'Personalised templates', 'sparkle'],
       ['/admin/signature', 'Signature collection', 'star'],
@@ -284,6 +286,7 @@ export default function Admin() {
                     <Route path="worlds" element={<Worlds />} />
                     <Route path="campaigns" element={<Campaigns />} />
                     <Route path="coupons" element={<Coupons />} />
+                    <Route path="photos" element={<Photos />} />
                     <Route path="signature" element={<SignatureManager />} />
                     <Route path="categories" element={<Categories />} />
                     <Route path="catalog" element={<FrameOptions />} />

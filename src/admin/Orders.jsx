@@ -62,7 +62,7 @@ export default function Orders() {
   const [sp] = useSearchParams();
   const [filter, setFilter] = useState(() => sp.get('filter') || 'paid');
   const [ship, setShip] = useState({});
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState(() => sp.get('q') || '');
 
   useEffect(() => {
     supabase
