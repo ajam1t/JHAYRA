@@ -9,11 +9,10 @@ import { getMaster, uploadMaster, downloadPrivate, downloadPublic, dpiFor, dpiLa
 // · Catalogue artwork (e.g. Radha Krishna) → the website artwork, plus your own
 //   HD print file for that product if you've added one (kept private).
 // Every download is named after the order so each print matches its order.
+// Only confirmed (paid) orders are shown — unpaid or abandoned checkouts never appear.
 const TABS = [
   ['print', 'To print'],
   ['done', 'Shipped & delivered'],
-  ['unpaid', 'Not paid'],
-  ['all', 'All'],
 ];
 const ext = (p) => (p.split('?')[0].split('.').pop() || 'jpg').toLowerCase();
 const base = (o) => o.order_number || `order-${o.id.slice(0, 8)}`;
@@ -46,7 +45,7 @@ export default function Photos() {
 
   useEffect(() => {
     (async () => {
-      const { data: ords, error: oe } = await supabase.from('orders').select('id, order_number, customer_name, customer_mobile, created_at, payment_status, order_status').order('created_at', { ascending: false }).limit(300);
+      const { data: ords, error: oe } = await supabase.from('orders').select('id, order_number, customer_name, customer_mobile, created_at, payment_status, order_status').eq('payment_status', 'paid').neq('order_status', 'cancelled').order('created_at', { ascending: false }).limit(300);
       if (oe) return setErr(oe.message);
       const ids = (ords || []).map((o) => o.id);
       let its = [];
@@ -85,7 +84,6 @@ export default function Photos() {
       const done = ['shipped', 'delivered'].includes(o.order_status);
       if (tab === 'print' && !(paid && !done && o.order_status !== 'cancelled')) return false;
       if (tab === 'done' && !(paid && done)) return false;
-      if (tab === 'unpaid' && paid) return false;
       return !s || [o.order_number, o.customer_name, o.customer_mobile].join(' ').toLowerCase().includes(s);
     });
   }, [orders, tab, q]);
@@ -134,7 +132,7 @@ export default function Photos() {
     <div className="ph">
       <div className="ph-head">
         <h1 className="ad-h1">Photos &amp; print files</h1>
-        <p className="ad-muted">Everything needed to print each order. Personalised orders show the customer’s photos in the original resolution they uploaded. Catalogue artwork (e.g. Radha Krishna) shows the website artwork and your own HD print file, if you’ve added one. Downloads are named by order number, e.g. JHY-20261031-756674_item1_photo1.jpg.</p>
+        <p className="ad-muted">Confirmed (paid) orders only — everything needed to print each one. Personalised orders show the customer’s photos in the original resolution they uploaded. Catalogue artwork (e.g. Radha Krishna) shows the website artwork and your own HD print file, if you’ve added one. Downloads are named by order number, e.g. JHY-20261031-756674_item1_photo1.jpg.</p>
       </div>
       <div className="ph-bar">
         <div className="ad-toolbar">
@@ -150,7 +148,7 @@ export default function Photos() {
       {!orders ? (
         <p className="ad-muted">Loading…</p>
       ) : !list.length ? (
-        <p className="ad-muted">{tab === 'print' ? 'Nothing waiting to print. New paid orders appear here automatically.' : 'No orders here.'}</p>
+        <p className="ad-muted">{tab === 'print' ? 'Nothing waiting to print. As soon as an order is paid and confirmed, its photos appear here.' : 'No shipped orders yet.'}</p>
       ) : (
         list.map((o) => (
           <section key={o.id} className="ad-card ph-order">
