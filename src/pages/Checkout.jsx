@@ -16,16 +16,28 @@ import { founderEligible, useSignature } from '../lib/signature';
 import { money, waLink, deliveryWindow, SITE, mobile10, GIFT_FEE } from '../lib/site';
 import { BRAND } from '../lib/brand';
 
+// Loads Razorpay once (started as soon as checkout opens). Gives up after
+// 15 s so a network that silently holds the request never freezes checkout.
+let rzpLoading = null;
 function loadRazorpay() {
-  return new Promise((resolve) => {
-    if (window.Razorpay) return resolve(true);
-    const s = document.createElement('script');
-    s.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    s.onload = () => resolve(true);
-    s.onerror = () => resolve(false);
-    document.head.appendChild(s);
-  });
+  if (window.Razorpay) return Promise.resolve(true);
+  if (!rzpLoading) {
+    rzpLoading = new Promise((resolve) => {
+      const s = document.createElement('script');
+      s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      s.async = true;
+      s.onload = () => resolve(!!window.Razorpay);
+      s.onerror = () => resolve(false);
+      document.head.appendChild(s);
+    }).then((ok) => {
+      if (!ok) rzpLoading = null;
+      return ok;
+    });
+  }
+  return Promise.race([rzpLoading, new Promise((r) => setTimeout(() => r(window.Razorpay ? true : false), 15000))]);
 }
+const TIMEOUT = 'timeout';
+const withTimeout = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(TIMEOUT)), ms))]);
 
 const SAVED = 'jhayra_checkout_details';
 const EMPTY = { name: '', mobile: '', email: '', address: '', house: '', area: '', landmark: '', city: '', state: '', pin: '' };
@@ -58,7 +70,7 @@ function PayButton({ status, label, onClick, disabled, className = '', compact =
         </span>
       </span>
       <span className="ck-paybtn-txt">
-        {placed ? <Icon name="check" size={compact ? 16 : 18} /> : running ? null : <Icon name="lock" size={compact ? 16 : 18} />} {running ? <span className="sr-only">{text}</span> : text}
+        {placed ? <Icon name="check" size={compact ? 16 : 18} /> : running ? null : <Icon name="lock" size={compact ? 16 : 18} />} {running ? <span className="ck-run-txt">{text}</span> : text}
       </span>
     </button>
   );
@@ -360,6 +372,11 @@ export default function Checkout() {
     else if (!order) trackStep('checkout_start');
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Start loading the payment window early so the Pay button opens it instantly.
+  useEffect(() => {
+    if (!order) loadRazorpay();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Festival offer applies itself.
   useEffect(() => {
     if (festival?.coupon && !cart.coupon && !tried.current && cart.items.length) {
@@ -455,7 +472,8 @@ export default function Checkout() {
     let opened = false;
     try {
       if (!(await loadRazorpay())) {
-        toast('Could not load the payment gateway. Please check your internet connection.', 'warn');
+        toast('Payment window couldn’t load on this network.', 'warn');
+        setFailure('The secure payment window couldn’t load on this network (some office or public Wi-Fi networks block it). Please try on mobile data, or order on WhatsApp below — we’ll send you a payment link.');
         return;
       }
       const items = cart.items.map((i) => ({
@@ -471,7 +489,7 @@ export default function Checkout() {
         customization: giftInfo ? { ...(i.customization || {}), gift: giftInfo } : i.customization || null,
         ...(i.signature ? { signature: true } : {}),
       }));
-      const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
+      const { data, error } = await withTimeout(supabase.functions.invoke('create-razorpay-order', {
         body: {
           items,
           customer: {
@@ -487,7 +505,7 @@ export default function Checkout() {
           ...(founderFee ? { founderDelivery: { fee: founderFee, slot: founder.slot } } : {}),
           ...(giftInfo ? { gift: true } : {}),
         },
-      });
+      }), 25000);
       if (error || data?.error) {
         toast(data?.error || 'Could not create your order. Please try again.', 'warn');
         return;
@@ -567,7 +585,9 @@ export default function Checkout() {
       opened = true;
     } catch (e) {
       console.error(e);
-      toast('Something went wrong. Please try again.', 'warn');
+      if (e?.message === TIMEOUT) toast('Payment server didn’t respond — please try again.', 'warn');
+      if (e?.message === TIMEOUT) setFailure('Our payment server didn’t respond in time — this network may be blocking it. Please try again on mobile data, or order on WhatsApp below.');
+      else toast('Something went wrong. Please try again.', 'warn');
     } finally {
       if (!opened) {
         lock.current = false;
