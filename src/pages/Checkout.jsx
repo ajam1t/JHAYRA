@@ -87,6 +87,196 @@ function barcode(seed) {
   }
   return bars;
 }
+/* Receipt printing and saving, independent of the page layout */
+const RCPT_CSS = `
+*{box-sizing:border-box}html,body{margin:0;background:#fff}
+@page{size:auto;margin:12mm}
+.rcpt{width:88mm;margin:0 auto;color:#2b2721;font:12.5px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;padding:6mm 2mm}
+.rcpt-head{display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px dashed #bfb39b}
+.rcpt-head img{width:40px;height:36px;object-fit:contain}
+.rcpt-head b{display:block;font:700 17px/1.2 Helvetica,Arial,sans-serif;letter-spacing:.32em}
+.rcpt-head small{font:italic 13px Georgia,serif;color:#8a6a2e}
+.rcpt-total{text-align:center;padding:14px 0 10px}
+.rcpt-total small{display:block;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#7d7566}
+.rcpt-total b{display:block;font:400 38px/1.1 Georgia,serif;color:#1c1813}
+.rcpt-total span{font-size:11px;color:#7d7566}
+.rcpt-meta{margin:0;padding:10px 0;border-top:1px dashed #bfb39b;border-bottom:1px dashed #bfb39b}
+.rcpt-meta div{display:flex;justify-content:space-between;gap:10px;margin:2px 0}
+.rcpt-meta dt{color:#7d7566}.rcpt-meta dd{margin:0;text-align:right;font-weight:700}
+.rcpt-lines{list-style:none;margin:0;padding:12px 0}
+.rcpt-lines li{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px}
+.rcpt-lines small{display:block;color:#7d7566;font-size:11px}
+.rcpt-sums{border-top:1px dashed #bfb39b;padding-top:10px}
+.rcpt-sums p{display:flex;justify-content:space-between;margin:0 0 4px}
+.rcpt-grand{margin-top:8px!important;padding-top:8px;border-top:2px solid #2b2721;font-weight:800;font-size:14px}
+.rcpt-eta{margin:14px 0 12px;text-align:center;font-size:11.5px;color:#5f574c}
+.rcpt-bars{display:flex;justify-content:center;gap:2px;height:40px}
+.rcpt-bars i{background:#1c1813}.rcpt-bars i:nth-child(3n){background:transparent}
+.rcpt-id{margin:6px 0 0;text-align:center;font-size:10px;letter-spacing:.08em;color:#7d7566;word-break:break-all}
+.rcpt-thanks{margin:14px 0 0;text-align:center;font:italic 16px Georgia,serif;color:#8a6a2e}
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}`;
+
+function printReceipt(el, orderNumber) {
+  if (!el) return;
+  const html = el.outerHTML.replace(/src="\/logo-mark\.webp"/, `src="${location.origin}/logo-mark.webp"`).replace(/class="rcpt[^"]*"/, 'class="rcpt"');
+  const doc = `<!doctype html><html><head><meta charset="utf-8"><title>JHAYRA receipt ${orderNumber}</title><style>${RCPT_CSS}</style></head><body>${html}</body></html>`;
+  const frame = document.createElement('iframe');
+  frame.setAttribute('aria-hidden', 'true');
+  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+  document.body.appendChild(frame);
+  const w = frame.contentWindow;
+  w.document.open();
+  w.document.write(doc);
+  w.document.close();
+  const go = () => {
+    w.focus();
+    w.print();
+    setTimeout(() => frame.remove(), 60000);
+  };
+  const img = w.document.querySelector('img');
+  if (img && !img.complete) {
+    img.onload = img.onerror = go;
+    setTimeout(go, 2500);
+  } else setTimeout(go, 150);
+}
+
+// Draws the receipt onto a canvas and downloads it as a PNG image.
+async function saveReceiptImage(order, rows) {
+  const W = 440;
+  const S = 2;
+  const pad = 28;
+  const mono = (sz, wt = 400) => `${wt} ${sz}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
+  const lineH = 20;
+  const est = 360 + rows.items.length * 40 + rows.sums.length * lineH + 180;
+  const c = document.createElement('canvas');
+  c.width = W * S;
+  c.height = est * S;
+  const g = c.getContext('2d');
+  g.scale(S, S);
+  g.fillStyle = '#fffdf8';
+  g.fillRect(0, 0, W, est);
+  g.fillStyle = '#b08a45';
+  g.fillRect(0, 0, W, 6);
+  let y = 34;
+  const logo = await new Promise((res) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => res(null);
+    i.src = '/logo-mark.webp';
+  });
+  if (logo) g.drawImage(logo, pad, y, 40, 36);
+  g.fillStyle = '#1c1813';
+  g.font = '700 18px Helvetica, Arial, sans-serif';
+  g.letterSpacing = '6px';
+  g.fillText('JHAYRA', pad + 52, y + 16);
+  g.letterSpacing = '0px';
+  g.fillStyle = '#8a6a2e';
+  g.font = 'italic 13px Georgia, serif';
+  g.fillText('Crafting Memories Into Art', pad + 52, y + 34);
+  y += 56;
+  const dash = () => {
+    g.strokeStyle = '#cfc3aa';
+    g.setLineDash([4, 4]);
+    g.beginPath();
+    g.moveTo(pad, y);
+    g.lineTo(W - pad, y);
+    g.stroke();
+    g.setLineDash([]);
+  };
+  const lr = (l, r, font = mono(13), col = '#2b2721', rc) => {
+    g.font = font;
+    g.fillStyle = col;
+    g.textAlign = 'left';
+    g.fillText(l, pad, y);
+    g.fillStyle = rc || col;
+    g.textAlign = 'right';
+    g.fillText(r, W - pad, y);
+    g.textAlign = 'left';
+  };
+  dash();
+  y += 30;
+  g.textAlign = 'center';
+  g.fillStyle = '#7d7566';
+  g.font = mono(11);
+  g.fillText('AMOUNT PAID', W / 2, y);
+  y += 44;
+  g.fillStyle = '#1c1813';
+  g.font = '400 42px Georgia, serif';
+  g.fillText(money(order.amount), W / 2, y);
+  y += 24;
+  g.fillStyle = '#7d7566';
+  g.font = mono(11.5);
+  g.fillText(rows.when, W / 2, y);
+  g.textAlign = 'left';
+  y += 20;
+  dash();
+  y += 24;
+  rows.meta.forEach(([k, v]) => {
+    lr(k, v, mono(13), '#7d7566', '#1c1813');
+    y += lineH + 2;
+  });
+  y += 2;
+  dash();
+  y += 26;
+  rows.items.forEach((it) => {
+    lr(it.name.length > 34 ? it.name.slice(0, 33) + '…' : it.name, it.price, mono(13, 600));
+    y += 18;
+    g.fillStyle = '#7d7566';
+    g.font = mono(11.5);
+    g.fillText(it.sub, pad, y);
+    y += 24;
+  });
+  dash();
+  y += 24;
+  rows.sums.forEach(([k, v]) => {
+    lr(k, v);
+    y += lineH;
+  });
+  g.fillStyle = '#2b2721';
+  g.fillRect(pad, y - 8, W - pad * 2, 2);
+  y += 16;
+  lr('Total', money(order.amount), mono(15, 800));
+  y += 34;
+  g.textAlign = 'center';
+  g.fillStyle = '#5f574c';
+  g.font = mono(11.5);
+  g.fillText(rows.eta, W / 2, y);
+  y += 22;
+  const bars = barcode(order.orderNumber);
+  const total = bars.reduce((a, b) => a + b + 2, 0);
+  let x = (W - total) / 2;
+  bars.forEach((w, k) => {
+    if ((k + 1) % 3) {
+      g.fillStyle = '#1c1813';
+      g.fillRect(x, y, w, 40);
+    }
+    x += w + 2;
+  });
+  y += 58;
+  g.fillStyle = '#7d7566';
+  g.font = mono(10);
+  g.fillText(`${order.orderNumber}${order.paymentId ? ` · ${order.paymentId}` : ''}`, W / 2, y);
+  y += 30;
+  g.fillStyle = '#8a6a2e';
+  g.font = 'italic 17px Georgia, serif';
+  g.fillText('Thank you for choosing JHAYRA', W / 2, y);
+  y += 30;
+  const out = document.createElement('canvas');
+  out.width = W * S;
+  out.height = y * S;
+  out.getContext('2d').drawImage(c, 0, 0);
+  out.toBlob((b) => {
+    if (!b) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(b);
+    a.download = `JHAYRA-receipt-${order.orderNumber}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+  }, 'image/png');
+}
+
 function Receipt({ order }) {
   const [printed, setPrinted] = useState(reducedMotion());
   useEffect(() => {
@@ -96,6 +286,32 @@ function Receipt({ order }) {
   const when = new Date(order.date);
   const win = deliveryWindow(when);
   const lines = order.items || [];
+  const paper = useRef(null);
+  // Replays the print-out animation, then runs the action (print / save).
+  const [run, setRun] = useState(0);
+  const replay = (after) => {
+    if (reducedMotion()) return after?.();
+    setPrinted(false);
+    setRun((n) => n + 1);
+    setTimeout(() => {
+      setPrinted(true);
+      after?.();
+    }, 2700);
+  };
+  const whenText = when.toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  const rows = {
+    when: whenText,
+    meta: [['Order', order.orderNumber], ['For', order.customerName], ...(order.city ? [['Deliver to', `${order.city}${order.state ? `, ${order.state}` : ''}`]] : [])],
+    items: lines.map((i) => ({ name: `${i.qty} × ${i.name}`, sub: `${i.option?.size || ''} · ${i.option?.colour || ''} frame`, price: money(i.price * i.qty) })),
+    sums: [
+      ...(order.subtotal != null ? [['Subtotal', money(order.subtotal)]] : []),
+      ...(order.discount > 0 ? [[`Discount${order.coupon ? ` (${order.coupon})` : ''}`, `−${money(order.discount)}`]] : []),
+      ...(order.giftFee > 0 ? [['Gift packaging & card', money(order.giftFee)]] : []),
+      ...(order.founderFee > 0 ? [['Founder delivery', money(order.founderFee)]] : []),
+      ['Delivery', 'Free'],
+    ],
+    eta: `Handcrafted for you · arriving ${win.early} – ${win.late}`,
+  };
   const share = waLink(
     [`JHAYRA receipt — ${order.orderNumber}`, ...lines.map((i) => `• ${i.name} (${i.option?.size}, ${i.option?.colour}) × ${i.qty} — ${money(i.price * i.qty)}`), order.giftFee ? `Gift packaging & card — ${money(order.giftFee)}` : '', `Total paid: ${money(order.amount)}`, `Arriving ${win.early} – ${win.late}`].filter(Boolean).join('\n'),
   );
@@ -105,7 +321,7 @@ function Receipt({ order }) {
         <span />
       </div>
       <div className="rcpt-clip">
-        <article className={`rcpt ${printed ? 'done' : ''}`}>
+        <article key={run} ref={paper} className={`rcpt ${printed ? 'done' : ''} ${run ? 'again' : ''}`} onClick={() => printed && replay()} title="Tap to print again">
           <header className="rcpt-head">
             <img src="/logo-mark.webp" alt="" width="40" height="36" />
             <div>
@@ -116,7 +332,7 @@ function Receipt({ order }) {
           <div className="rcpt-total">
             <small>Amount paid</small>
             <b>{money(order.amount)}</b>
-            <span>{when.toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
+            <span>{whenText}</span>
           </div>
           <dl className="rcpt-meta">
             <div>
@@ -200,7 +416,10 @@ function Receipt({ order }) {
         </article>
       </div>
       <div className={`rcpt-actions ${printed ? 'show' : ''}`}>
-        <button type="button" className="btn btn-ghost" onClick={() => window.print()}>
+        <button type="button" className="btn btn-ghost" onClick={() => replay(() => printReceipt(paper.current, order.orderNumber))}>
+          <Icon name="print" size={17} /> Print receipt
+        </button>
+        <button type="button" className="btn btn-ghost" onClick={() => replay(() => saveReceiptImage(order, rows))}>
           <Icon name="download" size={17} /> Save receipt
         </button>
         <a className="btn btn-ghost" href={share} target="_blank" rel="noopener noreferrer">

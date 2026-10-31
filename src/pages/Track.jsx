@@ -12,7 +12,7 @@ const STEPS = [
   ['shipped', 'Shipped', 'truck'],
   ['delivered', 'Delivered', 'home'],
 ];
-const RANK = { pending: 0, confirmed: 0, processing: 1, shipped: 2, delivered: 3 };
+const RANK = { pending: 0, confirmed: 0, personalization: 1, processing: 1, shipped: 2, delivered: 3 };
 
 export default function Track() {
   const [sp] = useSearchParams();

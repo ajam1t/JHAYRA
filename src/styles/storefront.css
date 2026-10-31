@@ -7203,11 +7203,7 @@
 .rcpt-actions.show { opacity: 1; transform: none; }
 .rcpt-actions .btn { gap: 8px; }
 @media (prefers-reduced-motion: reduce) { .rcpt { animation: none; transform: none; } .ck-paybtn.run, .ck-paybtn.run .ck-truck, .ck-paybtn-road i, .ck-paybtn.placed { animation: none; } .ck-paybtn.run .ck-truck { left: 50%; transform: translate(-50%, -58%); } }
-@media print {
-  body * { visibility: hidden !important; }
-  .rcpt, .rcpt * { visibility: visible !important; }
-  .rcpt { position: absolute; left: 0; top: 0; width: 80mm; transform: none !important; animation: none !important; box-shadow: none; }
-}
+
 .unbox:has(.rcpt-wrap) { flex-direction: column; align-items: stretch; }
 .unbox:has(.rcpt-wrap) > .unbox-grid { width: 100%; }
 
@@ -7276,3 +7272,5 @@
 .ck-addr-meter.full p { color: #22673b; }
 .ck-addr-meter.full svg { vertical-align: -2px; }
 .ck-addr-meter p svg { display: inline-block; vertical-align: -2px; margin-right: 2px; }
+.rcpt.again { animation-delay: 0.2s; }
+.rcpt.done { cursor: pointer; }
