@@ -28,7 +28,7 @@ function loadRazorpay() {
 }
 
 const SAVED = 'jhayra_checkout_details';
-const EMPTY = { name: '', mobile: '', email: '', address: '', city: '', state: '', pin: '' };
+const EMPTY = { name: '', mobile: '', email: '', address: '', house: '', area: '', landmark: '', city: '', state: '', pin: '' };
 
 export const JOURNEY = [
   ['Order placed', 'check'],
@@ -38,6 +38,166 @@ export const JOURNEY = [
   ['Shipped', 'truck'],
   ['Delivered', 'home'],
 ];
+
+
+const reducedMotion = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ── Pay button: a delivery truck runs while payment is prepared and
+   confirmed, then it turns green — "Order placed". ─────────────────────── */
+function PayButton({ status, label, onClick, disabled, className = '', compact = false }) {
+  const running = status === 'creating' || status === 'verifying';
+  const placed = status === 'placed';
+  const state = placed ? 'placed' : running ? 'run' : '';
+  const text = placed ? 'Order placed' : status === 'creating' ? (compact ? 'Preparing…' : 'Preparing secure payment…') : status === 'verifying' ? (compact ? 'Confirming…' : 'Confirming payment…') : label;
+  return (
+    <button className={`btn btn-gold ck-paybtn ${state} ${className}`} disabled={disabled} onClick={onClick} aria-live="polite">
+      <span className="ck-paybtn-road" aria-hidden="true">
+        <i />
+        <span className="ck-truck">
+          <Icon name="truck" size={compact ? 18 : 22} />
+        </span>
+      </span>
+      <span className="ck-paybtn-txt">
+        {placed ? <Icon name="check" size={compact ? 16 : 18} /> : running ? null : <Icon name="lock" size={compact ? 16 : 18} />} {running ? <span className="sr-only">{text}</span> : text}
+      </span>
+    </button>
+  );
+}
+
+/* ── Receipt that prints out of a gold slot on the thank-you page ─────── */
+function barcode(seed) {
+  const bars = [];
+  let h = 0;
+  for (const c of String(seed)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  for (let i = 0; i < 46; i++) {
+    h = (h * 1103515245 + 12345) >>> 0;
+    bars.push(1 + (h % 3));
+  }
+  return bars;
+}
+function Receipt({ order }) {
+  const [printed, setPrinted] = useState(reducedMotion());
+  useEffect(() => {
+    const t = setTimeout(() => setPrinted(true), 2600);
+    return () => clearTimeout(t);
+  }, []);
+  const when = new Date(order.date);
+  const win = deliveryWindow(when);
+  const lines = order.items || [];
+  const share = waLink(
+    [`JHAYRA receipt — ${order.orderNumber}`, ...lines.map((i) => `• ${i.name} (${i.option?.size}, ${i.option?.colour}) × ${i.qty} — ${money(i.price * i.qty)}`), order.giftFee ? `Gift packaging & card — ${money(order.giftFee)}` : '', `Total paid: ${money(order.amount)}`, `Arriving ${win.early} – ${win.late}`].filter(Boolean).join('\n'),
+  );
+  return (
+    <section className="rcpt-wrap" aria-label="Your receipt">
+      <div className="rcpt-slot" aria-hidden="true">
+        <span />
+      </div>
+      <div className="rcpt-clip">
+        <article className={`rcpt ${printed ? 'done' : ''}`}>
+          <header className="rcpt-head">
+            <img src="/logo-mark.webp" alt="" width="40" height="36" />
+            <div>
+              <b>JHAYRA</b>
+              <small>Crafting Memories Into Art</small>
+            </div>
+          </header>
+          <div className="rcpt-total">
+            <small>Amount paid</small>
+            <b>{money(order.amount)}</b>
+            <span>{when.toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
+          </div>
+          <dl className="rcpt-meta">
+            <div>
+              <dt>Order</dt>
+              <dd>{order.orderNumber}</dd>
+            </div>
+            <div>
+              <dt>For</dt>
+              <dd>{order.customerName}</dd>
+            </div>
+            {order.city && (
+              <div>
+                <dt>Deliver to</dt>
+                <dd>
+                  {order.city}
+                  {order.state ? `, ${order.state}` : ''}
+                </dd>
+              </div>
+            )}
+          </dl>
+          <ul className="rcpt-lines">
+            {lines.map((i, k) => (
+              <li key={k}>
+                <span>
+                  {i.qty} × {i.name}
+                  <small>
+                    {i.option?.size} · {i.option?.colour} frame
+                  </small>
+                </span>
+                <b>{money(i.price * i.qty)}</b>
+              </li>
+            ))}
+          </ul>
+          <div className="rcpt-sums">
+            {order.subtotal != null && (
+              <p>
+                <span>Subtotal</span>
+                <span>{money(order.subtotal)}</span>
+              </p>
+            )}
+            {order.discount > 0 && (
+              <p>
+                <span>Discount{order.coupon ? ` (${order.coupon})` : ''}</span>
+                <span>−{money(order.discount)}</span>
+              </p>
+            )}
+            {order.giftFee > 0 && (
+              <p>
+                <span>Gift packaging & card</span>
+                <span>{money(order.giftFee)}</span>
+              </p>
+            )}
+            {order.founderFee > 0 && (
+              <p>
+                <span>Founder delivery</span>
+                <span>{money(order.founderFee)}</span>
+              </p>
+            )}
+            <p>
+              <span>Delivery</span>
+              <span>Free</span>
+            </p>
+            <p className="rcpt-grand">
+              <span>Total</span>
+              <span>{money(order.amount)}</span>
+            </p>
+          </div>
+          <p className="rcpt-eta">
+            Handcrafted for you · arriving {win.early} – {win.late}
+          </p>
+          <div className="rcpt-bars" aria-hidden="true">
+            {barcode(order.orderNumber).map((w, k) => (
+              <i key={k} style={{ width: w }} />
+            ))}
+          </div>
+          <p className="rcpt-id">
+            {order.orderNumber}
+            {order.paymentId ? ` · ${order.paymentId}` : ''}
+          </p>
+          <p className="rcpt-thanks">Thank you for choosing JHAYRA</p>
+        </article>
+      </div>
+      <div className={`rcpt-actions ${printed ? 'show' : ''}`}>
+        <button type="button" className="btn btn-ghost" onClick={() => window.print()}>
+          <Icon name="download" size={17} /> Save receipt
+        </button>
+        <a className="btn btn-ghost" href={share} target="_blank" rel="noopener noreferrer">
+          <WhatsAppGlyph size={17} /> Share
+        </a>
+      </div>
+    </section>
+  );
+}
 
 /* ── Success: the unboxing ────────────────────────────────────────────── */
 function Unboxing({ order }) {
@@ -101,6 +261,7 @@ function Unboxing({ order }) {
           </p>
         </div>
       </div>
+      <Receipt order={order} />
     </section>
   );
 }
@@ -129,12 +290,18 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [d, setD] = useState(() => {
     try {
-      return { ...EMPTY, ...JSON.parse(localStorage.getItem(SAVED) || '{}') };
+      const saved = { ...EMPTY, ...JSON.parse(localStorage.getItem(SAVED) || '{}') };
+      // Older saved details had one address line.
+      if (!saved.house && !saved.area && saved.address) saved.house = saved.address;
+      return saved;
     } catch {
       return EMPTY;
     }
   });
   const [pinState, setPinState] = useState('');
+  const [editPlace, setEditPlace] = useState(false);
+  // The full address as the workshop and courier read it.
+  const addr = [d.house.trim(), d.area.trim(), d.landmark.trim() && `Near ${d.landmark.trim()}`].filter(Boolean).join(', ');
   const [errors, setErrors] = useState({});
   const [params] = useSearchParams();
   // ?gift=1 (from the Signature Experience) opens the gift card section.
@@ -198,17 +365,18 @@ export default function Checkout() {
     const e = {};
     if (!d.name.trim()) e.name = 'Please enter your full name';
     if (!/^[6-9]\d{9}$/.test(mobile10(d.mobile))) e.mobile = 'Please enter a valid 10-digit mobile number';
-    if (d.email && !/^\S+@\S+\.\S+$/.test(d.email)) e.email = 'Please check this email';
     if (!/^\d{6}$/.test(d.pin)) e.pin = 'Enter a valid 6-digit pincode';
-    if (!d.address.trim()) e.address = 'Please enter your address';
+    if (!d.house.trim()) e.house = 'Please enter your house / flat and street';
+    if (!d.area.trim()) e.area = 'Please enter your area or locality';
     if (!d.city.trim()) e.city = 'Please enter your city';
+    if ((e.city || e.state) && /^\d{6}$/.test(d.pin)) setEditPlace(true);
     setErrors(e);
     const first = Object.keys(e)[0];
     if (first) document.getElementById(`ck-${first}`)?.focus();
     return !first;
   };
 
-  const giftInfo = gift.on ? { to: gift.to.trim() || null, from: gift.from.trim() || null, note: gift.note.trim() || null, hidePrice: gift.hidePrice } : null;
+  const giftInfo = gift.on ? { to: gift.to.trim() || null, from: gift.from.trim() || null, note: gift.note.trim() || null, hidePrice: true, packaging: 'premium' } : null;
 
   const pay = async () => {
     if (lock.current || !validate()) return;
@@ -227,12 +395,12 @@ export default function Checkout() {
         ...lines,
         cart.discount > 0 ? `Discount (${cart.coupon.code}): −${money(cart.discount)}` : '',
         founderFee ? `Founder delivery: ${money(founderFee)} · preferred slot: ${founder.slot}` : '',
-        giftFee ? `Gift card & hidden price: ${money(giftFee)}` : '',
+        giftFee ? `Gift packaging & greeting card: ${money(giftFee)}` : '',
         `Total: ${money(grand)}`,
         '',
         `Name: ${d.name}`,
         `Mobile: ${d.mobile}`,
-        `Address: ${d.address}, ${d.city}${d.state ? `, ${d.state}` : ''} – ${d.pin}`,
+        `Address: ${addr}, ${d.city}${d.state ? `, ${d.state}` : ''} – ${d.pin}`,
         giftInfo ? `Gift card — to: ${giftInfo.to || '—'}, from: ${giftInfo.from || '—'}, message: ${giftInfo.note || '—'}${giftInfo.hidePrice ? ' (hide prices)' : ''}` : '',
       ]
         .filter(Boolean)
@@ -242,7 +410,7 @@ export default function Checkout() {
       return;
     }
     try {
-      localStorage.setItem(SAVED, JSON.stringify(d));
+      localStorage.setItem(SAVED, JSON.stringify({ ...d, address: addr }));
     } catch {}
     lock.current = true;
     setStatus('creating');
@@ -272,8 +440,8 @@ export default function Checkout() {
           customer: {
             name: d.name.trim(),
             mobile: mobile10(d.mobile),
-            email: d.email.trim() || null,
-            address: d.address.trim(),
+            email: null,
+            address: addr,
             city: d.city.trim(),
             state: d.state.trim() || null,
             pin: d.pin.trim(),
@@ -297,10 +465,10 @@ export default function Checkout() {
         order_id: razorpay_order_id,
         name: 'JHAYRA',
         description: 'Handcrafted frames & wall art',
-        image: SITE.ogImage,
-        prefill: { name: d.name.trim(), email: d.email.trim(), contact: mobile10(d.mobile) },
+        image: `${SITE.url}/icon-512.png`,
+        prefill: { name: d.name.trim(), contact: mobile10(d.mobile) },
         notes: giftInfo ? { gift: 'yes' } : undefined,
-        theme: { color: '#B68D40' },
+        theme: { color: '#B08A45', backdrop_color: 'rgba(20, 16, 10, 0.72)' },
         modal: {
           ondismiss: () => {
             setStatus('idle');
@@ -327,12 +495,24 @@ export default function Checkout() {
               date: new Date().toISOString(),
               items: snapshot.map((s, k) => (k === 0 ? { ...s, preview: previewItem.preview || previewItem.image } : s)),
               gift: !!giftInfo,
+              subtotal: cart.subtotal,
+              discount: cart.discount,
+              coupon: cart.coupon?.code || null,
+              giftFee,
+              founderFee,
+              city: d.city,
+              state: d.state,
             };
             saveLocalOrder({ ...done, items: snapshot });
-            setOrder(done);
-            cart.clear();
-            setStatus('success');
-            window.scrollTo(0, 0);
+            // The button turns green ("Order placed") for a moment before the
+            // thank-you page and receipt appear.
+            setStatus('placed');
+            setTimeout(() => {
+              setOrder(done);
+              cart.clear();
+              setStatus('success');
+              window.scrollTo(0, 0);
+            }, reducedMotion() ? 200 : 1700);
           } catch {
             setFailure('Network problem while confirming the payment. If money was deducted, please WhatsApp us.');
             setStatus('failed');
@@ -367,7 +547,7 @@ export default function Checkout() {
   );
 
   const win = deliveryWindow();
-  const busy = status === 'creating' || status === 'verifying';
+  const busy = status === 'creating' || status === 'verifying' || status === 'placed';
 
   return (
     <>
@@ -377,16 +557,28 @@ export default function Checkout() {
           <Link to="/cart" className="crumbs" style={{ display: 'inline-flex' }}>
             <Icon name="arrowL" size={16} /> Back to bag
           </Link>
-          <h1 className="h1" style={{ marginBottom: 6 }}>
-            Checkout
-          </h1>
-          <p className="muted">
-            <Icon name="lock" size={14} /> Secure · No account needed · Takes about a minute
+          <ol className="ck-steps" aria-label="Checkout progress">
+            <li className="done">
+              <span>
+                <Icon name="check" size={12} />
+              </span>{' '}
+              Bag
+            </li>
+            <li className="on" aria-current="step">
+              <span>2</span> Details
+            </li>
+            <li>
+              <span>3</span> Payment
+            </li>
+          </ol>
+          <h1 className="h1 ck-title">Almost yours.</h1>
+          <p className="muted ck-sub">
+            <Icon name="lock" size={14} /> Secure checkout · no account needed · about a minute
           </p>
 
-          <fieldset className="ck-sec">
+          <fieldset className="ck-sec ck-anim" style={{ '--i': 0 }}>
             <legend>
-              <span>1</span> Contact
+              <span>1</span> Your details
             </legend>
             <div className="ck-grid">
               <div className="field span2">
@@ -394,51 +586,86 @@ export default function Checkout() {
                 <input id="ck-name" className="input" autoComplete="name" {...f('name')} />
                 {errors.name && <small className="err">{errors.name}</small>}
               </div>
-              <div className="field">
-                <label htmlFor="ck-mobile">Mobile (for WhatsApp updates)</label>
-                <input id="ck-mobile" className="input" inputMode="tel" autoComplete="tel-national" maxLength={16} {...f('mobile')} />
+              <div className="field span2">
+                <label htmlFor="ck-mobile">Mobile number</label>
+                <div className="ck-phone">
+                  <span>+91</span>
+                  <input id="ck-mobile" className="input" type="tel" inputMode="tel" autoComplete="tel-national" maxLength={16} {...f('mobile')} />
+                </div>
+                <small className="muted">Order updates and tracking on WhatsApp</small>
                 {errors.mobile && <small className="err">{errors.mobile}</small>}
-              </div>
-              <div className="field">
-                <label htmlFor="ck-email">
-                  Email <span className="muted">(optional)</span>
-                </label>
-                <input id="ck-email" className="input" type="email" autoComplete="email" {...f('email')} />
-                {errors.email && <small className="err">{errors.email}</small>}
               </div>
             </div>
           </fieldset>
 
-          <fieldset className="ck-sec">
+          <fieldset className="ck-sec ck-anim" style={{ '--i': 1 }}>
             <legend>
               <span>2</span> Delivery address
             </legend>
-            <div className="ck-grid">
-              <div className="field">
-                <label htmlFor="ck-pin">Pincode</label>
-                <input id="ck-pin" className="input" inputMode="numeric" autoComplete="postal-code" maxLength={6} {...f('pin')} onChange={(e) => (setD((x) => ({ ...x, pin: e.target.value.replace(/\D/g, '').slice(0, 6) })), setErrors((x) => ({ ...x, pin: '' })))} />
-                {pinState === 'ok' && <small className="ok">✓ We deliver here — free</small>}
-                {pinState === 'bad' && <small className="err">Pincode not found — please check</small>}
-                {errors.pin && <small className="err">{errors.pin}</small>}
+            <div className="field">
+              <label htmlFor="ck-pin">Pincode</label>
+              <div className={`ck-pin ${pinState}`}>
+                <input id="ck-pin" className="input" inputMode="numeric" autoComplete="postal-code" maxLength={6} placeholder="6-digit pincode" {...f('pin')} onChange={(e) => (setD((x) => ({ ...x, pin: e.target.value.replace(/\D/g, '').slice(0, 6) })), setErrors((x) => ({ ...x, pin: '' })), setEditPlace(false))} />
+                <span className="ck-pin-ic" aria-hidden="true">
+                  {pinState === 'loading' ? <i className="ck-spin" /> : pinState === 'ok' ? <Icon name="check" size={18} /> : <Icon name="pin" size={18} />}
+                </span>
               </div>
-              <div className="field">
-                <label htmlFor="ck-city">City</label>
-                <input id="ck-city" className="input" autoComplete="address-level2" {...f('city')} />
-                {errors.city && <small className="err">{errors.city}</small>}
+              {pinState === 'bad' && <small className="err">We couldn’t find this pincode — please check it, or enter your city and state below.</small>}
+              {errors.pin && <small className="err">{errors.pin}</small>}
+            </div>
+
+            {pinState === 'ok' && !editPlace && (
+              <div className="ck-place" role="status">
+                <Icon name="pin" size={18} />
+                <div>
+                  <b>
+                    {d.city}
+                    {d.state ? `, ${d.state}` : ''}
+                  </b>
+                  <small>Free delivery · arrives {win.early} – {win.late}</small>
+                </div>
+                <button type="button" className="link small" onClick={() => setEditPlace(true)}>
+                  Change
+                </button>
               </div>
-              <div className="field span2">
-                <label htmlFor="ck-address">House, street, area, landmark</label>
-                <textarea id="ck-address" className="textarea" rows={2} autoComplete="street-address" {...f('address')} />
-                {errors.address && <small className="err">{errors.address}</small>}
-              </div>
-              <div className="field span2">
-                <label htmlFor="ck-state">State</label>
-                <input id="ck-state" className="input" autoComplete="address-level1" {...f('state')} />
+            )}
+
+            <div className={`ck-reveal ${/^\d{6}$/.test(d.pin) && pinState !== 'loading' ? 'open' : ''}`}>
+              <div>
+                {(editPlace || pinState === 'bad' || (pinState !== 'ok' && /^\d{6}$/.test(d.pin))) && (
+                  <div className="ck-grid">
+                    <div className="field">
+                      <label htmlFor="ck-city">City</label>
+                      <input id="ck-city" className="input" autoComplete="address-level2" {...f('city')} />
+                      {errors.city && <small className="err">{errors.city}</small>}
+                    </div>
+                    <div className="field">
+                      <label htmlFor="ck-state">State</label>
+                      <input id="ck-state" className="input" autoComplete="address-level1" {...f('state')} />
+                    </div>
+                  </div>
+                )}
+                <div className="ck-grid">
+                  <div className="field span2">
+                    <label htmlFor="ck-house">House / flat no., building, street</label>
+                    <input id="ck-house" className="input" autoComplete="address-line1" placeholder="e.g. 12B, Shanti Apartments, MG Road" {...f('house')} />
+                    {errors.house && <small className="err">{errors.house}</small>}
+                  </div>
+                  <div className="field span2">
+                    <label htmlFor="ck-area">Area / locality</label>
+                    <input id="ck-area" className="input" autoComplete="address-line2" placeholder="e.g. Boring Road" {...f('area')} />
+                    {errors.area && <small className="err">{errors.area}</small>}
+                  </div>
+                  <div className="field span2">
+                    <label htmlFor="ck-landmark">
+                      Landmark <span className="muted">(optional)</span>
+                    </label>
+                    <input id="ck-landmark" className="input" placeholder="e.g. opposite City Hospital" {...f('landmark')} />
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="ck-eta">
-              <Icon name="truck" size={18} /> Free delivery · arrives <b>{win.early} – {win.late}</b>
-            </div>
+            {!/^\d{6}$/.test(d.pin) && <p className="muted small ck-hint">Enter your pincode — we’ll fill in your city and state.</p>}
           </fieldset>
 
           {hasSig && sig.founder.enabled && (
@@ -475,39 +702,58 @@ export default function Checkout() {
             </fieldset>
           )}
 
-          <fieldset className="ck-sec">
+          <fieldset className={`ck-sec ck-anim ck-gift ${gift.on ? 'on' : ''}`} style={{ '--i': 2 }}>
             <legend>
-              <span>3</span> Is it a gift?
+              <span>3</span> Sending it as a gift?
             </legend>
-            <label className="toggle" style={{ marginBottom: gift.on ? 18 : 0 }}>
-              <input type="checkbox" checked={gift.on} onChange={(e) => setGift((g) => ({ ...g, on: e.target.checked }))} />
-              <span />
-              Yes — add a gift card & hide the price (+{money(GIFT_FEE)})
-            </label>
-            {gift.on && (
-              <div className="gift-grid">
-                <div className="ck-grid">
-                  <div className="field">
-                    <label htmlFor="g-to">To</label>
-                    <input id="g-to" className="input" maxLength={30} value={gift.to} onChange={(e) => setGift((g) => ({ ...g, to: e.target.value }))} placeholder="Ananya" />
+            <button type="button" className="ck-gift-card" aria-pressed={gift.on} onClick={() => setGift((g) => ({ ...g, on: !g.on }))}>
+              <span className="ck-gift-box" aria-hidden="true">
+                <i />
+              </span>
+              <span className="ck-gift-copy">
+                <b>Make it a gift</b>
+                <span className="ck-gift-perks">
+                  <span>
+                    <Icon name="box" size={14} /> Premium gift packaging
+                  </span>
+                  <span>
+                    <Icon name="edit" size={14} /> Greeting card with your message
+                  </span>
+                  <span>
+                    <Icon name="eye" size={14} /> No price anywhere in the box
+                  </span>
+                </span>
+              </span>
+              <span className="ck-gift-price">
+                +{money(GIFT_FEE)}
+                <span className={`ck-switch ${gift.on ? 'on' : ''}`} aria-hidden="true">
+                  <i />
+                </span>
+              </span>
+            </button>
+            <div className={`ck-reveal ${gift.on ? 'open' : ''}`}>
+              <div>
+                <div className="gift-grid">
+                  <div className="ck-grid">
+                    <div className="field">
+                      <label htmlFor="g-to">To</label>
+                      <input id="g-to" className="input" maxLength={30} value={gift.to} onChange={(e) => setGift((g) => ({ ...g, to: e.target.value }))} placeholder="Ananya" tabIndex={gift.on ? undefined : -1} />
+                    </div>
+                    <div className="field">
+                      <label htmlFor="g-from">From</label>
+                      <input id="g-from" className="input" maxLength={30} value={gift.from} onChange={(e) => setGift((g) => ({ ...g, from: e.target.value }))} placeholder="Aarav" tabIndex={gift.on ? undefined : -1} />
+                    </div>
+                    <div className="field span2">
+                      <label htmlFor="g-note">
+                        Message for the greeting card <span className="muted" style={{ float: 'right' }}>{gift.note.length}/200</span>
+                      </label>
+                      <textarea id="g-note" className="textarea" maxLength={200} rows={3} value={gift.note} onChange={(e) => setGift((g) => ({ ...g, note: e.target.value }))} placeholder="Happy anniversary! Every year with you is my favourite photo." tabIndex={gift.on ? undefined : -1} />
+                    </div>
                   </div>
-                  <div className="field">
-                    <label htmlFor="g-from">From</label>
-                    <input id="g-from" className="input" maxLength={30} value={gift.from} onChange={(e) => setGift((g) => ({ ...g, from: e.target.value }))} placeholder="Aarav" />
-                  </div>
-                  <div className="field span2">
-                    <label htmlFor="g-note">
-                      Your message <span className="muted" style={{ float: 'right' }}>{gift.note.length}/200</span>
-                    </label>
-                    <textarea id="g-note" className="textarea" maxLength={200} rows={3} value={gift.note} onChange={(e) => setGift((g) => ({ ...g, note: e.target.value }))} placeholder="Happy anniversary! Every year with you is my favourite photo." />
-                  </div>
-                  <label className="check span2">
-                    <input type="checkbox" checked={gift.hidePrice} onChange={(e) => setGift((g) => ({ ...g, hidePrice: e.target.checked }))} /> Don’t put prices in the box
-                  </label>
+                  <GiftCard gift={gift} />
                 </div>
-                <GiftCard gift={gift} />
               </div>
-            )}
+            </div>
           </fieldset>
         </div>
 
@@ -548,7 +794,7 @@ export default function Checkout() {
             </div>
             {gift.on && (
               <div className="sum-row">
-                <span>Gift card & hidden price</span>
+                <span>Gift packaging & card</span>
                 <span>{money(GIFT_FEE)}</span>
               </div>
             )}
@@ -576,9 +822,7 @@ export default function Checkout() {
                 </a>
               </div>
             )}
-            <button className="btn btn-gold btn-lg btn-block ck-pay" disabled={busy || !cart.items.length} onClick={pay}>
-              <Icon name="lock" size={18} /> {concierge ? `Confirm with Signature concierge · ${money(grand)}` : status === 'creating' ? 'Preparing secure payment…' : status === 'verifying' ? 'Confirming payment…' : `Pay ${money(grand)}`}
-            </button>
+            <PayButton className="btn-lg btn-block ck-pay" status={status} disabled={busy || !cart.items.length} onClick={pay} label={concierge ? `Confirm with Signature concierge · ${money(grand)}` : `Pay ${money(grand)}`} />
             <div className="ck-methods" aria-label="Payment methods">
               <span>UPI</span>
               <span>GPay</span>
@@ -591,7 +835,7 @@ export default function Checkout() {
             </div>
             <a
               className="btn btn-ghost btn-block"
-              href={waLink(orderText(cart.items, cart, d.name ? d : null) + (giftInfo ? `\n\nGift card — To: ${giftInfo.to || ''} From: ${giftInfo.from || ''}\n"${giftInfo.note || ''}"` : ''))}
+              href={waLink(orderText(cart.items, cart, d.name ? { ...d, address: addr } : null) + (giftInfo ? `\n\nGift card — To: ${giftInfo.to || ''} From: ${giftInfo.from || ''}\n"${giftInfo.note || ''}"` : ''))}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -605,6 +849,13 @@ export default function Checkout() {
           </div>
         </aside>
       </section>
+      <div className="ck-bar">
+        <div>
+          <small>Total{gift.on ? ' · gift' : ''}</small>
+          <b key={grand}>{money(grand)}</b>
+        </div>
+        <PayButton status={status} disabled={busy || !cart.items.length} onClick={pay} label={concierge ? 'Confirm' : 'Pay securely'} compact />
+      </div>
     </>
   );
 }

@@ -29,6 +29,30 @@ function Customization({ c }) {
   );
 }
 
+// The greeting card the customer wrote at checkout, shown at the top of the
+// order so it's packed with the frame (and never missed).
+function GiftCard({ items }) {
+  const g = (items || []).map((it) => it.customization?.gift).find(Boolean);
+  if (!g) return null;
+  const text = [g.to && `To: ${g.to}`, g.note, g.from && `— ${g.from}`].filter(Boolean).join('\n\n');
+  return (
+    <div className="ad-gift">
+      <div className="ad-gift-head">
+        <span>🎁 Gift order</span>
+        <small>Premium packaging · greeting card · no price in the box</small>
+      </div>
+      <div className="ad-gift-card">
+        {g.to && <p className="ad-gift-to">To {g.to},</p>}
+        <p className="ad-gift-msg">{g.note || <i className="ad-muted">No message written — card with greeting only.</i>}</p>
+        {g.from && <p className="ad-gift-from">With love, {g.from}</p>}
+      </div>
+      <button className="ad-btn" onClick={() => navigator.clipboard?.writeText(text)}>
+        Copy card text
+      </button>
+    </div>
+  );
+}
+
 export default function Orders() {
   const [orders, setOrders] = useState(null);
   const [open, setOpen] = useState(null);
@@ -152,6 +176,7 @@ export default function Orders() {
                 <tr className="ad-click" onClick={() => toggle(o.id)}>
                   <td>
                     <b>{o.order_number || o.id.slice(0, 8)}</b>
+                    {/gift/i.test(o.notes || '') && <span className="ad-badge ad-badge-gift">🎁 Gift</span>}
                   </td>
                   <td>
                     {o.customer_name}
@@ -229,6 +254,7 @@ export default function Orders() {
                           </div>
                         </div>
                         <div>
+                          <GiftCard items={items[o.id]} />
                           <h3>Items</h3>
                           {!items[o.id] && <p className="ad-muted">Loading…</p>}
                           {(items[o.id] || []).some((it) => it.artwork_paths?.length) && (

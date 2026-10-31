@@ -1843,3 +1843,16 @@
 .db-funnel b { font-size: 16px; }
 .db-funnel small { grid-column: 1 / -1; font-size: 11.5px; color: #6b6158; }
 @media (prefers-reduced-motion: reduce) { .db-funnel-bar { animation: none; } }
+
+/* Gift orders: badge in the list, greeting card at the top of the order */
+.ad-badge-gift { margin-left: 8px; background: #f6ecd8; color: #7a5a1f; border: 1px solid #e3cf9f; }
+.ad-gift { margin: 0 0 18px; padding: 14px; border-radius: 14px; background: linear-gradient(135deg, #fbf5e8, #f3e6c8); border: 1px solid #e3cf9f; display: grid; gap: 10px; }
+.ad-gift-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.ad-gift-head span { font-weight: 700; color: #6b4e17; }
+.ad-gift-head small { color: #6b5a3a; }
+.ad-gift-card { background: #fffdf8; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 0 #e9dcbc, 0 6px 18px -10px rgba(90, 64, 20, .35); font-family: Georgia, 'Times New Roman', serif; color: #2c2416; }
+.ad-gift-card p { margin: 0; white-space: pre-wrap; line-height: 1.55; }
+.ad-gift-to { font-style: italic; margin-bottom: 8px !important; }
+.ad-gift-msg { font-size: 1.05rem; }
+.ad-gift-from { text-align: right; font-style: italic; margin-top: 10px !important; }
+.ad-gift .ad-btn { justify-self: start; }
