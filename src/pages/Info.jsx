@@ -315,7 +315,7 @@ function Corporate() {
         <div className="wrap">
           <div className="tiers tiers-2">
             {[
-              ['Business', '10+ units', '₹449', 'per unit', ['Custom branding', 'Choice of sizes', 'Priority packaging', '5-day delivery'], true],
+              ['Business', '10–199 units', '₹449', 'per unit', ['Custom branding', 'Choice of sizes', 'Priority packaging', '5-day delivery'], true],
               ['Enterprise', '200+ units', 'Custom', 'pricing', ['Full customisation', 'Dedicated manager', 'Logo integration', 'Express delivery']],
             ].map(([t, q, p, u, feats, hot]) => (
               <div key={t} className={`tier ${hot ? 'hot' : ''}`}>
@@ -373,7 +373,7 @@ const PAGES = {
   about: { title: 'About JHAYRA — Our Story Since 2017', desc: `From a small workshop to ${BRAND.homes} homes: the story of JHAYRA, handcrafted photo frames and wall art made in India since ${BRAND.since}.`, el: About },
   contact: { title: 'Contact JHAYRA', desc: 'WhatsApp, email or Instagram — talk to a real person at JHAYRA.', el: Contact },
   support: { title: 'Help & FAQ', desc: 'Delivery times, orders, photo quality, payments — answers to common questions.', el: Support },
-  corporate: { title: 'Corporate Gifting — Personalised Wall Art in Bulk', desc: `Branded, personalised frames for employees and clients. Volume pricing from ₹449/unit for 10+ units. Trusted by ${BRAND.corporates} companies.`, el: Corporate },
+  corporate: { title: 'Corporate Gifting — Personalised Wall Art in Bulk', desc: `Branded, personalised frames for employees and clients. Volume pricing from ₹449/unit for 10–199 units. Trusted by ${BRAND.corporates} companies.`, el: Corporate },
 };
 
 export default function Info({ page }) {
