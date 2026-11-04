@@ -80,7 +80,7 @@ serve(async (req) => {
 
   const { data: order } = await supabase
     .from('orders')
-    .select('id, payment_status')
+    .select('id, payment_status, total_amount')
     .eq('razorpay_order_id', razorpayOrderId)
     .maybeSingle();
 
@@ -90,20 +90,31 @@ serve(async (req) => {
     return new Response(JSON.stringify({ received: true }), { status: 200 });
   }
 
-  if (eventType === 'payment.captured' && order.payment_status !== 'paid') {
-    const { data: changed } = await supabase.from('orders').update({
-      razorpay_payment_id: payment.id,
-      payment_status: 'paid',
-      payment_amount: Number(payment.amount) / 100,
-      paid_at: new Date().toISOString(),
-      order_status: 'confirmed',
-    }).eq('id', order.id).neq('payment_status', 'paid').select('id');
-    if (changed?.length) await notifyOwner(supabase, order.id);
+  const captured = eventType === 'payment.captured' || (eventType === 'order.paid' && payment.status === 'captured');
+  if (captured && order.payment_status !== 'paid') {
+    const due = Math.round(Number(order.total_amount) * 100);
+    if (Number(payment.amount) < due) {
+      // Never mark an under-paid order as paid; leave it for the team to review.
+      console.error('Webhook: captured amount below order total', order.id, payment.amount, due);
+      await supabase.from('orders').update({
+        failure_reason: `Captured ${Number(payment.amount) / 100} for an order of ${due / 100} — review`,
+      }).eq('id', order.id).neq('payment_status', 'paid');
+    } else {
+      const { data: changed } = await supabase.from('orders').update({
+        razorpay_payment_id: payment.id,
+        payment_status: 'paid',
+        payment_amount: Number(payment.amount) / 100,
+        paid_at: new Date().toISOString(),
+        order_status: 'confirmed',
+        failure_reason: null,
+      }).eq('id', order.id).neq('payment_status', 'paid').select('id');
+      if (changed?.length) await notifyOwner(supabase, order.id);
+    }
   } else if (eventType === 'payment.failed' && order.payment_status === 'pending') {
     await supabase.from('orders').update({
       payment_status: 'failed',
       failure_reason: (payment.error_description as string) || 'Payment failed',
-    }).eq('id', order.id);
+    }).eq('id', order.id).eq('payment_status', 'pending');
   }
   // All other events: acknowledge without action (idempotent)
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { withCm } from '../lib/frames';
 import { Link } from 'react-router-dom';
 import Frame from './Frame';
 import Icon from './Icon';
@@ -66,7 +67,7 @@ export default function QuickView({ product, onClose }) {
           {!cfg && <div className="skel" style={{ height: 120, marginTop: 16 }} />}
           {cfg && (
             <>
-              <label className="editor-label">Size {size && <span className="muted">· {size.dimensions}</span>}</label>
+              <label className="editor-label">Size {size && <span className="muted">· {withCm(size.dimensions)}</span>}</label>
               <div className="ls-sizes">
                 {cfg.sizes.map((s) => (
                   <button key={s.slug} className={`ls-size ${s.slug === sizeSlug ? 'on' : ''}`} aria-pressed={s.slug === sizeSlug} onClick={() => setSizeSlug(s.slug)}>

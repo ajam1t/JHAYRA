@@ -5,7 +5,7 @@ import Frame from './Frame';
 import Img from './Img';
 import { optimized } from '../lib/img';
 import { useCart } from '../state/cart';
-import { trackView } from '../lib/analytics';
+import { trackView, trackStep } from '../lib/analytics';
 import { useShop } from '../state/store';
 import { SITE, money, waLink } from '../lib/site';
 import { BRAND } from '../lib/brand';
@@ -579,6 +579,7 @@ function SearchPalette() {
             value={q}
             onChange={(e) => {
               setQ(e.target.value);
+              if (e.target.value.trim().length > 2) trackStep('search');
               setSel(0);
             }}
             onKeyDown={onKey}

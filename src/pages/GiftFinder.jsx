@@ -12,6 +12,7 @@ import { useTemplates } from '../lib/templates';
 import { money, waLink, deliveryWindow } from '../lib/site';
 import { SIZES } from '../lib/frames';
 import { WHO, WHEN, STYLES, TYPES, budgets, recommend, GIFT_GUIDE, GIFT_HOW } from '../lib/giftfinder';
+import { trackStep } from '../lib/analytics';
 
 const KEYS = ['who', 'when', 'budget', 'style', 'type'];
 const ANY = 'any';
@@ -173,6 +174,9 @@ export default function GiftFinder() {
     return recommend({ products, templates: active, sizes, a: clean });
   }, [products, active, sizes, params]); // eslint-disable-line react-hooks/exhaustive-deps
   const results = done ? live : null;
+  useEffect(() => {
+    if (done) trackStep('gift_finder_complete');
+  }, [done]);
   const [tab, setTab] = useState('');
 
   const largest = results?.fits?.[results.fits.length - 1];

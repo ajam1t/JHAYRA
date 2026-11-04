@@ -8,7 +8,7 @@ export const LEGAL = {
       ['Information we collect', 'Your name, mobile number, email (optional) and delivery address when you order or contact us, and the photos and text you add to personalised products.'],
       ['How we use it', 'To make and deliver your order, send order updates on WhatsApp/SMS, provide support and improve our service. We never sell your personal data.'],
       ['Your photos', 'Photos you upload are stored privately and used only to produce your order. They are visible only to our production team, and are not used for marketing without your written permission.'],
-      ['Visit statistics', 'We count anonymous visits — page, device type, referring website and page-load speed, linked to a random browser ID — to improve the site. No names, emails or IP addresses are recorded. See our Cookie Policy.'],
+      ['Visit statistics', 'We count anonymous visits — page, device type, referring website, page-load speed and an approximate state and city, linked to a random browser ID — to improve the site. No names, emails, mobile numbers or IP addresses are recorded, and nothing is counted if your browser sends Do Not Track or Global Privacy Control. See our Cookie Policy.'],
       ['Payments', 'Online payments are processed by Razorpay. We do not receive or store your card, UPI or banking credentials.'],
       ['WhatsApp communications', 'When you message us or order, you agree to receive order-related messages from us on WhatsApp.'],
       ['Data security', 'We use industry-standard safeguards to protect your information. No system is perfectly secure, but we take care to keep your data safe.'],
@@ -66,12 +66,14 @@ export const LEGAL = {
   },
   'cookie-policy': {
     title: 'Cookie Policy',
-    desc: 'How JHAYRA uses cookies and local storage.',
+    desc: 'Exactly what JHAYRA keeps in your browser, why, and how to clear it.',
     sections: [
-      ['What we store', 'We keep your bag, wishlist, recently viewed designs, saved delivery details and order history in your browser’s local storage so they’re there when you return.'],
-      ['Essential storage', 'These are needed for the shop to work and are never shared.'],
-      ['Visit statistics', 'To understand which pages are useful and how fast the site loads, we count visits with a random ID kept in your browser. We record the page, device type (phone, tablet or computer), the website that sent you and page-load timings — never your name, email or IP address. We skip this if your browser sends “Do Not Track” or Global Privacy Control.'],
-      ['Your choices', 'You can clear site data from your browser settings at any time; this will empty your bag, wishlist and saved details.'],
+      ['In short', 'JHAYRA sets no advertising or cross-site tracking cookies. We keep a few items in your browser’s local and session storage so the shop works, plus anonymous visit statistics you can switch off.'],
+      ['Needed for the shop (local storage)', 'Your bag, wishlist, recently viewed designs, saved delivery details, the pincode you checked, the words and choices of an unfinished personalised design (for 14 days — never its photos) and the orders placed on this device (order number, items, total and the mobile number used, so “My orders” can show live status). They stay on your device until you clear them and are never shared.'],
+      ['Needed during payment (session storage)', 'While you pay, we remember the payment order created for your bag for up to 25 minutes, so pressing Pay again never creates a duplicate order. It is cleared when your payment is confirmed or the tab is closed.'],
+      ['Payment window', 'Online payments open Razorpay’s secure checkout, which may set its own cookies to process and protect your payment. See Razorpay’s privacy policy for details.'],
+      ['Visit statistics', 'To learn which pages help and how fast they load, we count visits with a random ID in local storage and a session ID in session storage. We record the page, device type, the website that sent you, page-load timings and an approximate state and city worked out from your connection — never your name, email, mobile or IP address. We skip all of this if your browser sends “Do Not Track” or Global Privacy Control.'],
+      ['Your choices', 'Turn on “Do Not Track” or Global Privacy Control in your browser to stop visit statistics. You can clear site data from your browser settings at any time; this also empties your bag, wishlist, saved details and the order list on this device (your orders themselves are safe — track them any time with your order number and mobile).'],
     ],
   },
 };

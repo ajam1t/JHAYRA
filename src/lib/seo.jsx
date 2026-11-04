@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { SITE } from './site';
+import { webPageLd } from './schema';
 
 function setMeta(attr, key, content) {
   let el = document.head.querySelector(`meta[${attr}="${key}"]`);
@@ -42,11 +43,12 @@ export function Seo({ title, description, path = '/', image, noindex = false, js
 
     const old = document.getElementById('page-jsonld');
     if (old) old.remove();
-    if (jsonLd) {
+    const ld = jsonLd || (!noindex && path !== '/' ? webPageLd({ path: path.replace(/\/$/, '') || '/', title, description }) : null);
+    if (ld) {
       const s = document.createElement('script');
       s.type = 'application/ld+json';
       s.id = 'page-jsonld';
-      s.textContent = JSON.stringify(jsonLd);
+      s.textContent = JSON.stringify(ld);
       document.head.appendChild(s);
     }
   }, [title, description, path, image, noindex, jsonLd && JSON.stringify(jsonLd)]);

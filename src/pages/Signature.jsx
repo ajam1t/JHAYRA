@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { withCm } from '../lib/frames';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import Frame from '../components/Frame';
@@ -110,7 +111,7 @@ function Detail({ item, s, onClose }) {
               <div className="sg-price">
                 <b>{money(price)}</b>
                 <small>
-                  {sz?.dimensions} · premium packaging included
+                  {withCm(sz?.dimensions)} · premium packaging included
                   {` · Signature price`}
                 </small>
               </div>

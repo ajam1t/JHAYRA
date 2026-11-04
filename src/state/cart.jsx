@@ -44,7 +44,10 @@ export function CartProvider({ children }) {
   const setQty = useCallback((key, qty) => {
     setItems((list) => (qty <= 0 ? list.filter((i) => i.key !== key) : list.map((i) => (i.key === key ? { ...i, qty: Math.min(99, qty) } : i))));
   }, []);
-  const remove = useCallback((key) => setItems((list) => list.filter((i) => i.key !== key)), []);
+  const remove = useCallback((key) => {
+    trackStep('remove_from_cart');
+    setItems((list) => list.filter((i) => i.key !== key));
+  }, []);
   const clear = useCallback(() => {
     setItems([]);
     setCoupon(null);

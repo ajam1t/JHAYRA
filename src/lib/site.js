@@ -41,6 +41,18 @@ export function deliveryTimeline(from = new Date()) {
   return { placed: fmt(from), ship: [fmt(addBiz(from, 1)), fmt(addBiz(from, 2))], arrive: [fmt(addBiz(from, 6)), fmt(addBiz(from, 9))] };
 }
 
+// Latest day to order so the 6–9 business-day window still ends by `date`
+// (the same rule as deliveryWindow, counted backwards).
+export function orderBy(date) {
+  const x = new Date(date);
+  let n = 9;
+  while (n > 0) {
+    x.setDate(x.getDate() - 1);
+    if (x.getDay() !== 0) n--;
+  }
+  return x;
+}
+
 // Admin-entered link targets: only same-site paths are followed (never
 // javascript:, protocol-relative or external URLs); anything else goes home.
 export const safePath = (to) => (typeof to === 'string' && /^\/(?!\/|\\)/.test(to.trim()) ? to.trim() : '/');

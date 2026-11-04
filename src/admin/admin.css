@@ -1887,3 +1887,15 @@
 .ph-dpi.bad { color: #b3261e; }
 .ph-empty .ph-thumb { color: #a39a88; border-bottom: 1px dashed rgba(0, 0, 0, 0.12); }
 .ph-photo label.ad-btn { justify-content: center; cursor: pointer; }
+
+/* Approved design (template orders) + full-size print layout */
+.ad-approved { margin: 12px 0; display: grid; gap: 8px; width: min(280px, 100%); }
+.ad-approved-head { display: grid; gap: 2px; }
+.ad-approved-box { position: relative; width: 100%; background: #fbf8f2; border: 6px solid #1c1c1c; box-shadow: 0 6px 18px rgba(30, 20, 10, 0.18); overflow: hidden; }
+.ad-print-root { position: fixed; inset: 0; z-index: 9999; background: rgba(28, 22, 16, 0.92); display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 14px; overflow: auto; }
+.ad-print-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; color: #f7f2e9; font-size: 14px; }
+.ad-print-sheet { position: relative; background: #fbf8f2; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); overflow: hidden; }
+@media print {
+  .ad-print-root { padding: 0; display: block; }
+  .ad-print-sheet { margin: 0; }
+}

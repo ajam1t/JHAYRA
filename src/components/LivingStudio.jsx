@@ -5,7 +5,7 @@ import Icon from './Icon';
 import PanZoom, { IDENTITY, ZoomControls } from './PanZoom';
 import WallStudio from './WallStudio';
 import PreviewDock from './PreviewDock';
-import { SIZES, customOption, colourHex } from '../lib/frames';
+import { SIZES, customOption, colourHex, withCm } from '../lib/frames';
 import { TREATMENTS, treatedSource, composePrint, canvasToBlob, loadImage } from '../lib/treatments';
 import { readPhoto, uploadArtwork, photoHandoff, QUALITY_LABEL } from '../lib/upload';
 import { optimized } from '../lib/img';
@@ -292,7 +292,7 @@ export default function LivingStudio({ compact = false, samplePhoto }) {
           <div>
             <b>{money(option.price)}</b>
             <small>
-              {size.dimensions} · black frame · free delivery
+              {withCm(size.dimensions)} · black frame · free delivery
               {quality && <span className={`q-${quality.tone}`}> · {quality.text}</span>}
             </small>
           </div>

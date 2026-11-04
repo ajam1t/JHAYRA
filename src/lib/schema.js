@@ -99,3 +99,17 @@ export function productLd({ id, name, description, images = [], category, sizes 
     })),
   };
 }
+
+// Default structured data for pages that don't provide their own: a WebPage
+// (CollectionPage for browsing hubs) that is part of the site, plus its
+// breadcrumb. Used by the build-time prerender and by <Seo> in the browser so
+// both publish the same thing.
+const HUBS = new Set(['/shop', '/collections', '/journal', '/customize', '/celebrations', '/worlds', '/inspiration', '/signature']);
+export function webPageLd({ path, title, description }) {
+  const url = SITE_URL + (path === '/' ? '/' : path);
+  const name = String(title || '').split(' | ')[0].trim();
+  return [
+    { '@context': 'https://schema.org', '@type': HUBS.has(path) ? 'CollectionPage' : 'WebPage', name, description, url, inLanguage: 'en-IN', isPartOf: { '@id': WEBSITE['@id'] }, publisher: { '@id': ORG_ID } },
+    breadcrumbLd([['Home', '/'], [name.split(' — ')[0], path]]),
+  ];
+}

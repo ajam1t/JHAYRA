@@ -29,10 +29,17 @@ export async function uploadArtwork(photos) {
     if (!file.size || file.size > MAX_BYTES) continue;
     const type = file.type || 'image/jpeg';
     const path = `${folder}/${Date.now()}-${i}.${ext(type)}`;
-    const { error } = await supabase.storage.from('customer-artwork').upload(path, file, { contentType: type, upsert: false });
-    if (error) continue;
+    // Mobile networks drop uploads: retry each photo twice before giving up.
+    let ok = false;
+    for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+      if (attempt) await new Promise((r) => setTimeout(r, 1200 * attempt));
+      const { error } = await supabase.storage.from('customer-artwork').upload(path, file, { contentType: type, upsert: false });
+      // "already exists" means an earlier attempt landed before the network dropped.
+      ok = !error || /exists|duplicate/i.test(error.message || '');
+    }
+    if (!ok) continue;
     result.paths.push(path);
-    result.meta.push({ path, name: name || file.name || null, width, height, bytes: file.size, type });
+    result.meta.push({ path, name: name || file.name || null, width, height, bytes: file.size, type, ...(list[i].slot ? { slot: list[i].slot } : {}) });
   }
   result.uploaded = result.paths.length;
   return result;

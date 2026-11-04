@@ -17,6 +17,9 @@ function corsHeaders(origin: string | null) {
 // Gift card & hidden-price packing, charged once per order when chosen.
 const GIFT_FEE = 100;
 
+// Customer uploads: <uuid or time-random>/<timestamp>-<index>.<ext>
+const ARTWORK_PATH = /^[A-Za-z0-9-]{8,64}\/\d{10,16}-\d{1,2}\.(jpg|png|webp|heic|heif)$/;
+
 // Personalised (customer-photo) frames are made in these size/finish pairs —
 // the same list the storefront offers (src/lib/frames.js CUSTOM).
 const CUSTOM_COMBOS = new Set([
@@ -51,7 +54,11 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(origin) });
 
   try {
-    const { items, customer, gift } = await req.json();
+    const { items, customer, gift, founderDelivery } = await req.json();
+
+    // Founder delivery is only offered with Signature pieces, which are
+    // confirmed by the concierge — never charge (or skip charging) it here.
+    if (founderDelivery) return json({ error: 'Founder delivery is confirmed by our concierge on WhatsApp.' }, 400);
 
     // Basic shape validation
     if (!Array.isArray(items) || !items.length) return json({ error: 'No items' }, 400);
@@ -90,9 +97,17 @@ serve(async (req) => {
 
     for (const item of items) {
       const { legacyId, name, qty, price, size, colour, orientation, category, artworkPaths, customization } = item;
+      // Only the customer's own uploads (<folder>/<time>-<n>.<ext>, made by
+      // src/lib/upload.js) — never other paths in the private bucket.
       const cleanArtwork = Array.isArray(artworkPaths)
-        ? artworkPaths.filter((p: unknown) => typeof p === 'string').slice(0, 20)
+        ? artworkPaths.filter((p: unknown) => typeof p === 'string' && ARTWORK_PATH.test(p)).slice(0, 20)
         : null;
+      if (Array.isArray(artworkPaths) && artworkPaths.length && cleanArtwork!.length !== Math.min(20, artworkPaths.length)) {
+        return json({ error: 'Some photos could not be attached. Please re-upload them and try again.' }, 400);
+      }
+      if (customization != null && JSON.stringify(customization).length > 60000) {
+        return json({ error: 'Personalisation details are too large. Please contact us on WhatsApp.' }, 400);
+      }
 
       if (!legacyId || !qty || qty < 1 || qty > 50) {
         return json({ error: `Invalid item: ${legacyId}` }, 400);

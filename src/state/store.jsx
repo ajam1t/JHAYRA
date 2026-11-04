@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { trackStep } from '../lib/analytics';
 
 /* ── Persistent list helper (wishlist, recently viewed) ───────────────────── */
 function usePersistentList(key, max = 50) {
@@ -25,7 +26,15 @@ export function ShopProvider({ children }) {
   const [wish, setWish] = usePersistentList('jhayra_wishlist');
   const [recent, setRecent] = usePersistentList('jhayra_recent', 12);
   const [searchOpen, setSearchOpen] = useState(false);
-  const toggleWish = useCallback((id) => setWish((l) => (l.includes(id) ? l.filter((x) => x !== id) : [id, ...l])), [setWish]);
+  const toggleWish = useCallback(
+    (id) =>
+      setWish((l) => {
+        if (l.includes(id)) return l.filter((x) => x !== id);
+        trackStep('wishlist_add');
+        return [id, ...l];
+      }),
+    [setWish],
+  );
   const pushRecent = useCallback((id) => setRecent((l) => [id, ...l.filter((x) => x !== id)].slice(0, 12)), [setRecent]);
   return <ShopCtx.Provider value={{ wish, toggleWish, recent, pushRecent, searchOpen, setSearchOpen }}>{children}</ShopCtx.Provider>;
 }

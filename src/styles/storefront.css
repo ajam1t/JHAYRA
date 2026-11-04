@@ -7280,3 +7280,12 @@
 .m5-ig { width: 48px; height: 48px; display: grid; place-items: center; flex: none; border-radius: 13px; overflow: hidden; box-shadow: 0 6px 14px rgba(214, 36, 159, 0.28); transition: transform 0.25s; }
 .m5-ig:hover { transform: translateY(-1px); }
 .m5-ig svg { display: block; width: 48px; height: 48px; }
+
+/* Celebrations: coming up + order-by planner */
+.cel-next { cursor: default; }
+.cel-by { margin-top: 8px; font-size: 13px; color: var(--gold-deep, #8a6a2e); }
+.cel-plan { display: grid; gap: 18px; padding: clamp(22px, 4vw, 36px); border-radius: 8px; background: linear-gradient(160deg, #fbf7ef, #f1e7d6); border: 1px solid rgba(184, 154, 96, 0.35); }
+@media (min-width: 860px) { .cel-plan { grid-template-columns: 1.4fr 1fr; align-items: end; } .cel-plan-out { grid-column: 1 / -1; } }
+.cel-plan-in { display: grid; gap: 6px; font-size: 14px; }
+.cel-plan-out { margin: 0; font-size: 17px; }
+.cel-plan-out b { color: var(--espresso, #29221d); }

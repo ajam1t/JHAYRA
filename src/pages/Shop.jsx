@@ -16,6 +16,7 @@ import { money, waLink, SITE } from '../lib/site';
 import { SIZES, COLOURS } from '../lib/frames';
 import { ROOMS, ROOM_MAP } from '../lib/rooms';
 import { useShop } from '../state/store';
+import { trackStep } from '../lib/analytics';
 
 const SORTS = [
   ['featured', 'Featured'],
@@ -496,6 +497,7 @@ export default function Shop() {
   const landing = !active.length;
 
   const set = (k, v) => {
+    if (v) trackStep('filter');
     const n = new URLSearchParams(params);
     if (v) n.set(k, v);
     else n.delete(k);

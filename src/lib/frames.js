@@ -53,3 +53,12 @@ export const MIN_PRICE = Math.min(...SIZES.map((s) => s.price));
 export function colourHex(name) {
   return (COLOURS[name] || COLOURS.Black).hex;
 }
+
+// "9.5 × 13 inches" → "9.5 × 13 in (24 × 33 cm)" — the same measurement in
+// centimetres too, for customers who measure their wall in cm.
+export function withCm(dimensions = '') {
+  const m = String(dimensions).match(/([\d.]+)\s*[×x]\s*([\d.]+)\s*(?:inches|inch|in|")/i);
+  if (!m) return dimensions;
+  const cm = (v) => Math.round(parseFloat(v) * 2.54);
+  return `${m[1]} × ${m[2]} in (${cm(m[1])} × ${cm(m[2])} cm)`;
+}

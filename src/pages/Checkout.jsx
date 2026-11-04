@@ -39,6 +39,41 @@ function loadRazorpay() {
 const TIMEOUT = 'timeout';
 const withTimeout = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(TIMEOUT)), ms))]);
 
+// One Razorpay order per bag: pressing Pay again (after closing the payment
+// window, a failed attempt or a reload in this tab) reuses the order already
+// created for exactly the same items, address and coupon — no duplicate orders.
+const PENDING = 'jh_pending_payment';
+const PENDING_TTL = 25 * 60 * 1000;
+const readPending = () => {
+  try {
+    const p = JSON.parse(sessionStorage.getItem(PENDING) || 'null');
+    return p && Date.now() - p.at < PENDING_TTL ? p : null;
+  } catch {
+    return null;
+  }
+};
+const writePending = (p) => {
+  try {
+    if (p) sessionStorage.setItem(PENDING, JSON.stringify(p));
+    else sessionStorage.removeItem(PENDING);
+  } catch {}
+};
+
+// Server-side confirmation, retried on network trouble (it is idempotent).
+// Returns 'ok', 'rejected' (the server checked and said no) or 'unknown'.
+export async function confirmPayment(body, tries = 3) {
+  for (let i = 0; i < tries; i++) {
+    try {
+      const { data, error } = await withTimeout(supabase.functions.invoke('verify-razorpay-payment', { body }), 20000);
+      if (data?.success) return 'ok';
+      const status = error?.context?.status;
+      if (status && status >= 400 && status < 500) return 'rejected';
+    } catch {}
+    if (i < tries - 1) await new Promise((r) => setTimeout(r, 1500 * (i + 1)));
+  }
+  return 'unknown';
+}
+
 const SAVED = 'jhayra_checkout_details';
 const EMPTY = { name: '', mobile: '', email: '', address: '', house: '', area: '', po: '', landmark: '', city: '', state: '', pin: '' };
 
@@ -587,6 +622,8 @@ export default function Checkout() {
   const [failure, setFailure] = useState('');
   const [order, setOrder] = useState(null);
   const lock = useRef(false);
+  const ackAmount = useRef('');
+  const [unverified, setUnverified] = useState(null);
   const tried = useRef(false);
   // Signature items: concierge confirmation (until the payment function prices
   // Signature on the server) and optional founder delivery.
@@ -723,30 +760,79 @@ export default function Checkout() {
         customization: giftInfo ? { ...(i.customization || {}), gift: giftInfo } : i.customization || null,
         ...(i.signature ? { signature: true } : {}),
       }));
-      const { data, error } = await withTimeout(supabase.functions.invoke('create-razorpay-order', {
-        body: {
-          items,
-          customer: {
-            name: d.name.trim(),
-            mobile: mobile10(d.mobile),
-            email: null,
-            address: addr,
-            city: d.city.trim(),
-            state: d.state.trim() || null,
-            pin: d.pin.trim(),
-            coupon: cart.coupon?.code || null,
-          },
-          ...(founderFee ? { founderDelivery: { fee: founderFee, slot: founder.slot } } : {}),
-          ...(giftInfo ? { gift: true } : {}),
+      const body = {
+        items,
+        customer: {
+          name: d.name.trim(),
+          mobile: mobile10(d.mobile),
+          email: null,
+          address: addr,
+          city: d.city.trim(),
+          state: d.state.trim() || null,
+          pin: d.pin.trim(),
+          coupon: cart.coupon?.code || null,
         },
-      }), 25000);
-      if (error || data?.error) {
-        toast(data?.error || 'Could not create your order. Please try again.', 'warn');
-        return;
+        ...(founderFee ? { founderDelivery: { fee: founderFee, slot: founder.slot } } : {}),
+        ...(giftInfo ? { gift: true } : {}),
+      };
+      const key = JSON.stringify(body);
+      let data = readPending()?.key === key ? readPending().data : null;
+      if (!data) {
+        const res = await withTimeout(supabase.functions.invoke('create-razorpay-order', { body }), 25000);
+        if (res.error || res.data?.error) {
+          let msg = res.data?.error;
+          try {
+            msg = msg || (await res.error?.context?.json())?.error;
+          } catch {}
+          toast(msg || 'Could not create your order. Please try again.', 'warn');
+          if (msg) setFailure(msg);
+          return;
+        }
+        data = res.data;
+        writePending({ key, data, at: Date.now() });
       }
       const { razorpay_order_id, amount, currency, key_id, order_id, order_number } = data;
+      // The amount charged is the server's. If it differs from what is shown
+      // (a price changed since the bag was filled), say so before paying.
+      if (Math.round(grand * 100) !== Number(amount) && ackAmount.current !== `${order_id}:${amount}`) {
+        ackAmount.current = `${order_id}:${amount}`;
+        setFailure(`Your total has been updated to ${money(Number(amount) / 100)} (current prices). Press Pay again to continue, or WhatsApp us with any questions.`);
+        return;
+      }
       const snapshot = cart.items.map((i) => ({ name: i.name, qty: i.qty, price: i.price, option: i.option, image: i.image, preview: i.artworkPaths?.length ? '' : i.preview, colourHex: i.colourHex }));
       const previewItem = cart.items[0];
+      const finish = (resp) => {
+        const done = {
+          orderId: order_id,
+          orderNumber: order_number || `ORD-${String(order_id).slice(0, 8).toUpperCase()}`,
+          amount: amount / 100,
+          paymentId: resp.razorpay_payment_id,
+          customerName: d.name.trim(),
+          mobile: mobile10(d.mobile),
+          date: new Date().toISOString(),
+          items: snapshot.map((s, k) => (k === 0 ? { ...s, preview: previewItem.preview || previewItem.image } : s)),
+          gift: !!giftInfo,
+          subtotal: cart.subtotal,
+          discount: cart.discount,
+          coupon: cart.coupon?.code || null,
+          giftFee,
+          founderFee,
+          city: d.city,
+          state: d.state,
+        };
+        saveLocalOrder({ ...done, items: snapshot });
+        writePending(null);
+        setUnverified(null);
+        // The button turns green ("Order placed") for a moment before the
+        // thank-you page and receipt appear.
+        setStatus('placed');
+        setTimeout(() => {
+          setOrder(done);
+          cart.clear();
+          setStatus('success');
+          window.scrollTo(0, 0);
+        }, reducedMotion() ? 200 : 1700);
+      };
       const rzp = new window.Razorpay({
         key: key_id,
         amount,
@@ -766,44 +852,19 @@ export default function Checkout() {
         },
         handler: async (resp) => {
           setStatus('verifying');
+          const vbody = { razorpay_order_id: resp.razorpay_order_id, razorpay_payment_id: resp.razorpay_payment_id, razorpay_signature: resp.razorpay_signature, order_id };
           try {
-            const { data: v, error: ve } = await supabase.functions.invoke('verify-razorpay-payment', {
-              body: { razorpay_order_id: resp.razorpay_order_id, razorpay_payment_id: resp.razorpay_payment_id, razorpay_signature: resp.razorpay_signature, order_id },
-            });
-            if (ve || !v?.success) {
-              setFailure('We couldn’t verify the payment. If money was deducted, please WhatsApp us — your order is safe.');
+            const r = await confirmPayment(vbody);
+            if (r === 'ok') return finish(resp);
+            if (r === 'rejected') {
+              setFailure('We couldn’t verify this payment. If money was deducted, please WhatsApp us — your order is safe.');
               setStatus('failed');
               return;
             }
-            const done = {
-              orderId: order_id,
-              orderNumber: order_number || `ORD-${String(order_id).slice(0, 8).toUpperCase()}`,
-              amount: amount / 100,
-              paymentId: resp.razorpay_payment_id,
-              customerName: d.name.trim(),
-              date: new Date().toISOString(),
-              items: snapshot.map((s, k) => (k === 0 ? { ...s, preview: previewItem.preview || previewItem.image } : s)),
-              gift: !!giftInfo,
-              subtotal: cart.subtotal,
-              discount: cart.discount,
-              coupon: cart.coupon?.code || null,
-              giftFee,
-              founderFee,
-              city: d.city,
-              state: d.state,
-            };
-            saveLocalOrder({ ...done, items: snapshot });
-            // The button turns green ("Order placed") for a moment before the
-            // thank-you page and receipt appear.
-            setStatus('placed');
-            setTimeout(() => {
-              setOrder(done);
-              cart.clear();
-              setStatus('success');
-              window.scrollTo(0, 0);
-            }, reducedMotion() ? 200 : 1700);
-          } catch {
-            setFailure('Network problem while confirming the payment. If money was deducted, please WhatsApp us.');
+            // Payment went through at Razorpay but we couldn't reach our server:
+            // keep everything as is and let the customer re-check (no second payment).
+            setUnverified({ body: vbody, resp, orderNumber: order_number, finish });
+            setFailure(`Your payment for order ${order_number || ''} was received, but our network couldn’t confirm it yet. Please don’t pay again — tap “Check payment again”.`);
             setStatus('failed');
           } finally {
             lock.current = false;
@@ -828,6 +889,20 @@ export default function Checkout() {
         setStatus('idle');
       } else setStatus((st) => (st === 'creating' ? 'idle' : st));
     }
+  };
+
+  const recheck = async () => {
+    if (!unverified || lock.current) return;
+    lock.current = true;
+    setStatus('verifying');
+    const r = await confirmPayment(unverified.body);
+    lock.current = false;
+    if (r === 'ok') return unverified.finish(unverified.resp);
+    setStatus('failed');
+    if (r === 'rejected') {
+      setUnverified(null);
+      setFailure('We couldn’t verify this payment. If money was deducted, please WhatsApp us — your order is safe.');
+    } else toast('Still can’t reach our server — please try again in a moment, or WhatsApp us.', 'warn');
   };
 
   if (order) return (
@@ -1148,7 +1223,13 @@ export default function Checkout() {
                 </a>
               </div>
             )}
-            <PayButton className="btn-lg btn-block ck-pay" status={status} disabled={busy || !cart.items.length} onClick={pay} label={concierge ? `Confirm with Signature concierge · ${money(grand)}` : `Pay ${money(grand)}`} />
+            {unverified ? (
+              <button className="btn btn-gold btn-lg btn-block ck-pay" onClick={recheck} disabled={busy}>
+                {busy ? 'Checking your payment…' : 'Check payment again'}
+              </button>
+            ) : (
+              <PayButton className="btn-lg btn-block ck-pay" status={status} disabled={busy || !cart.items.length} onClick={pay} label={concierge ? `Confirm with Signature concierge · ${money(grand)}` : `Pay ${money(grand)}`} />
+            )}
             <div className="ck-methods" aria-label="Payment methods">
               <span>UPI</span>
               <span>GPay</span>

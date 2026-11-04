@@ -7,12 +7,13 @@ import Icon from '../components/Icon';
 import { IDENTITY, ZoomControls } from '../components/PanZoom';
 import WallStudio from '../components/WallStudio';
 import { Seo } from '../lib/seo';
-import { useTemplates, LAYOUTS, DECORATIONS, slotsFor } from '../lib/templates';
+import { useTemplates, templatesSnapshot, LAYOUTS, DECORATIONS, slotsFor } from '../lib/templates';
 import { SIZES, customColours, customOption, colourHex } from '../lib/frames';
 import { readPhoto, uploadArtwork, QUALITY_LABEL } from '../lib/upload';
 import { useCart } from '../state/cart';
 import { useToast } from '../state/store';
 import { money, waLink } from '../lib/site';
+import { trackStep } from '../lib/analytics';
 
 const PALETTES = [
   { color: '#F3EADB', accent: '#B68D40', label: 'Ivory gold' },
@@ -77,12 +78,45 @@ export default function TemplateEditor({ scratch = false }) {
   const stageRef = useRef(null);
   const pendingSlot = useRef(null);
 
+  // Save & resume: the words and choices of an unfinished design are kept on
+  // this device for 14 days (photos are re-added — they're never stored here).
+  const draftKey = `jh_draft_${scratch ? 'scratch' : templateId}`;
+  const restored = useRef(false);
+  useEffect(() => {
+    if (!base || restored.current) return;
+    restored.current = true;
+    if ([...params.keys()].some((k) => k.startsWith('text.'))) return;
+    try {
+      const dr = JSON.parse(localStorage.getItem(draftKey) || 'null');
+      if (!dr || Date.now() - dr.at > 14 * 864e5) return;
+      if (dr.design && scratch) setDesign(dr.design);
+      if (dr.texts) setTexts(dr.texts);
+      if (dr.cal) setCal(dr.cal);
+      if (dr.sizeName) setSizeName(dr.sizeName);
+      if (dr.colour) setColour(dr.colour);
+      if (dr.orientation) setOrientation(dr.orientation);
+      toast('Welcome back — we’ve restored your words and choices. Add your photos again to finish.', 'ok');
+    } catch {}
+  }, [base?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!base || !restored.current) return;
+    const defaults = Object.fromEntries(base.textFields.map((f) => [f.id, (f.defaultValue ?? '').slice(0, f.maxChars || 80)]));
+    const untouched = JSON.stringify(texts) === JSON.stringify(defaults) && sizeName === 'A3+' && colour === 'Black' && orientation === 'Vertical' && (!scratch || design === DEFAULT_SCRATCH);
+    if (untouched || !Object.keys(texts).length) return;
+    const id = setTimeout(() => {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({ at: Date.now(), texts, cal, sizeName, colour, orientation, ...(scratch ? { design } : {}) }));
+      } catch {}
+    }, 600);
+    return () => clearTimeout(id);
+  }, [texts, cal, sizeName, colour, orientation, design]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!base) return;
     // Links can pre-fill text, e.g. /customize/tmpl-name-aarav?text.name=Myra
     setTexts((t) => (Object.keys(t).length ? t : Object.fromEntries(base.textFields.map((f) => [f.id, (params.get(`text.${f.id}`) ?? f.defaultValue ?? '').slice(0, f.maxChars || 80)]))));
-    if (base.calendar && !cal) setCal({ ...base.calendar });
-    if (base.hasCalendar && !base.calendar && !cal) setCal({ month: new Date().getMonth() + 1, year: new Date().getFullYear(), highlightDate: new Date().getDate() });
+    if (base.calendar) setCal((c) => c || { ...base.calendar });
+    if (base.hasCalendar && !base.calendar) setCal((c) => c || { month: new Date().getMonth() + 1, year: new Date().getFullYear(), highlightDate: new Date().getDate() });
   }, [base?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -154,7 +188,7 @@ export default function TemplateEditor({ scratch = false }) {
     setBusy(true);
     try {
       const filled = slots.filter((s) => photos[s.id]);
-      const up = await uploadArtwork(filled.map((s) => ({ file: photos[s.id].file, name: photos[s.id].name, width: photos[s.id].width, height: photos[s.id].height })));
+      const up = await uploadArtwork(filled.map((s) => ({ file: photos[s.id].file, name: photos[s.id].name, width: photos[s.id].width, height: photos[s.id].height, slot: s.id })));
       if (up.uploaded < up.requested) {
         toast('Some photos failed to upload — please try again.', 'warn');
         return;
@@ -177,6 +211,11 @@ export default function TemplateEditor({ scratch = false }) {
           source: 'template',
           templateId: base.id,
           templateTitle: base.title,
+          // Exactly what the customer approved, so the workshop can redraw it
+          // even if the template is edited later (Admin → Orders → Approved design).
+          templateSnapshot: { ...base, colors: base.colors || templatesSnapshot().groupMap[base.group] || undefined },
+          textsRaw: texts,
+          calendar: cal || undefined,
           texts: allTexts,
           orientation,
           transforms: Object.fromEntries(filled.map((s) => [s.id, transforms[s.id] || IDENTITY])),
@@ -184,6 +223,10 @@ export default function TemplateEditor({ scratch = false }) {
           ...(scratch ? { design: { layout: design.layout, photos: slots.length, decorations: design.decor, palette: design.palette.label, lines: design.lines.map((l) => l.label) } } : {}),
         },
       });
+      trackStep('personalise_complete');
+      try {
+        localStorage.removeItem(draftKey);
+      } catch {}
     } finally {
       setBusy(false);
     }

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { money } from '../lib/site';
 import Icon from '../components/Icon';
+import ApprovedDesign from './ApprovedDesign';
 
 const STATUSES = ['pending', 'confirmed', 'personalization', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -271,6 +272,7 @@ export default function Orders() {
                                 {it.frame_size} · {it.frame_colour} · {it.frame_orientation} · {money(it.unit_price)} each
                               </div>
                               <Customization c={it.customization} />
+                              <ApprovedDesign item={it} orderNumber={o.order_number} />
                               {Array.isArray(it.artwork_paths) && it.artwork_paths.length > 0 && (
                                 <div className="ad-art">
                                   {it.artwork_paths.map((p, k) => (

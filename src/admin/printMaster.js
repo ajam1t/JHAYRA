@@ -2,16 +2,39 @@ import { supabase } from '../lib/supabase';
 import { SIZES } from '../lib/frames';
 
 // HD print files for catalogue artwork. Kept in the private customer-artwork
-// bucket under masters/<productId>/ — admins can read and add files there,
-// the public cannot. The newest file is the one used for printing.
+// bucket under masters/<productId>/ — admins can read them, the public cannot.
+// Customers may upload photos into that bucket, so a file is trusted only when
+// it is listed in the admin-written index below (product-images is writable by
+// admins only); anything else in masters/ is ignored.
 const BUCKET = 'customer-artwork';
+const INDEX = 'site-config/print-masters.json';
 const dir = (pid) => `masters/${pid}`;
+let indexCache = null;
+
+async function readIndex(force = false) {
+  if (indexCache && !force) return indexCache;
+  try {
+    const { data } = supabase.storage.from('product-images').getPublicUrl(INDEX);
+    const r = await fetch(`${data.publicUrl}?t=${Date.now()}`, { cache: 'no-store' });
+    indexCache = r.ok ? await r.json() : {};
+  } catch {
+    indexCache = {};
+  }
+  return indexCache;
+}
+
+async function writeIndex(next) {
+  const blob = new Blob([JSON.stringify(next, null, 1)], { type: 'application/json' });
+  const { error } = await supabase.storage.from('product-images').upload(INDEX, blob, { upsert: true, contentType: 'application/json', cacheControl: '0' });
+  if (error) throw error;
+  indexCache = next;
+}
 
 export async function getMaster(pid) {
-  const { data, error } = await supabase.storage.from(BUCKET).list(dir(pid), { limit: 50, sortBy: { column: 'created_at', order: 'desc' } });
-  if (error || !data) return null;
-  const f = data.find((x) => x.name && !x.name.startsWith('.'));
-  return f ? { path: `${dir(pid)}/${f.name}`, name: f.name, size: f.metadata?.size, created: f.created_at } : null;
+  const idx = await readIndex();
+  const e = idx?.[pid];
+  if (!e?.path || !e.path.startsWith(`${dir(pid)}/`)) return null;
+  return { path: e.path, name: e.name || e.path.split('/').pop(), size: e.size, created: e.created };
 }
 
 export async function uploadMaster(pid, file) {
@@ -19,6 +42,8 @@ export async function uploadMaster(pid, file) {
   const path = `${dir(pid)}/${Date.now()}.${extn}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type || 'image/jpeg', upsert: false });
   if (error) throw error;
+  const idx = await readIndex(true);
+  await writeIndex({ ...idx, [pid]: { path, name: file.name, size: file.size, created: new Date().toISOString() } });
   return path;
 }
 

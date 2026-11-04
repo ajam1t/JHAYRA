@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { withCm } from '../lib/frames';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Frame from '../components/Frame';
 import Img from '../components/Img';
@@ -339,7 +340,7 @@ export default function Product() {
             <>
               <fieldset className="opt">
                 <legend>
-                  Size <span>{size?.dimensions}</span>
+                  Size <span>{withCm(size?.dimensions)}</span>
                 </legend>
                 <div className="size-grid">
                   {cfg.sizes.map((s) => (

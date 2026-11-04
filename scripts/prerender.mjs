@@ -9,12 +9,13 @@
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ORGANIZATION, WEBSITE, productLd, breadcrumbLd } from '../src/lib/schema.js';
+import { ORGANIZATION, WEBSITE, productLd, breadcrumbLd, webPageLd } from '../src/lib/schema.js';
 import { CATEGORY_SEO, categoryFaq, productTitle } from '../src/lib/seoContent.js';
 import { HOME_FAQ, FAQ } from '../src/lib/faq.js';
 import { LEGAL } from '../src/lib/policies.js';
 import { ROOMS } from '../src/lib/rooms.js';
 import { GIFT_GUIDE, GIFT_HOW } from '../src/lib/giftfinder.js';
+import { srcSet } from '../src/lib/img.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
@@ -108,7 +109,7 @@ const crumbs = (items) => `<nav aria-label="Breadcrumb">${items.map(([l, u], i) 
 const faqHtml = (items, title = 'Frequently asked questions') => (items?.length ? `<h2>${esc(title)}</h2>${items.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}` : '');
 const faqLd = (items) => ({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) });
 
-function page({ path, title, description, image = OG, noindex = false, jsonLd, body = '' }) {
+function page({ path, title, description, image = OG, noindex = false, jsonLd, body = '', lcpImage }) {
   const url = SITE + (path === '/' ? '/' : path);
   let html = shell
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`)
@@ -120,6 +121,9 @@ function page({ path, title, description, image = OG, noindex = false, jsonLd, b
     .replace(/<meta property="og:image"[^>]*>/, `<meta property="og:image" content="${esc(image)}" />`);
   const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
   const extra = [
+    // The page's main image starts downloading with the HTML instead of after
+    // the app has booted (same srcset/sizes as the <img>, so it is reused).
+    lcpImage ? `<link rel="preload" as="image" fetchpriority="high" imagesrcset="${esc(srcSet(lcpImage.src))}" imagesizes="${esc(lcpImage.sizes)}" />` : '',
     preloadsFor(path),
     `<meta name="robots" content="${noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'}" />`,
     `<meta name="twitter:title" content="${esc(title)}" />`,
@@ -286,14 +290,14 @@ const LD = {
 
 for (const [path, title, description] of STATIC) {
   const body = BODIES[path]?.() || `<h1>${esc(title.split('|')[0].split(' — ')[0].trim())}</h1><p>${esc(description)}</p>`;
-  write(path, page({ path, title, description, jsonLd: LD[path]?.(), body }));
+  write(path, page({ path, title, description, jsonLd: LD[path]?.() || (path === '/' ? undefined : webPageLd({ path, title, description })), body }));
   urls.push([path, path === '/' ? '1.0' : path === '/shop' || path === '/customize' ? '0.9' : '0.7']);
 }
 // Policy pages: the full published text.
 for (const [slug, p] of Object.entries(LEGAL)) {
   const path = `/${slug}`;
   const sections = p.sections.map(([h, v]) => `<h2>${esc(h)}</h2>${Array.isArray(v) ? `<ul>${v.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : `<p>${esc(v)}</p>`}`).join('');
-  write(path, page({ path, title: withBrand(p.title), description: p.desc, body: `${crumbs([['Home', '/'], [p.title, path]])}<h1>${esc(p.title)}</h1><p>${esc(p.sub || p.desc)}</p>${sections}` }));
+  write(path, page({ path, title: withBrand(p.title), description: p.desc, jsonLd: webPageLd({ path, title: p.title, description: p.desc }), body: `${crumbs([['Home', '/'], [p.title, path]])}<h1>${esc(p.title)}</h1><p>${esc(p.sub || p.desc)}</p>${sections}` }));
   urls.push([path, '0.4']);
 }
 for (const [path, title] of PRIVATE) write(path, page({ path, title, description: 'JHAYRA', noindex: true }));
@@ -360,6 +364,7 @@ for (const p of products) {
       title: withBrand(productTitle(p.name, cName)),
       description,
       image,
+      lcpImage: main ? { src: main, sizes: '(max-width: 900px) 70vw, 34vw' } : null,
       jsonLd: [productLd({ id: p.legacy_id, name: p.name, description: p.description || p.name, images: imgs.map((i) => i.url), category: cName, sizes, colours, material: material?.name }), breadcrumbLd([['Home', '/'], ['Shop', '/shop'], [cName, `/shop/${p.category_slug}`], [p.name, path]])],
       body,
     }),

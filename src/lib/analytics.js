@@ -31,8 +31,12 @@ function store(kind, key, make) {
 
 const device = () => (innerWidth < 760 ? 'mobile' : innerWidth < 1100 ? 'tablet' : 'desktop');
 
+// Event names the database accepts. Until docs/sql/2026-11-04-analytics-events.sql
+// is applied only the first three are stored; a refused event switches off just
+// that event name, never page views.
+const refused = new Set();
 function send(row) {
-  if (off()) return;
+  if (off() || (row.name && refused.has(row.name))) return;
   fetch(ENDPOINT, {
     method: 'POST',
     keepalive: true,
@@ -40,7 +44,10 @@ function send(row) {
     body: JSON.stringify(row),
   })
     .then((r) => {
-      if (r.status === 404 || r.status === 401 || r.status === 403) disabled = true;
+      if (r.status === 404 || r.status === 401 || r.status === 403) {
+        if (row.name && r.status !== 404) refused.add(row.name);
+        else disabled = true;
+      }
     })
     .catch(() => {});
 }
@@ -152,4 +159,17 @@ function startVitals() {
   };
   addEventListener('visibilitychange', () => flush(false));
   addEventListener('pagehide', () => flush(true));
+}
+
+// WhatsApp clicks anywhere on the site (links to wa.me / api.whatsapp.com),
+// counted once per page like the other funnel steps.
+if (typeof document !== 'undefined') {
+  document.addEventListener(
+    'click',
+    (e) => {
+      const a = e.target?.closest?.('a[href*="wa.me"], a[href*="api.whatsapp.com"]');
+      if (a) trackStep('whatsapp_click');
+    },
+    { capture: true, passive: true },
+  );
 }

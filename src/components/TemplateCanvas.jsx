@@ -198,7 +198,7 @@ function SpecialArt({ kind, t, texts, mini }) {
  * Renders a personalised template (photos + text + ornaments) inside a frame.
  * In edit mode, empty slots are buttons and filled slots can be dragged & zoomed.
  */
-export default function TemplateCanvas({ template: t, photos = {}, transforms = {}, texts = {}, calendar, active, onSlot, onTransform, editable = false, mini = false }) {
+export default function TemplateCanvas({ template: t, photos = {}, transforms = {}, texts = {}, calendar, active, onSlot, onTransform, editable = false, mini = false, samples = true }) {
   const g = t.colors || templatesSnapshot().groupMap[t.group] || { color: '#F0EBE2', accent: '#B68D40' };
   const dark = t.group === 'moon-style' || /^#[0-3]/.test(g.color);
   const { hero, sub, msg, attr } = composeText(t, texts);
@@ -239,8 +239,10 @@ export default function TemplateCanvas({ template: t, photos = {}, transforms = 
                     <Icon name="plus" size={mini ? 12 : 20} />
                     {!mini && <span>{s.label}</span>}
                   </button>
-                ) : (
+                ) : samples ? (
                   <img className="tc-sample" src={samplePhoto(t, s, i)} alt="" loading="lazy" decoding="async" />
+                ) : (
+                  <span className="tc-missing">{s.label} — photo missing</span>
                 )}
               </div>
             );

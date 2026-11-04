@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '../components/Icon';
 import Reveal from '../components/Reveal';
 import { EventBanner } from '../components/EventExperience';
 import { Seo } from '../lib/seo';
 import { useProducts } from '../lib/catalog';
-import { liveCampaigns, resolveCampaign, useCampaigns } from '../lib/campaigns';
+import { liveCampaigns, resolveCampaign, useCampaigns, campaignStatus } from '../lib/campaigns';
+import { orderBy, waLink } from '../lib/site';
 
 // Every occasion links to an existing collection, category, world or set of
 // personalised designs.
@@ -21,6 +23,12 @@ export default function Celebrations() {
   const all = useCampaigns();
   const { data: products } = useProducts();
   const live = liveCampaigns(all);
+  // Festivals the team has scheduled, soonest first (admin → Festivals).
+  const upcoming = all
+    .filter((c) => campaignStatus(c) === 'scheduled')
+    .sort((a, b) => String(a.start).localeCompare(String(b.start)))
+    .slice(0, 4)
+    .map(resolveCampaign);
   return (
     <>
       <Seo title="Celebrations — Festival, Wedding & Gifting Collections" description="Festive art, wedding keepsakes and personalised gifts for every celebration — curated JHAYRA collections, delivered free across India." path="/celebrations" />
@@ -59,6 +67,71 @@ export default function Celebrations() {
           ))}
         </div>
       </section>
+      {upcoming.length > 0 && (
+        <section className="wrap section-sm">
+          <h2 className="h3" style={{ marginBottom: 20 }}>
+            Coming up
+          </h2>
+          <div className="cel-grid">
+            {upcoming.map((c) => {
+              const ev = c.eventDate && !c.verify ? new Date(`${c.eventDate}T12:00`) : null;
+              return (
+                <div key={c.id} className="cel-occ cel-next">
+                  <b>{c.title || c.themeName}</b>
+                  <small>{ev ? ev.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'long' }) : `From ${fmt(new Date(String(c.start).slice(0, 10) + 'T12:00'))}`}</small>
+                  {ev && orderBy(ev) > new Date() && <span className="cel-by">Order by {fmt(orderBy(ev))} for delivery in time</span>}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+      <GiftPlanner />
     </>
+  );
+}
+
+const fmt = (d) => d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+
+// "When do I need to order?" — the same delivery rule used at checkout.
+function GiftPlanner() {
+  const [date, setDate] = useState('');
+  const d = date ? new Date(`${date}T12:00`) : null;
+  const by = d ? orderBy(d) : null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const late = by && by < today;
+  return (
+    <section className="wrap section-sm" style={{ paddingBottom: 80 }}>
+      <div className="cel-plan">
+        <div>
+          <h2 className="h3">Ordering for a date?</h2>
+          <p className="muted" style={{ marginTop: 8 }}>
+            Every piece is made to order — 1–2 business days to craft, then 5–7 to reach you. Pick the day and we’ll tell you when to order.
+          </p>
+        </div>
+        <label className="cel-plan-in">
+          <span>Celebration date</span>
+          <input className="input" type="date" value={date} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setDate(e.target.value)} />
+        </label>
+        {by && (
+          <p className="cel-plan-out" role="status">
+            {late ? (
+              <>
+                That’s a tight one —{' '}
+                <a href={waLink(`Hi JHAYRA! I need a frame delivered by ${fmt(d)}. Can you make it?`)} target="_blank" rel="noopener noreferrer">
+                  WhatsApp us
+                </a>{' '}
+                and we’ll tell you honestly whether we can make your date.
+              </>
+            ) : (
+              <>
+                Order by <b>{fmt(by)}</b> for delivery by {fmt(d)}.
+              </>
+            )}
+          </p>
+        )}
+      </div>
+    </section>
   );
 }

@@ -69,24 +69,18 @@ serve(async (req) => {
       return json({ error: 'Missing payment verification fields' }, 400);
     }
 
+    const keyId = Deno.env.get('RAZORPAY_KEY_ID')!;
     const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET')!;
     const expected = await hmacSHA256(`${razorpay_order_id}|${razorpay_payment_id}`, keySecret);
-    const isValid = timingSafeEqual(expected, razorpay_signature);
+    const isValid = timingSafeEqual(expected, String(razorpay_signature));
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    if (!isValid) {
-      await supabase.from('orders').update({
-        payment_status: 'failed',
-        failure_reason: 'Signature verification failed',
-      }).eq('id', order_id);
-      return json({ success: false, error: 'Payment verification failed' }, 400);
-    }
-
-    // Fetch the order — confirm it belongs to this Razorpay order ID
+    // The order must exist AND belong to this Razorpay order before anything
+    // is written — otherwise a forged request could mark any order as failed.
     const { data: order } = await supabase
       .from('orders')
       .select('id, razorpay_order_id, payment_status, total_amount')
@@ -96,9 +90,47 @@ serve(async (req) => {
 
     if (!order) return json({ success: false, error: 'Order not found' }, 404);
 
+    if (!isValid) {
+      // Only a still-pending order is marked failed; a paid order is never touched.
+      await supabase.from('orders').update({
+        payment_status: 'failed',
+        failure_reason: 'Signature verification failed',
+      }).eq('id', order.id).eq('payment_status', 'pending');
+      return json({ success: false, error: 'Payment verification failed' }, 400);
+    }
+
     // Idempotency — already marked paid (webhook may have beaten us)
     if (order.payment_status === 'paid') {
       return json({ success: true, order_id, already_processed: true });
+    }
+
+    // Trusted confirmation from Razorpay itself: the payment belongs to this
+    // order, is captured (or authorised for capture) and is for the full amount.
+    let paidAmount = Number(order.total_amount);
+    try {
+      const pr = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(razorpay_payment_id)}`, {
+        headers: { Authorization: `Basic ${btoa(`${keyId}:${keySecret}`)}` },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (pr.ok) {
+        const p = await pr.json();
+        const due = Math.round(Number(order.total_amount) * 100);
+        if (p.order_id !== razorpay_order_id || !['captured', 'authorized'].includes(p.status) || Number(p.amount) < due) {
+          console.error('Payment does not match order', order.id, p.order_id, p.status, p.amount, due);
+          await supabase.from('orders').update({
+            failure_reason: `Payment check failed: ${p.status} ${Number(p.amount) / 100} for ${due / 100}`,
+          }).eq('id', order.id).eq('payment_status', 'pending');
+          return json({ success: false, error: 'Payment could not be confirmed' }, 400);
+        }
+        paidAmount = Number(p.amount) / 100;
+      } else {
+        // Razorpay unreachable: the signature already proves the payment for
+        // this Razorpay order (whose amount we fixed at creation); the webhook
+        // re-confirms the captured amount.
+        console.warn('Razorpay payment fetch failed', pr.status);
+      }
+    } catch (e) {
+      console.warn('Razorpay payment fetch error', e);
     }
 
     // Only the first confirmation (here or the webhook) flips the order to
@@ -107,11 +139,12 @@ serve(async (req) => {
       razorpay_payment_id,
       razorpay_signature,
       payment_status: 'paid',
-      payment_amount: order.total_amount,
+      payment_amount: paidAmount,
       paid_at: new Date().toISOString(),
       order_status: 'confirmed',
-    }).eq('id', order_id).neq('payment_status', 'paid').select('id');
-    if (changed?.length) await notifyOwner(supabase, order_id);
+      failure_reason: null,
+    }).eq('id', order.id).neq('payment_status', 'paid').select('id');
+    if (changed?.length) await notifyOwner(supabase, order.id);
 
     return json({ success: true, order_id });
   } catch (err) {

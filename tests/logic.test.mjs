@@ -135,3 +135,20 @@ test('mobile numbers: +91, 0 and spacing are normalised to 10 digits', async () 
   assert.equal(mobile10('919876543210'), '9876543210');
   assert.equal(mobile10('12345'), '12345');
 });
+
+test('order-by planner: ordering on the order-by date still arrives by the celebration', async () => {
+  const { orderBy, deliveryWindow } = await import('../src/lib/site.js');
+  const fmt = (d) => d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+  for (const day of ['2026-12-25', '2027-01-14', '2027-02-14', '2027-03-08']) {
+    const ev = new Date(`${day}T12:00`);
+    if (ev.getDay() === 0) continue;
+    assert.equal(deliveryWindow(orderBy(ev)).late, fmt(ev), day);
+  }
+});
+
+test('size labels add centimetres without changing the inches', async () => {
+  const { withCm } = await import('../src/lib/frames.js');
+  assert.equal(withCm('9.5 × 13 inches'), '9.5 × 13 in (24 × 33 cm)');
+  assert.equal(withCm('24 × 36 inches'), '24 × 36 in (61 × 91 cm)');
+  assert.equal(withCm('Custom'), 'Custom');
+});
