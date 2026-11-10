@@ -27,6 +27,8 @@ const Celebrations = lazy(() => import('./pages/Celebrations'));
 const SignaturePage = lazy(() => import('./pages/Signature'));
 const Info = lazy(() => import('./pages/Info'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const GiftReveal = lazy(() => import('./pages/GiftReveal'));
+const GiftOpen = lazy(() => import('./pages/GiftOpen'));
 const Admin = lazy(() => import('./admin/Admin'));
 
 function Loading() {
@@ -47,6 +49,8 @@ export default function App() {
               <Suspense fallback={<Loading />}>
                 <Routes>
                   <Route path="/admin/*" element={<Admin />} />
+                  {/* The recipient's private reveal: full screen, no shop chrome. */}
+                  <Route path="/gift/:id" element={<GiftOpen />} />
                   <Route element={<Layout />}>
                     <Route index element={<Home />} />
                     <Route path="shop" element={<Shop />} />
@@ -72,6 +76,7 @@ export default function App() {
                     <Route path="track" element={<Track />} />
                     <Route path="wishlist" element={<Wishlist />} />
                     <Route path="gift-finder" element={<GiftFinder />} />
+                    <Route path="gift-reveal" element={<GiftReveal />} />
                     <Route path="room-inspiration" element={<Inspiration />} />
                     <Route path="wall-planner" element={<WallPlanner />} />
                     <Route path="stories" element={<Navigate to="/about" replace />} />

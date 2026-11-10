@@ -474,6 +474,15 @@ function Receipt({ order }) {
           <WhatsAppGlyph size={17} /> Share
         </a>
       </div>
+      {/* A gift? Let them open it twice: a private digital reveal before the frame arrives. */}
+      <Link to="/gift-reveal" className={`rcpt-reveal ${printed ? 'show' : ''}`}>
+        <Icon name="gift" size={20} />
+        <span>
+          <b>Is this a gift? Send a Gift Reveal</b>
+          <small>A private digital surprise with your photos and words — opened by link or QR code before the frame arrives.</small>
+        </span>
+        <Icon name="arrow" size={16} />
+      </Link>
     </section>
   );
 }

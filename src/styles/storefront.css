@@ -7301,3 +7301,14 @@
 .gf3-guide-links a, .insp-list a, .legal-help a { display: inline-flex; align-items: center; min-height: 44px; }
 .gf3-guide-links { gap: 0 16px; }
 .cz3-feat-ctas .link.small { display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; }
+
+/* Order confirmation: invitation to send a Gift Reveal */
+.rcpt-reveal { display: flex; align-items: center; gap: 14px; max-width: 520px; margin: 18px auto 0; padding: 16px 18px; border-radius: 8px; text-align: left; background: linear-gradient(135deg, #fbf5ea, #f0e3cc); border: 1px solid rgba(176, 138, 69, 0.4); color: #29221d; opacity: 0; transform: translateY(10px); transition: opacity 0.6s 0.3s, transform 0.6s 0.3s; }
+.rcpt-reveal.show { opacity: 1; transform: none; }
+.rcpt-reveal > svg:first-child { flex: none; color: #8a6a2e; }
+.rcpt-reveal span { display: grid; gap: 3px; flex: 1; }
+.rcpt-reveal small { color: #5c4a3a; font-size: 13px; line-height: 1.4; }
+
+/* Gift Reveal links stay hidden until its backend is switched on (see src/lib/reveal.js). */
+html:not([data-gr]) a[href='/gift-reveal'],
+html:not([data-gr]) li:has(> a[href='/gift-reveal']) { display: none !important; }

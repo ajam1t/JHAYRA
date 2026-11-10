@@ -52,7 +52,7 @@ const MENU = [
   ['Shop', [['/shop', 'All Wall Art'], ['/shop?room=living', 'Living Room'], ['/shop?room=bedroom', 'Bedroom'], ['/shop?room=office', 'Office'], ['/shop?room=dining', 'Dining Room'], ['/customize', 'Personalised Frames']]],
   ['Create', [['/customize', 'Create Your Own Art'], ['/customize/photo', 'Upload Your Photo'], ['/visualise', 'Visualise on Your Wall'], ['/wall-planner', 'Plan a Gallery Wall']]],
   ['Celebrations', [['/celebrations', 'All Celebrations'], ['/worlds/festivals', 'Festivals'], ['/worlds/wedding', 'Weddings'], ['/customize?moment=anniversary', 'Anniversaries'], ['/customize?moment=birthday', 'Birthdays'], ['/collections/art-for-gifting', 'Gifting']]],
-  ['Discover', [['/signature-experience', 'Signature Experience ✦'], ['/gift-finder', 'Gift Finder'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/shop?sort=new', 'New Arrivals'], ['/collections', 'Collections'], ['/worlds', 'Worlds'], ['/journal', 'Inspiration Journal']]],
+  ['Discover', [['/signature-experience', 'Signature Experience ✦'], ['/gift-finder', 'Gift Finder'], ['/gift-reveal', 'Gift Reveal'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/shop?sort=new', 'New Arrivals'], ['/collections', 'Collections'], ['/worlds', 'Worlds'], ['/journal', 'Inspiration Journal']]],
   ['About', [['/about', 'Our Story'], ['/contact', 'Contact'], ['/support', 'Help & FAQs'], ['/orders', 'My Orders'], ['/wishlist', 'Wishlist'], ['/corporate', 'Corporate Gifting']]],
 ];
 
@@ -645,7 +645,7 @@ function SearchPalette() {
 
 function Footer() {
   const cols = [
-    ['Shop', [['/shop', 'All wall art'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/collections', 'Collections'], ['/customize', 'Create your own'], ['/gift-finder', 'Gift finder'], ['/corporate', 'Corporate gifting']]],
+    ['Shop', [['/shop', 'All wall art'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/collections', 'Collections'], ['/customize', 'Create your own'], ['/gift-finder', 'Gift finder'], ['/gift-reveal', 'Gift reveal'], ['/corporate', 'Corporate gifting']]],
     ['Help', [['/support', 'Help & FAQs'], ['/track', 'Track my order'], ['/shipping-policy', 'Shipping'], ['/refund', 'Returns & refunds'], ['/contact', 'Contact us']]],
     ['Jhayra', [['/signature-experience', 'Signature'], ['/about', 'About us'], ['/worlds', 'Worlds'], ['/journal', 'Journal'], ['/visualise', 'Visualise']]],
   ];
@@ -741,6 +741,23 @@ export default function Layout() {
     setDrawerOpen(false);
   }, [pathname, setDrawerOpen]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => trackView(pathname), [pathname]);
+  // Gift Reveal links appear only once its backend is switched on.
+  useEffect(() => {
+    const show = () => document.documentElement.setAttribute('data-gr', '1');
+    try {
+      if (sessionStorage.getItem('jh_gr_on') === '1') return show();
+    } catch {}
+    // One small lookup per visit (kept inline so the reveal code itself loads only on its own pages).
+    import('../lib/supabase').then(({ supabase }) =>
+      supabase.rpc('open_gift_reveal', { p_id: '0'.repeat(32), p_count: false }).then(({ data, error }) => {
+        if (error || !data?.status) return;
+        try {
+          sessionStorage.setItem('jh_gr_on', '1');
+        } catch {}
+        show();
+      }),
+    );
+  }, []);
 
   const bottomNav = !(pathname.startsWith('/checkout') || /^\/customize\/.+/.test(pathname));
   useEffect(() => {

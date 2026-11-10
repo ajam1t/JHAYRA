@@ -7,6 +7,10 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/gift/:id",
+      "destination": "/app-shell"
+    },
+    {
       "source": "/product/:id",
       "destination": "/app-shell"
     },
@@ -148,6 +152,23 @@
         {
           "key": "X-Robots-Tag",
           "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/gift/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
         }
       ]
     }
