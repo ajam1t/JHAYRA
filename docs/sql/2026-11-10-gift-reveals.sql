@@ -5,7 +5,8 @@
 -- is never sent to the server. This table and the bucket hold ciphertext only.
 -- The server controls availability: expiry, the sender's off switch and deletion.
 --
--- Additive only: one new table, three functions, one bucket, two storage rules.
+-- Additive only: one new table, four functions, one bucket, two storage rules.
+-- Applied to production on 10 Nov 2026.
 
 begin;
 
