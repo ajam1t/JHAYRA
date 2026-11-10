@@ -1002,3 +1002,11 @@ kbd {
   z-index: 5;
   background: rgba(255, 255, 255, 0.9);
 }
+
+/* WhatsApp button: steps aside while the buy buttons are on screen, and is a
+   little smaller on phones so it covers less of the page. */
+.wa-fab { transition: gap 0.4s var(--ease), padding 0.4s var(--ease), opacity 0.25s, transform 0.25s; }
+.wa-fab.is-clear { opacity: 0; transform: translateY(14px) scale(0.9); pointer-events: none; }
+@media (max-width: 979px) {
+  .wa-fab { height: 48px; padding: 0 12px; right: 14px; box-shadow: 0 8px 22px rgba(37, 211, 102, 0.35); }
+}

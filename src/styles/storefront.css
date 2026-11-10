@@ -6753,7 +6753,7 @@
 @media (max-width: 999px) { .cz3-feat-card.big h3 { font-size: 24px; } }
 
 /* Floating live preview (phones) */
-.pdock { position: fixed; z-index: 80; top: calc(var(--header-h) + 10px); right: 12px; width: 112px; animation: pdockIn 0.35s var(--ease-spring); transition: width 0.35s var(--ease); }
+.pdock { position: fixed; z-index: 80; top: calc(var(--header-h) + 10px); right: 12px; width: 98px; animation: pdockIn 0.35s var(--ease-spring); transition: width 0.35s var(--ease); }
 .pdock.big { width: min(64vw, 280px); }
 @keyframes pdockIn { from { opacity: 0; transform: translateY(-10px) scale(0.9); } }
 .pdock-art { display: block; width: 100%; padding: 8px; border-radius: 14px; background: radial-gradient(80% 70% at 50% 15%, #fffaf0, #e7dccb); box-shadow: 0 16px 34px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.06); position: relative; }

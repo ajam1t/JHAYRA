@@ -693,9 +693,32 @@ function Footer() {
 
 function WhatsAppFab() {
   const { pathname } = useLocation();
-  if (pathname.startsWith('/checkout') || pathname.startsWith('/customize/')) return null;
+  // Steps aside while the main buy buttons are on screen, so it never sits on
+  // top of "Add to bag", the wishlist heart or a price.
+  const [clear, setClear] = useState(false);
+  useEffect(() => {
+    setClear(false);
+    if (typeof IntersectionObserver === 'undefined') return;
+    let io;
+    const id = setTimeout(() => {
+      const els = document.querySelectorAll('.pdp-actions');
+      if (!els.length) return;
+      const seen = new Set();
+      io = new IntersectionObserver((es) => {
+        es.forEach((e) => (e.isIntersecting ? seen.add(e.target) : seen.delete(e.target)));
+        setClear(seen.size > 0);
+      });
+      els.forEach((el) => io.observe(el));
+    }, 600);
+    return () => {
+      clearTimeout(id);
+      io?.disconnect();
+    };
+  }, [pathname]);
+  // The bag and checkout have their own "Order on WhatsApp" button.
+  if (pathname.startsWith('/checkout') || pathname.startsWith('/cart') || pathname.startsWith('/customize/')) return null;
   return (
-    <a className="wa-fab" href={waLink('Hi JHAYRA! I have a question.')} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
+    <a className={`wa-fab${clear ? ' is-clear' : ''}`} href={waLink('Hi JHAYRA! I have a question.')} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
       <WhatsAppGlyph size={26} />
       <span>Chat with us</span>
     </a>

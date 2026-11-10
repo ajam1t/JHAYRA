@@ -5,9 +5,13 @@ import Icon from './Icon';
 // Phones: once the main preview scrolls out of view, a small live copy of it
 // floats in the corner so every change can still be seen. Tap to enlarge;
 // the arrow scrolls back to the full preview.
-export default function PreviewDock({ target, children, label = 'Live preview' }) {
+// `until` (a CSS selector) names the last control the preview is useful for:
+// once that has scrolled off the top, the dock steps aside instead of covering
+// the rest of the page.
+export default function PreviewDock({ target, children, label = 'Live preview', until }) {
   const [show, setShow] = useState(false);
   const [big, setBig] = useState(false);
+  const [past, setPast] = useState(false);
   const el = target.current;
   useEffect(() => {
     if (!el || typeof IntersectionObserver === 'undefined') return;
@@ -17,9 +21,25 @@ export default function PreviewDock({ target, children, label = 'Live preview' }
     return () => io.disconnect();
   }, [el]);
   useEffect(() => {
-    if (!show) setBig(false);
-  }, [show]);
-  if (!show) return null;
+    if (!until) return;
+    let raf = 0;
+    const check = () => {
+      raf = 0;
+      const u = document.querySelector(until);
+      setPast(!!u && u.getBoundingClientRect().bottom < 90);
+    };
+    const on = () => !raf && (raf = requestAnimationFrame(check));
+    window.addEventListener('scroll', on, { passive: true });
+    check();
+    return () => {
+      window.removeEventListener('scroll', on);
+      cancelAnimationFrame(raf);
+    };
+  }, [until]);
+  useEffect(() => {
+    if (!show || past) setBig(false);
+  }, [show, past]);
+  if (!show || past) return null;
   return createPortal(
     <div className={`pdock${big ? ' big' : ''}`} role="region" aria-label={label}>
       <button type="button" className="pdock-art" onClick={() => setBig((b) => !b)} aria-label={big ? 'Shrink preview' : 'Enlarge preview'}>

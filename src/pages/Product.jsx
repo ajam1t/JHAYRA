@@ -252,7 +252,7 @@ export default function Product() {
         </nav>
       </div>
       {/* Phones: once the preview scrolls away, a small live copy follows the size and frame choices. */}
-      <PreviewDock target={mediaRef} label="Frame preview">
+      <PreviewDock target={mediaRef} label="Frame preview" until=".pdp-actions">
         <Frame ratio={ratio} orientation={photo ? orientation : 'Vertical'} colour={colour?.hex || '#1C1C1C'} glare={false} sizes="140px" {...(photo ? {} : { src: artSrc, alt: '' })}>
           {photo ? <PanZoom src={photo.url} value={tf} alt="" editable={false} /> : null}
         </Frame>
