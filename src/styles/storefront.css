@@ -7289,3 +7289,15 @@
 .cel-plan-in { display: grid; gap: 6px; font-size: 14px; }
 .cel-plan-out { margin: 0; font-size: 17px; }
 .cel-plan-out b { color: var(--espresso, #29221d); }
+
+/* Checkout: made-to-order terms above the payment methods */
+.ck-terms { list-style: none; margin: 14px 0 4px; padding: 12px 14px; display: grid; gap: 8px; border-radius: 8px; background: rgba(176, 138, 69, 0.08); border: 1px solid rgba(176, 138, 69, 0.22); font-size: 13.5px; line-height: 1.4; color: #4a3d2e; }
+.ck-terms li { display: flex; gap: 8px; align-items: flex-start; }
+.ck-terms li svg { flex: none; margin-top: 2px; color: #8a6a2e; }
+.ck-terms li:last-child { font-size: 13px; gap: 6px; flex-wrap: wrap; }
+.ck-terms a { color: #5c4a2c; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; display: inline-flex; align-items: center; min-height: 32px; }
+
+/* Comfortable tap targets (44 px) on links the audit flagged */
+.gf3-guide-links a, .insp-list a, .legal-help a { display: inline-flex; align-items: center; min-height: 44px; }
+.gf3-guide-links { gap: 0 16px; }
+.cz3-feat-ctas .link.small { display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; }

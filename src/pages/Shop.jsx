@@ -159,7 +159,7 @@ function RoomBubbles({ current, onPick }) {
     <div className="sh-bubbles" role="group" aria-label="Shop by room">
       {ROOMS.map((r, i) => (
         <button key={r.id} type="button" className={`sh-bubble ${current === r.id ? 'on' : ''}`} style={{ '--i': i }} aria-pressed={current === r.id} onClick={() => onPick(r.id)}>
-          <span className="sh-bubble-ring">{ROOM_PHOTOS[r.id] ? <img src={`/rooms/${ROOM_PHOTOS[r.id]}.webp`} alt="" loading="lazy" decoding="async" width="120" height="120" /> : <Icon name={r.id === 'pooja' ? 'temple' : 'users'} size={22} />}</span>
+          <span className="sh-bubble-ring">{ROOM_PHOTOS[r.id] ? <img src={`/rooms/thumb-${ROOM_PHOTOS[r.id]}.webp`} alt="" loading="lazy" decoding="async" width="120" height="120" /> : <Icon name={r.id === 'pooja' ? 'temple' : 'users'} size={22} />}</span>
           <small>{r.label}</small>
         </button>
       ))}

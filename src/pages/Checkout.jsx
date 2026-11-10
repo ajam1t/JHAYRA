@@ -1243,6 +1243,18 @@ export default function Checkout() {
             ) : (
               <PayButton className="btn-lg btn-block ck-pay" status={status} disabled={busy || !cart.items.length} onClick={pay} label={concierge ? `Confirm with Signature concierge · ${money(grand)}` : `Pay ${money(grand)}`} />
             )}
+            {/* The terms that matter for a made-to-order piece, before paying (from the published policies). */}
+            <ul className="ck-terms">
+              <li>
+                <Icon name="brush" size={15} /> Made to order for you — changes are possible within 2 hours of ordering.
+              </li>
+              <li>
+                <Icon name="shield" size={15} /> Arrives damaged or not as ordered? We replace it free — tell us within 48 hours.
+              </li>
+              <li>
+                <Link to="/replacement-policy" target="_blank">Replacement promise</Link> · <Link to="/refund" target="_blank">Refunds</Link> · <Link to="/terms" target="_blank">Terms</Link>
+              </li>
+            </ul>
             <div className="ck-methods" aria-label="Payment methods">
               <span>UPI</span>
               <span>GPay</span>

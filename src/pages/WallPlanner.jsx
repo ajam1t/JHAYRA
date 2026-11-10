@@ -64,6 +64,8 @@ export default function WallPlanner() {
   const [wall, setWall] = useState(WALLS[0]);
   const [furniture, setFurniture] = useState('sofa');
   const [cat, setCat] = useState('');
+  // The picker shows 24 artworks at first (it used to load all ~80 images at once).
+  const [more, setMore] = useState(false);
   const [moved, setMoved] = useState({});
 
   const preset = PRESETS.find((p) => p.id === presetId) || PRESETS[0];
@@ -148,7 +150,7 @@ export default function WallPlanner() {
               ))}
           </div>
           <div className="picker">
-            {list.map((p) => (
+            {(more ? list : list.slice(0, 24)).map((p) => (
               <button
                 key={p.id}
                 className={picked[idx]?.id === p.id ? 'on' : ''}
@@ -168,6 +170,11 @@ export default function WallPlanner() {
               </button>
             ))}
           </div>
+          {!more && list.length > 24 && (
+            <button type="button" className="btn btn-ghost btn-sm" style={{ marginTop: 10 }} onClick={() => setMore(true)}>
+              Show all {list.length} artworks
+            </button>
+          )}
           <label className="editor-label">Frame finish for the set</label>
           <div className="swatches">
             {['Black', 'Gold', 'Brown'].map((c) => (
