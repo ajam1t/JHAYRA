@@ -39,6 +39,19 @@ function loadRazorpay() {
 const TIMEOUT = 'timeout';
 const withTimeout = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(TIMEOUT)), ms))]);
 
+// The delivering post office that names the pincode's city: the Head Post
+// Office if there is one, else the most common district (same rule as api/pincode.js).
+const mainOffice = (all) => {
+  if (!all?.length) return null;
+  const pool = all.filter((p) => p.DeliveryStatus === 'Delivery');
+  const list = pool.length ? pool : all;
+  const tally = {};
+  list.forEach((p) => p.District && (tally[p.District] = (tally[p.District] || 0) + 1));
+  const head = list.find((p) => /head post office/i.test(p.BranchType || ''));
+  const d = head?.District || Object.keys(tally).sort((x, y) => tally[y] - tally[x])[0];
+  return list.find((p) => p.District === d) || list[0];
+};
+
 // One Razorpay order per bag: pressing Pay again (after closing the payment
 // window, a failed attempt or a reload in this tab) reuses the order already
 // created for exactly the same items, address and coupon — no duplicate orders.
@@ -551,14 +564,14 @@ function GiftCard({ gift }) {
 async function lookupPin(pin, signal) {
   const tries = [
     async () => {
-      const r = await fetch(`/api/pincode?pin=${pin}`, { signal });
+      const r = await fetch(`/api/pincode?pin=${pin}&v=2`, { signal }); // v=2: skips answers cached before the city fix
       const j = await r.json();
       if (j.ok || j.reason === 'not_found') return j;
       throw new Error('unavailable');
     },
     async () => {
       const res = await (await fetch(`https://api.postalpincode.in/pincode/${pin}`, { signal })).json();
-      const po = res?.[0]?.PostOffice?.[0];
+      const po = mainOffice(res?.[0]?.PostOffice);
       if (res?.[0]?.Status === 'Success' && po) return { ok: true, city: po.District || po.Name, state: po.State, areas: [...new Set(res[0].PostOffice.filter((p) => p.DeliveryStatus === 'Delivery').map((p) => p.Name))].sort().slice(0, 40) };
       if (res?.[0]?.Status === 'Error') return { ok: false, reason: 'not_found' };
       throw new Error('unavailable');

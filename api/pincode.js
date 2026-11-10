@@ -16,7 +16,17 @@ export default async function handler(req) {
       const res = await r.json();
       const list = res?.[0]?.PostOffice || [];
       if (res?.[0]?.Status !== 'Success' || !list.length) return json({ ok: false, reason: 'not_found' });
-      const po = list.find((p) => p.DeliveryStatus === 'Delivery') || list[0];
+      // City: among the offices that deliver, the Head Post Office's district,
+      // else the most common one. (The first delivering office can sit in a
+      // neighbouring district — 400001's is Elephanta Caves in Raigarh, though
+      // the pincode is Mumbai GPO.)
+      const pool = list.filter((p) => p.DeliveryStatus === 'Delivery');
+      const from = pool.length ? pool : list;
+      const tally = {};
+      for (const p of from) if (p.District) tally[p.District] = (tally[p.District] || 0) + 1;
+      const head = from.find((p) => /head post office/i.test(p.BranchType || ''));
+      const district = head?.District || Object.keys(tally).sort((x, y) => tally[y] - tally[x])[0];
+      const po = from.find((p) => p.District === district) || from[0];
       // Post-office localities under this pincode, so the customer can pick theirs.
       const areas = [...new Set(list.filter((p) => p.DeliveryStatus === 'Delivery').map((p) => p.Name.replace(/\s*\((?:[^)]*)\)\s*$/, '').trim()))].sort().slice(0, 40);
       return json({ ok: true, city: po.District || po.Name, state: po.State, areas });
