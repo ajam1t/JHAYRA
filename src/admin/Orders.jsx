@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { money } from '../lib/site';
 import Icon from '../components/Icon';
 import ApprovedDesign from './ApprovedDesign';
+import { THEMES } from '../lib/revealContent';
 
 const STATUSES = ['pending', 'confirmed', 'personalization', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -45,7 +46,7 @@ function GiftRevealPanel({ reveal: r, order: o }) {
     ['For', r.recipient_name],
     ['From', r.sender_name],
     ['Occasion', r.occasion],
-    ['Theme', { envelope: 'Ivory Letter', box: 'Champagne Gift Box', night: 'Midnight Keepsake' }[r.theme] || r.theme],
+    ['Theme', THEMES.find((t) => t.id === r.theme)?.name || r.theme],
     ['Media', `${(r.photos || []).length} photo${(r.photos || []).length === 1 ? '' : 's'}${r.clip_kind ? ` + ${r.clip_kind === 'video' ? 'video' : 'voice note'}` : ''}`],
     ['Opens', scheduled ? f(r.publish_at) : `Immediately (${f(r.publish_at)})`],
     ['Views', `${r.views}${r.first_opened_at ? ` · first opened ${f(r.first_opened_at)}` : ' · not opened yet'}`],

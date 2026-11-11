@@ -7,11 +7,7 @@ import { SITE } from './site';
 
 export const BUCKET = 'gift-reveals';
 export const OCCASIONS = ['Birthday', 'Anniversary', 'Wedding', 'Housewarming', 'Festival', 'Thank you', 'Just because'];
-export const THEMES = [
-  { id: 'envelope', name: 'Ivory Letter', line: 'A wax seal breaks, the letter rises' },
-  { id: 'box', name: 'Champagne Gift Box', line: 'The ribbon slips, the lid lifts to light' },
-  { id: 'night', name: 'Midnight Keepsake', line: 'An espresso case opens in a gold glow' },
-];
+export { THEMES } from './revealContent';
 export const LIMITS = { photos: 4, message: 600, name: 40, clipMB: 25, voiceSeconds: 60 };
 const HANDOFF = 'jh_gr_handoff';
 

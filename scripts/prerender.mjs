@@ -209,7 +209,7 @@ const STATIC = [
   ['/collections', 'Collections — Curated Wall Art | JHAYRA', 'Curated JHAYRA collections: nature reimagined, abstract forms, minimalist living, botanical stories, personal memories and art for gifting.'],
   ['/customize', 'Personalised Photo Frames Online — Design Yours Live | JHAYRA', 'Design a personalised photo frame online: 150+ designs for weddings, anniversaries, birthdays, babies and festivals. Add photos, names and dates and see it live. From ₹499.'],
   ['/customize/photo', 'Custom Photo Frame — Turn Your Photo Into Framed Art | JHAYRA', 'Upload a photo, choose a treatment (original, monochrome, vintage, pencil sketch, soft glow), add names or a date, and order it framed from ₹499 with free delivery in India.'],
-  ['/gift-reveal', 'Gift Reveal — A Digital Unboxing for Your Gift | JHAYRA', 'Send a private digital surprise before your JHAYRA gift arrives: your photos, your words and a beautiful reveal, opened with a link or QR code. No app or account needed.'],
+  ['/gift-reveal', 'Gift Reveal — Digital Gift Unboxing with Your Photos & Message | JHAYRA', 'Send a private digital unboxing before your JHAYRA gift arrives: their name, your message, photos, voice note and the real gift, opened by link or QR code. Nine animations, free with every order.'],
   ['/customize/scratch', 'Design Your Own Photo Frame | JHAYRA', 'Design a personalised frame from scratch: any layout, up to 9 photos, your words, colours and decorations.'],
   ['/gift-finder', 'Gift Finder — Personalised Gift Ideas in Five Questions | JHAYRA', 'Answer five quick questions — who it’s for, the occasion, budget, style and type of art — and get matching JHAYRA artwork and personalised frames.'],
   ['/room-inspiration', 'Wall Décor Ideas by Room — Living Room, Bedroom & Pooja Room | JHAYRA', 'Living room, pooja room, bedroom and staircase gallery wall ideas — shop each look in one tap, true to size.'],
@@ -255,8 +255,15 @@ const tmplByGroup = () =>
 const fromSize = cat.sizes[0] ? inr(cat.sizes[0].base_price) : '₹499';
 
 const { ARTICLES: ARTICLE_LIST } = await import('../src/lib/journal.js');
+const GR = await import('../src/lib/revealContent.js');
 
 const BODIES = {
+  '/gift-reveal': () =>
+    `<h1>Gift Reveal — a digital unboxing for your JHAYRA gift</h1><p>Before your JHAYRA gift arrives, send a private reveal: their name, your words, your photos and the very gift you chose, opened with a link or QR code. Free with every order, open until it is delivered.</p>` +
+    `<h2>How it works</h2><ol>${GR.HOW_IT_WORKS.map(([h, t]) => `<li><h3>${esc(h)}</h3><p>${esc(t)}</p></li>`).join('')}</ol>` +
+    `<h2>Nine ways to open</h2><ul>${GR.THEMES.map((t) => `<li><b>${esc(t.name)}</b>: ${esc(t.line)}.</li>`).join('')}</ul>` +
+    `<h2>What they will see</h2><ol>${GR.JOURNEY.map(([h, t]) => `<li><h3>${esc(h)}</h3><p>${esc(t)}</p></li>`).join('')}</ol>` +
+    `<p>Ready to gift? <a href="/customize">Personalise a frame</a>, <a href="/shop">browse wall art</a> or use the <a href="/gift-finder">Gift Finder</a>.</p>${faqHtml(GR.GR_FAQ, 'Gift Reveal questions')}`,
   '/': () =>
     `<h1>Framed wall art &amp; personalised photo frames, handcrafted in India</h1><p>JHAYRA — Crafting Memories Into Art. We make framed wall art and personalised photo frames to order, and deliver free across India.</p>${shopFacts}` +
     `<h2>Shop by category</h2><ul>${catLinks}</ul><h2>Shop by room</h2><ul>${roomLinks}</ul>` +
@@ -284,6 +291,7 @@ const BODIES = {
   '/journal': () => `<h1>Wall art ideas &amp; framing guides</h1><p>Practical guides from JHAYRA on choosing, sizing, hanging and gifting wall art.</p><ul>${ARTICLE_LIST.map((a) => `<li><a href="/journal/${a.slug}">${esc(a.title)}</a> — ${esc(a.dek)}</li>`).join('')}</ul>`,
 };
 const LD = {
+  '/gift-reveal': () => [webPageLd({ path: '/gift-reveal', title: 'Gift Reveal — Digital Gift Unboxing | JHAYRA', description: 'A private digital unboxing for your JHAYRA gift, opened by link or QR code before it arrives.' }), faqLd(GR.GR_FAQ), { '@context': 'https://schema.org', '@type': 'HowTo', name: 'How to send a JHAYRA Gift Reveal', step: GR.HOW_IT_WORKS.map(([n, t], i) => ({ '@type': 'HowToStep', position: i + 1, name: n, text: t })) }],
   '/': () => [ORGANIZATION, WEBSITE, faqLd(HOME_FAQ)],
   '/support': () => [faqLd(FAQ)],
   '/about': () => [ORGANIZATION],

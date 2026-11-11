@@ -80,7 +80,7 @@ try {
 
   // 1 · verification: nothing shown before it; wrong mobile refused
   await page.goto(`${BASE}/gift-reveal`);
-  await page.getByText('Find your order').waitFor();
+  await page.getByRole('heading', { name: 'Create your Gift Reveal' }).waitFor();
   check(!(await page.getByText('Radha Krishna').count()), 'no order data before verification');
   await page.getByLabel('Order number').fill('JHY-20261111-000001');
   await page.getByLabel('Mobile number').fill('9000000000');
@@ -113,7 +113,7 @@ try {
   await page.getByLabel('Your message').fill('Ten years, and every one of them a gift.');
   await page.locator('input[type=file][accept="image/*"]').setInputFiles(['public/Images/modern.jpg', 'public/Images/horses.jpg']);
   await page.locator('.gr-photo').nth(1).waitFor();
-  await page.getByRole('button', { name: /Midnight Keepsake/ }).click();
+  await page.getByRole('button', { name: /Teddy Hug/ }).click();
   await page.getByRole('button', { name: 'Create my Gift Reveal' }).click();
   await page.getByText('Your Gift Reveal', { exact: true }).waitFor();
   const link = await page.getByLabel('Private reveal link').inputValue();
@@ -146,7 +146,7 @@ try {
   await r.goto(link.replace(/^https?:\/\/[^/]+/, BASE));
   await r.getByRole('button', { name: 'Open your gift reveal' }).waitFor();
   check(/Meera/.test(await r.locator('.grv-to').innerText()), 'welcome shows the recipient name');
-  check((await r.locator('.grv-t-night').count()) === 1, 'chosen theme applied');
+  check((await r.locator('.grv-t-teddy').count()) === 1, 'chosen theme applied (Teddy Hug, one of the new six)');
   await r.screenshot({ path: `${OUT}/3-welcome.png` });
   await r.getByRole('button', { name: 'Open your gift reveal' }).tap({ force: true });
   await r.locator('.grv-memory').waitFor({ timeout: 6000 });

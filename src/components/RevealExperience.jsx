@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon, { WhatsAppGlyph } from './Icon';
 import GiftPiece from './GiftPiece';
+import Opener from './RevealOpeners';
+import { THEME_IDS } from '../lib/revealContent';
 import { chime } from '../lib/reveal';
 import '../styles/reveal.css';
 
@@ -13,63 +15,6 @@ import '../styles/reveal.css';
 
 const LOGO = '/logo-mark-lg.webp';
 const reduced = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-
-function Seal() {
-  return (
-    <span className="grv-seal">
-      <img src={LOGO} alt="" />
-    </span>
-  );
-}
-
-// Three ways to open: a wax-sealed letter, a ribboned box, a keepsake case.
-function Opener({ theme, open }) {
-  if (theme === 'box')
-    return (
-      <div className={`grv-box ${open ? 'open' : ''}`} aria-hidden="true">
-        <div className="grv-box-glow" />
-        <div className="grv-box-lid">
-          <span className="grv-ribbon-h" />
-          <svg className="grv-bow" viewBox="-150 -110 300 170">
-            <path d="M-4 0 C-40 -70 -140 -80 -130 -20 C-120 30 -50 20 -4 4 Z" />
-            <path d="M4 0 C40 -70 140 -80 130 -20 C120 30 50 20 4 4 Z" />
-            <path d="M-6 4 C-30 30 -44 46 -62 60 L-40 64 C-28 46 -14 30 4 10 Z" />
-            <path d="M6 4 C30 30 44 46 62 60 L40 64 C28 46 14 30 -4 10 Z" />
-            <ellipse cx="0" cy="2" rx="17" ry="14" />
-          </svg>
-        </div>
-        <div className="grv-box-body">
-          <span className="grv-ribbon-v" />
-          <img className="grv-box-mark" src={LOGO} alt="" />
-        </div>
-      </div>
-    );
-  if (theme === 'night')
-    return (
-      <div className={`grv-case ${open ? 'open' : ''}`} aria-hidden="true">
-        <div className="grv-case-glow" />
-        <div className="grv-case-lid">
-          <img src={LOGO} alt="" />
-        </div>
-        <div className="grv-case-base">
-          <span className="grv-case-clasp" />
-        </div>
-      </div>
-    );
-  return (
-    <div className={`grv-env ${open ? 'open' : ''}`} aria-hidden="true">
-      <div className="grv-env-letter">
-        <i />
-        <i />
-        <i />
-      </div>
-      <div className="grv-env-back" />
-      <div className="grv-env-front" />
-      <div className="grv-env-flap" />
-      <Seal />
-    </div>
-  );
-}
 
 function Photos({ photos }) {
   const [i, setI] = useState(0);
@@ -141,12 +86,12 @@ function Gifts({ gifts }) {
   );
 }
 
-export default function RevealExperience({ data, preview = false, onClose }) {
+export default function RevealExperience({ data, preview = false, previewLabel, onClose }) {
   const [stage, setStage] = useState(0); // 0 entrance · 1 opening · 2 memory · 3 gift · 4 closing
   const [muted, setMuted] = useState(!data.sound);
   const gifts = data.gifts || [];
   useEffect(() => setMuted(!data.sound), [data.sound]);
-  const theme = ['envelope', 'box', 'night'].includes(data.theme) ? data.theme : 'envelope';
+  const theme = THEME_IDS.includes(data.theme) ? data.theme : 'envelope';
   const timer = useRef(null);
   useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -184,7 +129,7 @@ export default function RevealExperience({ data, preview = false, onClose }) {
       </div>
       {preview && (
         <div className="grv-preview-bar">
-          <span>Preview — this is what {data.to || 'they'} will see</span>
+          <span>{previewLabel || `Preview — this is what ${data.to || 'they'} will see`}</span>
           <button type="button" onClick={onClose} aria-label="Close preview">
             <Icon name="close" size={18} />
           </button>

@@ -23,7 +23,7 @@ const BUCKET = 'gift-reveals';
 const ART_BUCKET = 'customer-artwork';
 const ACTIVE = ['confirmed', 'personalization', 'processing', 'shipped'];
 const OCCASIONS = ['Birthday', 'Anniversary', 'Wedding', 'Housewarming', 'Festival', 'Thank you', 'Just because'];
-const THEMES = ['envelope', 'box', 'night'];
+const THEMES = ['envelope', 'box', 'night', 'bloom', 'balloons', 'teddy', 'locket', 'butterfly', 'diya'];
 const MIME_EXT: Record<string, string> = {
   'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp',
   'video/mp4': 'mp4', 'video/quicktime': 'mov', 'video/webm': 'webm',

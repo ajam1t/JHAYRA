@@ -4,9 +4,12 @@ import { Link, useSearchParams } from 'react-router-dom';
 import Icon, { WhatsAppGlyph } from '../components/Icon';
 import RevealExperience from '../components/RevealExperience';
 import GiftPiece from '../components/GiftPiece';
+import Opener from '../components/RevealOpeners';
 import { Seo } from '../lib/seo';
 import { waLink } from '../lib/site';
 import { useToast } from '../state/store';
+import { HOW_IT_WORKS, JOURNEY, GR_FAQ } from '../lib/revealContent';
+import { webPageLd } from '../lib/schema';
 import { OCCASIONS, THEMES, LIMITS, preparePhoto, prepareClip, verifyOrder, saveReveal, revealUrl, qrDataUrl, takeHandOff } from '../lib/reveal';
 import '../styles/reveal.css';
 
@@ -33,36 +36,7 @@ const CLOSED = {
 function ThemeSwatch({ id }) {
   return (
     <div className={`gr-swatch sw-${id}`} aria-hidden="true">
-      {id === 'envelope' && (
-        <div className="grv-env" style={{ width: 300 }}>
-          <div className="grv-env-back" />
-          <div className="grv-env-front" />
-          <div className="grv-env-flap" />
-          <span className="grv-seal">
-            <img src="/logo-mark-lg.webp" alt="" />
-          </span>
-        </div>
-      )}
-      {id === 'box' && (
-        <div className="grv-box" style={{ width: 240 }}>
-          <div className="grv-box-lid">
-            <span className="grv-ribbon-h" />
-          </div>
-          <div className="grv-box-body">
-            <span className="grv-ribbon-v" />
-          </div>
-        </div>
-      )}
-      {id === 'night' && (
-        <div className="grv-case" style={{ width: 270 }}>
-          <div className="grv-case-lid">
-            <img src="/logo-mark-lg.webp" alt="" />
-          </div>
-          <div className="grv-case-base">
-            <span className="grv-case-clasp" />
-          </div>
-        </div>
-      )}
+      <Opener theme={id} open={false} />
     </div>
   );
 }
@@ -185,6 +159,145 @@ function ShareCard({ reveal, to }) {
   );
 }
 
+// A sample, clearly labelled, so visitors can watch a whole reveal before ordering.
+const SAMPLE = {
+  to: 'Meera',
+  from: 'Aarav',
+  occasion: 'Anniversary',
+  message: 'Ten years ago you said yes, and every day since has felt like a gift.\nThis one is on its way to you — I hope it makes you smile the way you make me smile.',
+  sound: true,
+  photos: [{ url: '/samples/couple-1.webp' }, { url: '/samples/couple-3.webp' }, { url: '/samples/wedding-1.webp' }],
+  clip: null,
+  gifts: [{ name: 'Personalised photo frame', size: 'A3+', colour: 'Black', orientation: 'Vertical', qty: 1, image: '/samples/couple-2.webp', preview: null }],
+};
+
+function ThemeCard({ t, onWatch }) {
+  const [open, setOpen] = useState(false);
+  const timer = useRef(null);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const play = () => {
+    clearTimeout(timer.current);
+    setOpen(true);
+    timer.current = setTimeout(() => setOpen(false), 3400);
+  };
+  return (
+    <li className="gr-tcard">
+      <button type="button" className={`gr-stage sw-${t.id}`} onClick={play} aria-label={`Play the ${t.name} opening`}>
+        <span className="gr-stage-in">
+          <Opener theme={t.id} open={open} />
+        </span>
+        {!open && (
+          <span className="gr-play">
+            <Icon name="sparkle" size={13} /> Tap to open
+          </span>
+        )}
+      </button>
+      <h3>{t.name}</h3>
+      <p>{t.line}.</p>
+      <button type="button" className="link" onClick={() => onWatch(t.id)}>
+        Watch the full reveal <Icon name="arrow" size={13} />
+      </button>
+    </li>
+  );
+}
+
+function Showcase({ onWatch, toForm }) {
+  return (
+    <div className="gr-seo">
+      <section className="gr-sec">
+        <span className="eyebrow">How it works</span>
+        <h2 className="h2">Three steps to a surprise they’ll remember</h2>
+        <ol className="gr-steps">
+          {HOW_IT_WORKS.map(([h, p], i) => (
+            <li key={h}>
+              <span className="gr-step-n">{i + 1}</span>
+              <h3>{h}</h3>
+              <p>{p}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="gr-sec">
+        <span className="eyebrow">Nine ways to open</span>
+        <h2 className="h2">Choose how your gift opens</h2>
+        <p className="lead gr-sec-lead">Tap any of them to see it open. Each one sets the colours of the whole reveal.</p>
+        <ul className="gr-gallery">
+          {THEMES.map((t) => (
+            <ThemeCard key={t.id} t={t} onWatch={onWatch} />
+          ))}
+        </ul>
+      </section>
+
+      <section className="gr-sec gr-journey">
+        <span className="eyebrow">What they’ll see</span>
+        <h2 className="h2">One minute, five beautiful moments</h2>
+        <ol>
+          {JOURNEY.map(([h, p]) => (
+            <li key={h}>
+              <h3>{h}</h3>
+              <p>{p}</p>
+            </li>
+          ))}
+        </ol>
+        <div className="gr-sec-cta">
+          <button type="button" className="btn btn-gold btn-lg" onClick={() => onWatch('envelope')}>
+            <Icon name="eye" size={18} /> See a sample reveal
+          </button>
+          <button type="button" className="btn btn-ghost btn-lg" onClick={toForm}>
+            Create yours
+          </button>
+        </div>
+      </section>
+
+      <section className="gr-sec gr-trust">
+        <div>
+          <Icon name="lock" size={22} />
+          <h3>Private by design</h3>
+          <p>The link carries only a random code: no order number, name, phone or price. Photos and videos are stored privately and shown through short-lived secure links.</p>
+        </div>
+        <div>
+          <Icon name="clock" size={22} />
+          <h3>Right on time</h3>
+          <p>Send it now, or schedule it for midnight on their birthday. It closes automatically when the real gift is delivered.</p>
+        </div>
+        <div>
+          <Icon name="gift" size={22} />
+          <h3>Free with every order</h3>
+          <p>Included with every paid JHAYRA order. No app, no account, on any phone.</p>
+        </div>
+      </section>
+
+      <section className="gr-sec gr-faq">
+        <h2 className="h2">Gift Reveal questions</h2>
+        {GR_FAQ.map(([q, a]) => (
+          <details key={q}>
+            <summary>{q}</summary>
+            <p>{a}</p>
+          </details>
+        ))}
+      </section>
+
+      <section className="gr-sec gr-final">
+        <h2 className="h2">
+          Make the wait part of <em>the gift.</em>
+        </h2>
+        <div className="gr-sec-cta">
+          <Link className="btn btn-gold btn-lg" to="/customize">
+            Personalise a frame
+          </Link>
+          <Link className="btn btn-ghost btn-lg" to="/shop">
+            Browse wall art
+          </Link>
+          <button type="button" className="btn btn-ghost btn-lg" onClick={toForm}>
+            I’ve already ordered
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function GiftReveal() {
   const toast = useToast();
   const [params] = useSearchParams();
@@ -196,6 +309,12 @@ export default function GiftReveal() {
   const [draft, setDraft] = useState(blank);
   const [dirty, setDirty] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [sample, setSample] = useState(null);
+  const formRef = useRef(null);
+  const toForm = () => {
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => formRef.current?.querySelector('input')?.focus({ preventScroll: true }), 500);
+  };
   const [busy, setBusy] = useState(0);
   const [justSaved, setJustSaved] = useState(false);
   const fileRef = useRef(null);
@@ -307,22 +426,41 @@ export default function GiftReveal() {
 
   return (
     <>
-      <Seo title="Gift Reveal — A Digital Unboxing for Your Order" description="Ordered a JHAYRA gift? Send a private digital reveal before it arrives — your photos, your words and the gift itself, opened with a link or QR code." path="/gift-reveal" />
+      <Seo
+        title="Gift Reveal — Digital Gift Unboxing with Your Photos & Message"
+        description="Send a private digital unboxing before your JHAYRA gift arrives: their name, your message, photos, voice note and the real gift, opened by link or QR code. Nine animations, free with every order."
+        path="/gift-reveal"
+        jsonLd={[
+          webPageLd({ path: '/gift-reveal', title: 'Gift Reveal — Digital Gift Unboxing | JHAYRA', description: 'A private digital unboxing for your JHAYRA gift, opened by link or QR code before it arrives.' }),
+          { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: GR_FAQ.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) },
+          { '@context': 'https://schema.org', '@type': 'HowTo', name: 'How to send a JHAYRA Gift Reveal', step: HOW_IT_WORKS.map(([n, t], i) => ({ '@type': 'HowToStep', position: i + 1, name: n, text: t })) },
+        ]}
+      />
       <div className="wrap gr" ref={top}>
         <header className="gr-hero">
-          <span className="eyebrow">Gift Reveal</span>
+          <span className="eyebrow">Gift Reveal · a digital unboxing</span>
           <h1 className="h1" style={{ marginTop: 12 }}>
             Let them open it <em>twice.</em>
           </h1>
           <p className="lead" style={{ marginTop: 10, maxWidth: 640 }}>
-            Ordered a JHAYRA gift for someone? Before it arrives, send them a private digital reveal — your words, your photos, and the very gift you chose. One reveal per order, open until it’s delivered.
+            Before your JHAYRA gift arrives, send a private reveal: their name, your words, your photos, and the very gift you chose, opened with a link or QR code. Free with every order, open until it’s delivered.
           </p>
+          {!order && (
+            <div className="gr-hero-cta">
+              <button type="button" className="btn btn-gold" onClick={() => setSample('envelope')}>
+                <Icon name="eye" size={17} /> See a sample reveal
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={toForm}>
+                Create yours
+              </button>
+            </div>
+          )}
         </header>
 
         {!order ? (
-          <section className="gr-card gr-verify" style={{ marginTop: 22 }}>
-            <h2>Find your order</h2>
-            <p className="gr-hint">Enter the order number from your confirmation and the mobile number you used at checkout.</p>
+          <section className="gr-card gr-verify" style={{ marginTop: 22 }} ref={formRef} id="create">
+            <h2>Create your Gift Reveal</h2>
+            <p className="gr-hint">First, find your order: enter the order number from your confirmation and the mobile number you used at checkout.</p>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -546,7 +684,9 @@ export default function GiftReveal() {
             </aside>
           </div>
         )}
+        {!order && <Showcase onWatch={setSample} toForm={toForm} />}
       </div>
+      {sample && createPortal(<RevealExperience key={sample} data={{ ...SAMPLE, theme: sample }} preview previewLabel="Sample reveal — yours uses your own photos, words and gift" onClose={() => setSample(null)} />, document.body)}
       {preview && createPortal(<RevealExperience data={data} preview onClose={() => setPreview(false)} />, document.body)}
     </>
   );
