@@ -232,6 +232,8 @@
 .grv-frame.is-design { aspect-ratio: auto; width: min(66vw, 290px); }
 .grv-frame.grv-fc-white { border-color: #f4f1ea; }
 .grv-frame.grv-fc-gold { border-color: #b38a45; }
+.grv-frame.grv-fc-natural { border-color: #c8a47e; }
+.grv-frame.grv-fc-silver { border-color: #c0c0c0; }
 .grv-frame.grv-fc-brown, .grv-frame.grv-fc-walnut, .grv-frame.grv-fc-wood { border-color: #5b3b24; }
 .grv-design { position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; }
 .grv-design > .tc { position: absolute; inset: 0; width: 100%; height: 100%; }
