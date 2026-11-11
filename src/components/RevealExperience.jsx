@@ -89,6 +89,7 @@ function Gifts({ gifts }) {
 export default function RevealExperience({ data, preview = false, previewLabel, onClose }) {
   const [stage, setStage] = useState(0); // 0 entrance · 1 opening · 2 memory · 3 gift · 4 closing
   const [muted, setMuted] = useState(!data.sound);
+  const [hint, setHint] = useState(false);
   const gifts = data.gifts || [];
   useEffect(() => setMuted(!data.sound), [data.sound]);
   const theme = THEME_IDS.includes(data.theme) ? data.theme : 'envelope';
@@ -208,13 +209,18 @@ export default function RevealExperience({ data, preview = false, previewLabel, 
           <img className="grv-logo big" src={LOGO} alt="JHAYRA" />
           <p className="grv-tagline">Crafted with love by JHAYRA.</p>
           <div className="grv-actions">
-            <button type="button" className="grv-btn gold" onClick={share} disabled={preview} title={preview ? 'Available to the recipient' : undefined}>
+            <button type="button" className="grv-btn gold" onClick={preview ? () => setHint(true) : share}>
               <WhatsAppGlyph size={18} /> Say thank you
             </button>
             <button type="button" className="grv-btn" onClick={replay}>
               <Icon name="rotate" size={16} /> Watch again
             </button>
           </div>
+          {preview && hint && (
+            <p className="grv-hint" role="status">
+              In the real reveal, this lets {data.to || 'them'} send you a thank-you on WhatsApp.
+            </p>
+          )}
           {!preview && (
             <Link className="grv-own" to="/gift-reveal">
               Create a gift reveal for someone you love <Icon name="arrow" size={14} />

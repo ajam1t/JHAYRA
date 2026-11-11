@@ -543,3 +543,4 @@
 .gr-faq details p { margin: 0 0 16px; color: var(--muted); line-height: 1.6; }
 .gr-final { text-align: center; padding: 40px 20px; border-radius: 14px; background: radial-gradient(120% 120% at 50% 0%, #fffaf1, #efe3cc); }
 .gr-final .gr-sec-cta { justify-content: center; }
+.grv-hint { margin: 4px 0 0; max-width: 30ch; padding: 10px 14px; border-radius: 8px; background: var(--rv-card); border: 1px solid var(--rv-line); color: var(--rv-ink); font-size: 14px; line-height: 1.45; animation: grvIn 0.4s var(--ease) both; }
