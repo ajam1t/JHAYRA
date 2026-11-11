@@ -1,70 +1,64 @@
 import { supabase } from './supabase';
 import { SITE } from './site';
 
-/* JHAYRA Gift Reveal — shared logic for the sender's creator and the
-   recipient's page.
-
-   Privacy: everything personal (names, message, photos, video or voice) is
-   encrypted in the browser with AES-GCM. The key is put in the link after "#",
-   which browsers never send to a server, so our database and storage only
-   ever hold ciphertext. The server controls availability (expiry, the
-   sender's off switch, deletion) — see docs/sql/2026-11-10-gift-reveals.sql. */
+/* JHAYRA Gift Reveal — one reveal per order, valid until the order is delivered.
+   Everything goes through the `gift-reveal` Edge Function, which checks the
+   real order every time (see supabase/functions/gift-reveal). */
 
 export const BUCKET = 'gift-reveals';
 export const OCCASIONS = ['Birthday', 'Anniversary', 'Wedding', 'Housewarming', 'Festival', 'Thank you', 'Just because'];
 export const THEMES = [
-  { id: 'envelope', name: 'Ivory Letter', line: 'A wax-sealed envelope on warm ivory' },
-  { id: 'box', name: 'Champagne Gift Box', line: 'A ribboned box that opens to light' },
-  { id: 'night', name: 'Midnight Keepsake', line: 'An espresso keepsake case with gold' },
+  { id: 'envelope', name: 'Ivory Letter', line: 'A wax seal breaks, the letter rises' },
+  { id: 'box', name: 'Champagne Gift Box', line: 'The ribbon slips, the lid lifts to light' },
+  { id: 'night', name: 'Midnight Keepsake', line: 'An espresso case opens in a gold glow' },
 ];
-export const EXPIRY = [
-  [7, '7 days'],
-  [30, '30 days'],
-  [90, '90 days'],
-];
-export const LIMITS = { photos: 4, message: 600, name: 40, videoMB: 20, voiceSeconds: 60 };
+export const LIMITS = { photos: 4, message: 600, name: 40, clipMB: 25, voiceSeconds: 60 };
+const HANDOFF = 'jh_gr_handoff';
 
-/* ── bytes ↔ text ──────────────────────────────────────────────────────── */
-const b64u = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-const unb64u = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
-const b64 = (bytes) => {
-  let s = '';
-  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  return btoa(s);
-};
-const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-const hex = (n) => [...crypto.getRandomValues(new Uint8Array(n))].map((b) => b.toString(16).padStart(2, '0')).join('');
-
-/* ── encryption ────────────────────────────────────────────────────────── */
-export async function newKey() {
-  const raw = crypto.getRandomValues(new Uint8Array(32));
-  return { key: await importKey(raw), text: b64u(raw) };
+async function call(body) {
+  const { data, error } = await supabase.functions.invoke('gift-reveal', { body });
+  if (error) {
+    let payload = null;
+    try {
+      payload = await error.context?.json();
+    } catch {}
+    const e = new Error(payload?.error || 'Something went wrong. Please check your connection and try again.');
+    e.status = error.context?.status;
+    e.code = payload?.code;
+    e.payload = payload;
+    throw e;
+  }
+  return data;
 }
-export const importKey = (raw) => crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
-export const keyFromText = (text) => importKey(unb64u(text));
 
-// iv (12 bytes) + ciphertext
-async function seal(key, bytes) {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes));
-  const out = new Uint8Array(12 + ct.length);
-  out.set(iv);
-  out.set(ct, 12);
-  return out;
-}
-async function open(key, bytes) {
-  return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes.subarray(0, 12) }, key, bytes.subarray(12)));
-}
-export const sealJson = async (key, obj) => b64(await seal(key, new TextEncoder().encode(JSON.stringify(obj))));
-export const openJson = async (key, text) => JSON.parse(new TextDecoder().decode(await open(key, unb64(text))));
+export const verifyOrder = (orderNumber, mobile) => call({ action: 'verify', orderNumber, mobile });
+export const openReveal = (token) => call({ action: 'open', token });
+export const revealUrl = (token) => `${SITE.url}/gift/${token}`;
 
-/* ── media preparation ─────────────────────────────────────────────────── */
-// Photos are resized to at most 1600 px and re-encoded, so they load quickly
-// and carry no camera metadata (location, device).
+// Hand the order number + mobile from the confirmation / My Orders screen to the
+// creator page without putting the mobile in a URL.
+export function handOff(orderNumber, mobile) {
+  try {
+    sessionStorage.setItem(HANDOFF, JSON.stringify({ orderNumber, mobile }));
+  } catch {}
+}
+export function takeHandOff() {
+  try {
+    const v = JSON.parse(sessionStorage.getItem(HANDOFF) || 'null');
+    sessionStorage.removeItem(HANDOFF);
+    return v;
+  } catch {
+    return null;
+  }
+}
+
+/* ── media ─────────────────────────────────────────────────────────────── */
+// Photos are resized to at most 1600 px and re-encoded as JPEG, so they load
+// quickly and carry no camera metadata (location, device).
 export function preparePhoto(file) {
   return new Promise((resolve, reject) => {
     if (!file || !file.type.startsWith('image/')) return reject(new Error('Please choose a photo (JPG, PNG or WebP).'));
-    if (file.size > 20 * 1024 * 1024) return reject(new Error('That photo is over 20 MB. Please choose a smaller one.'));
+    if (file.size > 25 * 1024 * 1024) return reject(new Error('That photo is over 25 MB. Please choose a smaller one.'));
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
@@ -74,7 +68,7 @@ export function preparePhoto(file) {
       c.height = Math.round(img.naturalHeight * k);
       c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
       URL.revokeObjectURL(url);
-      c.toBlob((blob) => (blob ? resolve({ blob, url: URL.createObjectURL(blob), w: c.width, h: c.height, mime: 'image/jpeg' }) : reject(new Error('That photo could not be read.'))), 'image/jpeg', 0.86);
+      c.toBlob((blob) => (blob ? resolve({ blob, url: URL.createObjectURL(blob), mime: 'image/jpeg' }) : reject(new Error('That photo could not be read.'))), 'image/jpeg', 0.86);
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
@@ -84,152 +78,59 @@ export function preparePhoto(file) {
   });
 }
 
+const CLIP_TYPES = ['video/mp4', 'video/quicktime', 'video/webm', 'audio/webm', 'audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/x-wav', 'audio/aac'];
 export function prepareClip(file) {
-  const kind = file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'voice' : null;
-  if (!kind) throw new Error('Please choose a video or an audio file.');
-  if (file.size > LIMITS.videoMB * 1024 * 1024) throw new Error(`That file is over ${LIMITS.videoMB} MB. Please choose a shorter clip.`);
-  return { kind, blob: file, url: URL.createObjectURL(file), mime: file.type };
+  const type = (file.type || '').split(';')[0];
+  const kind = type.startsWith('video/') ? 'video' : type.startsWith('audio/') ? 'voice' : null;
+  if (!kind || !CLIP_TYPES.includes(type)) throw new Error('Please choose an MP4, MOV or WebM video, or an MP3, M4A, WAV or WebM audio file.');
+  if (file.size > LIMITS.clipMB * 1024 * 1024) throw new Error(`That file is over ${LIMITS.clipMB} MB. Please choose a shorter clip.`);
+  return { kind, blob: file, url: URL.createObjectURL(file), mime: type };
 }
 
-/* ── create (sender) ───────────────────────────────────────────────────── */
-async function putEncrypted(key, blob, onStep) {
-  const name = `${hex(16)}.bin`;
-  const sealed = await seal(key, new Uint8Array(await blob.arrayBuffer()));
-  let last = null;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    if (attempt) await new Promise((r) => setTimeout(r, 1200 * attempt));
-    const { error } = await supabase.storage.from(BUCKET).upload(name, new Blob([sealed], { type: 'application/octet-stream' }), { contentType: 'application/octet-stream', upsert: false });
-    if (!error || /exists|duplicate/i.test(error.message || '')) {
-      onStep?.();
-      return name;
-    }
-    last = error;
-  }
-  throw last || new Error('upload failed');
-}
-
-/** draft: { to, from, occasion, message, theme, product, photos:[{blob,w,h}], clip:{kind,blob,mime}|null, days } */
-export async function createReveal(draft, onProgress) {
-  const { key, text: keyText } = await newKey();
-  // A personalised gift's picture is the customer's own design: it is encrypted
-  // like the photos. A catalogue picture is already public and is linked.
-  const ownPicture = draft.product?.image?.startsWith('data:') ? await (await fetch(draft.product.image)).blob() : null;
-  const total = draft.photos.length + (draft.clip ? 1 : 0) + (ownPicture ? 1 : 0) + 1;
+/* ── save (create once / edit) ─────────────────────────────────────────── */
+// draft: { to, from, occasion, message, theme, sound, publishAt|null,
+//          photos:[{path}|{blob,mime}], clip:{path,kind,mime}|{blob,kind,mime}|null }
+export async function saveReveal(session, mode, draft, onProgress) {
+  const fresh = [...draft.photos.filter((p) => p.blob), ...(draft.clip?.blob ? [draft.clip] : [])];
+  const total = fresh.length + 1;
   let done = 0;
   const step = () => onProgress?.(++done / total);
-  const photos = [];
-  for (const p of draft.photos) photos.push({ file: await putEncrypted(key, p.blob, step), w: p.w, h: p.h, mime: 'image/jpeg' });
-  const clip = draft.clip ? { kind: draft.clip.kind, mime: draft.clip.mime, file: await putEncrypted(key, draft.clip.blob, step) } : null;
-  const product = draft.product ? (ownPicture ? { name: draft.product.name, file: await putEncrypted(key, ownPicture, step), mime: ownPicture.type || 'image/jpeg' } : { name: draft.product.name, image: draft.product.image }) : null;
-  const payload = await sealJson(key, {
-    v: 1,
-    to: draft.to.trim(),
-    from: draft.from.trim(),
-    occasion: draft.occasion,
-    message: draft.message.trim(),
-    theme: draft.theme,
-    product,
-    photos,
-    clip,
-  });
-  const manage = hex(24);
-  const { data, error } = await supabase.rpc('create_gift_reveal', { p_payload: payload, p_media: [...photos.map((p) => p.file), ...(clip ? [clip.file] : []), ...(product?.file ? [product.file] : [])], p_manage_secret: manage, p_days: draft.days });
-  if (error || !data) throw error || new Error('could not create');
-  step();
-  const rec = { id: data, key: keyText, manage, to: draft.to.trim(), occasion: draft.occasion, created: new Date().toISOString(), days: draft.days };
-  saveMine(rec);
-  return rec;
-}
-
-export const revealUrl = (rec) => `${SITE.url}/gift/${rec.id}#${rec.key}`;
-
-/* ── open (recipient) ──────────────────────────────────────────────────── */
-/** Returns { status } or { status:'ok', data } with photo/clip object URLs ready to show. */
-export async function openReveal(id, keyText, { count = true } = {}) {
-  if (!/^[a-f0-9]{32}$/.test(id || '')) return { status: 'not_found' };
-  if (!keyText) return { status: 'no_key' };
-  const { data: res, error } = await supabase.rpc('open_gift_reveal', { p_id: id, p_count: count });
-  if (error) return { status: 'error' };
-  if (res?.status !== 'ok') return { status: res?.status || 'not_found' };
-  let key, body;
-  try {
-    key = await keyFromText(keyText);
-    body = await openJson(key, res.payload);
-  } catch {
-    return { status: 'bad_key' };
-  }
-  const fetchOne = async (file, mime) => {
-    const { data: blob, error: e } = await supabase.storage.from(BUCKET).download(file);
-    if (e || !blob) return null;
-    try {
-      return URL.createObjectURL(new Blob([await open(key, new Uint8Array(await blob.arrayBuffer()))], { type: mime }));
-    } catch {
-      return null;
+  let uploads = [];
+  if (fresh.length) {
+    const r = await call({ action: 'upload', session, files: fresh.map((f) => ({ type: f.mime })) });
+    uploads = r.uploads;
+    for (let i = 0; i < fresh.length; i++) {
+      let ok = false;
+      let last = null;
+      for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+        if (attempt) await new Promise((res) => setTimeout(res, 1200 * attempt));
+        const { error } = await supabase.storage.from(BUCKET).uploadToSignedUrl(uploads[i].path, uploads[i].token, fresh[i].blob, { contentType: fresh[i].mime });
+        ok = !error;
+        last = error;
+      }
+      if (!ok) throw last || new Error('A file could not be uploaded. Please try again.');
+      fresh[i].path = uploads[i].path;
+      step();
     }
-  };
-  // The first photo is needed straight away; the rest load alongside.
-  const photos = (await Promise.all((body.photos || []).map((p) => fetchOne(p.file, p.mime || 'image/jpeg').then((url) => url && { url, w: p.w, h: p.h })))).filter(Boolean);
-  const product = body.product ? { name: body.product.name, image: body.product.file ? await fetchOne(body.product.file, body.product.mime || 'image/jpeg') : safeImage(body.product.image) } : null;
-  return {
-    status: 'ok',
-    expires: res.expires_at,
-    data: { ...body, photos, product, clip: null },
-    // Video / voice can be large: fetched only when the memory is on screen.
-    loadClip: body.clip ? () => fetchOne(body.clip.file, body.clip.mime).then((url) => (url ? { kind: body.clip.kind, url } : null)) : null,
-  };
-}
-
-// Only pictures from our own site or image services are shown as the gift.
-const safeImage = (u) => (typeof u === 'string' && /^https:\/\/([a-z0-9-]+\.supabase\.co|wsrv\.nl|www\.jhayra\.com)\//.test(u) ? u : null);
-
-/* ── manage (sender) ───────────────────────────────────────────────────── */
-export async function manageReveal(rec, action, days) {
-  const { data, error } = await supabase.rpc('manage_gift_reveal', { p_id: rec.id, p_manage_secret: rec.manage, p_action: action, p_days: days ?? null });
-  if (error) throw error;
-  return data;
-}
-
-// The sender's own reveals (with their keys) stay on the sender's device.
-const MINE = 'jh_gift_reveals';
-export function myReveals() {
-  try {
-    const v = JSON.parse(localStorage.getItem(MINE) || '[]');
-    return Array.isArray(v) ? v : [];
-  } catch {
-    return [];
   }
-}
-function saveMine(rec) {
-  try {
-    localStorage.setItem(MINE, JSON.stringify([rec, ...myReveals().filter((r) => r.id !== rec.id)].slice(0, 20)));
-  } catch {}
-}
-export function forgetMine(id) {
-  try {
-    localStorage.setItem(MINE, JSON.stringify(myReveals().filter((r) => r.id !== id)));
-  } catch {}
-}
-
-/* ── is the feature switched on? ───────────────────────────────────────── */
-// True once the database side exists (docs/sql/2026-11-10-gift-reveals.sql).
-// Until then the site hides its Gift Reveal links. A "yes" is remembered for
-// the tab; a "no" is checked again on the next page load.
-let availability;
-export function revealAvailable() {
-  try {
-    if (sessionStorage.getItem('jh_gr_on') === '1') return Promise.resolve(true);
-  } catch {}
-  availability ||= supabase
-    .rpc('open_gift_reveal', { p_id: '0'.repeat(32), p_count: false })
-    .then(({ data, error }) => {
-      const on = !error && !!data?.status;
-      try {
-        if (on) sessionStorage.setItem('jh_gr_on', '1');
-      } catch {}
-      return on;
-    })
-    .catch(() => false);
-  return availability;
+  const res = await call({
+    action: 'save',
+    session,
+    mode,
+    content: {
+      to: draft.to,
+      from: draft.from,
+      occasion: draft.occasion,
+      message: draft.message,
+      theme: draft.theme,
+      sound: draft.sound,
+      publishAt: draft.publishAt || null,
+      photos: draft.photos.map((p) => p.path).filter(Boolean),
+      clip: draft.clip?.path ? { path: draft.clip.path, kind: draft.clip.kind, mime: draft.clip.mime } : null,
+    },
+  });
+  step();
+  return res;
 }
 
 /* ── QR code ───────────────────────────────────────────────────────────── */
@@ -250,4 +151,37 @@ export async function qrDataUrl(text, { size = 720, dark = '#29221D', light = '#
   g.fillStyle = dark;
   for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (qr.isDark(y, x)) g.fillRect((x + quiet) * cell, (y + quiet) * cell, cell, cell);
   return c.toDataURL('image/png');
+}
+
+/* ── a soft chime (Web Audio, no files) ────────────────────────────────── */
+let actx = null;
+export function chime(kind = 'open') {
+  try {
+    actx ||= new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const now = actx.currentTime;
+    const notes = kind === 'open' ? [880, 1108.73, 1318.51, 1760] : [659.25, 987.77, 1318.51];
+    notes.forEach((f, i) => {
+      const t = now + i * (kind === 'open' ? 0.16 : 0.22);
+      const o = actx.createOscillator();
+      const o2 = actx.createOscillator();
+      const g = actx.createGain();
+      o.type = 'sine';
+      o2.type = 'sine';
+      o.frequency.value = f;
+      o2.frequency.value = f * 2.01;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.09, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+      const g2 = actx.createGain();
+      g2.gain.value = 0.25;
+      o.connect(g);
+      o2.connect(g2).connect(g);
+      g.connect(actx.destination);
+      o.start(t);
+      o2.start(t);
+      o.stop(t + 2.3);
+      o2.stop(t + 2.3);
+    });
+  } catch {}
 }

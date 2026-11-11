@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon, { WhatsAppGlyph } from './Icon';
+import GiftPiece from './GiftPiece';
+import { chime } from '../lib/reveal';
 import '../styles/reveal.css';
 
 /* The Gift Reveal itself — used unchanged for the sender's preview and the
    recipient's page, so what the sender previews is what the recipient sees.
 
-   data: { to, from, occasion, message, theme, product:{name,image}, photos:[{url}], clip:{kind,url}|null }
-   loadClip: optional () => Promise<{kind,url}|null> (recipient page: fetched when the memory is shown) */
+   data: { to, from, occasion, message, theme, sound, gifts:[…], photos:[{url}], clip:{kind,url}|null }
+   gifts come from the real order (see GiftPiece). */
 
 const LOGO = '/logo-mark-lg.webp';
 const reduced = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -105,33 +107,45 @@ function Photos({ photos }) {
   );
 }
 
-function Clip({ clip, loadClip }) {
-  const [c, setC] = useState(clip || null);
-  const [state, setState] = useState(clip ? 'ready' : loadClip ? 'idle' : 'none');
-  useEffect(() => {
-    setC(clip || null);
-    setState(clip ? 'ready' : loadClip ? 'idle' : 'none');
-  }, [clip, loadClip]);
-  if (state === 'none') return null;
-  const fetchIt = async () => {
-    setState('loading');
-    const r = await loadClip().catch(() => null);
-    if (r) {
-      setC(r);
-      setState('ready');
-    } else setState('failed');
-  };
-  if (state !== 'ready')
-    return (
-      <button type="button" className="grv-clip-load" onClick={fetchIt} disabled={state === 'loading'}>
-        <Icon name="sparkle" size={16} /> {state === 'loading' ? 'Opening…' : state === 'failed' ? 'Couldn’t load — tap to try again' : 'There’s a message to play — tap to open'}
-      </button>
-    );
-  return c.kind === 'video' ? <video className="grv-video" src={c.url} controls playsInline preload="metadata" /> : <audio className="grv-audio" src={c.url} controls preload="metadata" />;
+function Clip({ clip }) {
+  if (!clip?.url) return null;
+  return clip.kind === 'video' ? <video className="grv-video" src={clip.url} controls playsInline preload="metadata" /> : <audio className="grv-audio" src={clip.url} controls preload="metadata" />;
 }
 
-export default function RevealExperience({ data, loadClip, preview = false, onClose }) {
-  const [stage, setStage] = useState(0); // 0 entrance · 1 opening · 2 memory · 3 forever · 4 gift · 5 thanks
+function Gifts({ gifts }) {
+  const [i, setI] = useState(0);
+  const n = gifts.length;
+  if (!n) return null;
+  if (n === 1) return <GiftPiece gift={gifts[0]} />;
+  return (
+    <div className="grv-gifts">
+      <div className="grv-gift-track" style={{ transform: `translateX(${-i * 100}%)` }}>
+        {gifts.map((g, k) => (
+          <div className="grv-gift-slide" key={k} aria-hidden={k !== i}>
+            <GiftPiece gift={g} />
+          </div>
+        ))}
+      </div>
+      <div className="grv-gift-nav">
+        <button type="button" onClick={() => setI((i - 1 + n) % n)} aria-label="Previous gift">
+          <Icon name="chevronL" size={18} />
+        </button>
+        <span>
+          Gift {i + 1} of {n}
+        </span>
+        <button type="button" onClick={() => setI((i + 1) % n)} aria-label="Next gift">
+          <Icon name="chevron" size={18} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function RevealExperience({ data, preview = false, onClose }) {
+  const [stage, setStage] = useState(0); // 0 entrance · 1 opening · 2 memory · 3 gift · 4 closing
+  const [muted, setMuted] = useState(!data.sound);
+  const gifts = data.gifts || [];
+  useEffect(() => setMuted(!data.sound), [data.sound]);
   const theme = ['envelope', 'box', 'night'].includes(data.theme) ? data.theme : 'envelope';
   const timer = useRef(null);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -139,9 +153,14 @@ export default function RevealExperience({ data, loadClip, preview = false, onCl
   const openIt = () => {
     if (stage !== 0) return;
     setStage(1);
+    if (!muted) chime('open');
     timer.current = setTimeout(() => setStage(2), reduced() ? 400 : 2600);
   };
-  const next = () => setStage((s) => Math.min(5, s + 1));
+  const next = () =>
+    setStage((s) => {
+      if (s === 2 && !muted) chime('gift');
+      return Math.min(4, s + 1);
+    });
   const replay = () => {
     clearTimeout(timer.current);
     setStage(0);
@@ -170,6 +189,11 @@ export default function RevealExperience({ data, loadClip, preview = false, onCl
             <Icon name="close" size={18} />
           </button>
         </div>
+      )}
+      {data.sound && (
+        <button type="button" className={`grv-sound ${preview ? 'below' : ''}`} onClick={() => setMuted((m) => !m)} aria-pressed={!muted} aria-label={muted ? 'Turn sound on' : 'Turn sound off'}>
+          <Icon name={muted ? 'volumeOff' : 'volume'} size={18} />
+        </button>
       )}
 
       {/* 1–3 · entrance, personalisation and the reveal */}
@@ -204,46 +228,20 @@ export default function RevealExperience({ data, loadClip, preview = false, onCl
             {data.message && <p className="grv-msg">{data.message}</p>}
             {data.from && <p className="grv-from">— {data.from}</p>}
           </div>
-          <Clip clip={data.clip} loadClip={loadClip} />
+          <Clip clip={data.clip} />
           <button type="button" className="grv-next" onClick={next}>
-            Continue <Icon name="arrow" size={16} />
+            {gifts.length ? (gifts.length > 1 ? 'See your gifts' : 'See your gift') : 'Continue'} <Icon name="arrow" size={16} />
           </button>
         </section>
       )}
 
-      {/* 5 · the final surprise */}
+      {/* 5 · the gift, as it was actually ordered */}
       {stage === 3 && (
-        <section className="grv-stage grv-forever">
-          <span className="grv-rule" />
-          <h2>
-            A memory,
-            <br />
-            <em>crafted to stay forever.</em>
-          </h2>
-          <span className="grv-rule" />
-          <button type="button" className="grv-next" onClick={next}>
-            See your gift <Icon name="arrow" size={16} />
-          </button>
-        </section>
-      )}
-
-      {/* 6 · the gift */}
-      {stage === 4 && (
         <section className="grv-stage grv-gift">
-          <p className="grv-eyebrow">Your gift</p>
-          {data.product?.image ? (
-            <div className="grv-frame">
-              <img src={data.product.image} alt={data.product.name || 'Your JHAYRA gift'} />
-              <span className="grv-frame-glare" />
-            </div>
-          ) : (
-            <div className="grv-frame grv-frame-empty">
-              <img src={LOGO} alt="" />
-            </div>
-          )}
-          {data.product?.name && <p className="grv-product">{data.product.name}</p>}
+          <p className="grv-eyebrow">{gifts.length > 1 ? 'Your gifts' : 'Your gift'}</p>
+          <Gifts gifts={gifts} />
           <h2 className="grv-onway">
-            Your JHAYRA gift is <em>on its way.</em>
+            {gifts.length > 1 ? 'Your JHAYRA gifts are' : 'Your JHAYRA gift is'} <em>on the way.</em>
           </h2>
           <p className="grv-line">Handcrafted and framed for you{data.from ? `, with love from ${data.from}` : ''}.</p>
           <button type="button" className="grv-next" onClick={next}>
@@ -252,22 +250,18 @@ export default function RevealExperience({ data, loadClip, preview = false, onCl
         </section>
       )}
 
-      {/* 7 · closing */}
-      {stage === 5 && (
+      {/* 6 · closing */}
+      {stage === 4 && (
         <section className="grv-stage grv-thanks">
-          <img className="grv-logo big" src={LOGO} alt="JHAYRA" />
-          <p className="grv-wordmark">JHAYRA</p>
-          <p className="grv-tagline">Crafting Memories Into Art.</p>
-          <span className="grv-rule" />
-          <h2>
-            {data.from ? (
-              <>
-                With love, <em>{data.from}</em>
-              </>
-            ) : (
-              'With love'
-            )}
+          <h2 className="grv-closing">
+            Some gifts are opened.
+            <br />
+            <em>Some memories last forever.</em>
           </h2>
+          {data.from && <p className="grv-love">With love, {data.from}</p>}
+          <span className="grv-rule" />
+          <img className="grv-logo big" src={LOGO} alt="JHAYRA" />
+          <p className="grv-tagline">Crafted with love by JHAYRA.</p>
           <div className="grv-actions">
             <button type="button" className="grv-btn gold" onClick={share} disabled={preview} title={preview ? 'Available to the recipient' : undefined}>
               <WhatsAppGlyph size={18} /> Say thank you

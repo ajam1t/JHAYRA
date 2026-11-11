@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { localOrders } from '../state/store';
 import { money, waLink, deliveryWindow } from '../lib/site';
 import { JOURNEY } from './Checkout';
+import { handOff } from '../lib/reveal';
 
 // Real progress from the order's status on our server (the same lookup as
 // /track: order number + the mobile used at checkout). Orders saved before the
@@ -106,6 +107,11 @@ export default function Orders() {
               </ul>
               <footer>
                 <span className="small muted">{r?.order_status === 'delivered' ? 'Delivered' : `Expected ${win.early} – ${win.late}`}</span>
+                {r && o.mobile && r.order_status !== 'delivered' && r.order_status !== 'cancelled' && (
+                  <Link className="btn btn-ghost btn-sm" to="/gift-reveal" onClick={() => handOff(o.orderNumber, o.mobile)}>
+                    <Icon name="gift" size={15} /> Gift Reveal
+                  </Link>
+                )}
                 {r ? (
                   <a className="btn btn-wa btn-sm" href={waLink(`Hi JHAYRA! A question about order ${o.orderNumber}.`)} target="_blank" rel="noopener noreferrer">
                     <WhatsAppGlyph size={16} /> Ask us

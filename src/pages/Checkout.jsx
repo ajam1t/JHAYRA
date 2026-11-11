@@ -14,6 +14,7 @@ import { useActiveCampaign } from '../lib/campaigns';
 import { trackStep } from '../lib/analytics';
 import { founderEligible, useSignature } from '../lib/signature';
 import { money, waLink, deliveryWindow, SITE, mobile10, GIFT_FEE } from '../lib/site';
+import { handOff } from '../lib/reveal';
 import { BRAND } from '../lib/brand';
 
 // Loads Razorpay once (started as soon as checkout opens). Gives up after
@@ -475,11 +476,11 @@ function Receipt({ order }) {
         </a>
       </div>
       {/* A gift? Let them open it twice: a private digital reveal before the frame arrives. */}
-      <Link to="/gift-reveal" className={`rcpt-reveal ${printed ? 'show' : ''}`}>
+      <Link to="/gift-reveal" className={`rcpt-reveal ${printed ? 'show' : ''}`} onClick={() => handOff(order.orderNumber, order.mobile)}>
         <Icon name="gift" size={20} />
         <span>
           <b>Is this a gift? Send a Gift Reveal</b>
-          <small>A private digital surprise with your photos and words — opened by link or QR code before the frame arrives.</small>
+          <small>A private digital surprise with your photos, your words and this very gift — opened by link or QR code before it arrives.</small>
         </span>
         <Icon name="arrow" size={16} />
       </Link>

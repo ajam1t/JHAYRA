@@ -61,6 +61,9 @@ const P = {
   logout: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11',
   box: 'M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10',
   type: 'M5 6h14M12 6v13M9 19h6',
+  volume: 'M4 9h4l5-4v14l-5-4H4zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12',
+  volumeOff: 'M4 9h4l5-4v14l-5-4H4zM17 9.5l5 5M22 9.5l-5 5',
+  chevronL: 'M15 6l-6 6 6 6',
 };
 
 export const ICON_PATHS = P;

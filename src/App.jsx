@@ -50,7 +50,7 @@ export default function App() {
                 <Routes>
                   <Route path="/admin/*" element={<Admin />} />
                   {/* The recipient's private reveal: full screen, no shop chrome. */}
-                  <Route path="/gift/:id" element={<GiftOpen />} />
+                  <Route path="/gift/:token" element={<GiftOpen />} />
                   <Route element={<Layout />}>
                     <Route index element={<Home />} />
                     <Route path="shop" element={<Shop />} />

@@ -7310,5 +7310,3 @@
 .rcpt-reveal small { color: #5c4a3a; font-size: 13px; line-height: 1.4; }
 
 /* Gift Reveal links stay hidden until its backend is switched on (see src/lib/reveal.js). */
-html:not([data-gr]) a[href='/gift-reveal'],
-html:not([data-gr]) li:has(> a[href='/gift-reveal']) { display: none !important; }

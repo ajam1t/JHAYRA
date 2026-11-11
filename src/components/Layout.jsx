@@ -741,24 +741,6 @@ export default function Layout() {
     setDrawerOpen(false);
   }, [pathname, setDrawerOpen]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => trackView(pathname), [pathname]);
-  // Gift Reveal links appear only once its backend is switched on.
-  useEffect(() => {
-    const show = () => document.documentElement.setAttribute('data-gr', '1');
-    try {
-      if (sessionStorage.getItem('jh_gr_on') === '1') return show();
-    } catch {}
-    // One small lookup per visit (kept inline so the reveal code itself loads only on its own pages).
-    import('../lib/supabase').then(({ supabase }) =>
-      supabase.rpc('open_gift_reveal', { p_id: '0'.repeat(32), p_count: false }).then(({ data, error }) => {
-        if (error || !data?.status) return;
-        try {
-          sessionStorage.setItem('jh_gr_on', '1');
-        } catch {}
-        show();
-      }),
-    );
-  }, []);
-
   const bottomNav = !(pathname.startsWith('/checkout') || /^\/customize\/.+/.test(pathname));
   useEffect(() => {
     document.body.classList.toggle('has-bottom-nav', bottomNav);

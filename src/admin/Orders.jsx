@@ -32,6 +32,47 @@ function Customization({ c }) {
 
 // The greeting card the customer wrote at checkout, shown at the top of the
 // order so it's packed with the frame (and never missed).
+// The customer's Gift Reveal for this order (admins may read gift_reveals).
+// Opening it from here does not count as a view.
+function GiftRevealPanel({ reveal: r, order: o }) {
+  if (!r) return null;
+  const f = (d) => (d ? new Date(d).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—');
+  const scheduled = new Date(r.publish_at).getTime() > Date.now();
+  const closed = r.closed_reason || (o.order_status === 'delivered' ? 'delivered' : o.order_status === 'cancelled' ? 'cancelled' : o.payment_status === 'refunded' ? 'refunded' : null);
+  const state = closed ? `Closed (${closed})` : o.payment_status !== 'paid' ? 'Waiting for payment' : scheduled ? `Scheduled — opens ${f(r.publish_at)}` : 'Live';
+  const rows = [
+    ['Status', state],
+    ['For', r.recipient_name],
+    ['From', r.sender_name],
+    ['Occasion', r.occasion],
+    ['Theme', { envelope: 'Ivory Letter', box: 'Champagne Gift Box', night: 'Midnight Keepsake' }[r.theme] || r.theme],
+    ['Media', `${(r.photos || []).length} photo${(r.photos || []).length === 1 ? '' : 's'}${r.clip_kind ? ` + ${r.clip_kind === 'video' ? 'video' : 'voice note'}` : ''}`],
+    ['Opens', scheduled ? f(r.publish_at) : `Immediately (${f(r.publish_at)})`],
+    ['Views', `${r.views}${r.first_opened_at ? ` · first opened ${f(r.first_opened_at)}` : ' · not opened yet'}`],
+    ['Created', f(r.created_at)],
+    ['Last edited', r.edit_count ? `${f(r.updated_at)} (${r.edit_count} edit${r.edit_count > 1 ? 's' : ''})` : 'Never'],
+  ];
+  return (
+    <div className="ad-gift" style={{ marginBottom: 14 }}>
+      <b>✨ Gift Reveal</b>
+      <dl className="ad-dl" style={{ marginTop: 8 }}>
+        {rows.map(([k, v]) => (
+          <Fragment key={k}>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </Fragment>
+        ))}
+      </dl>
+      {r.message && <p style={{ whiteSpace: 'pre-wrap', margin: '8px 0' }}>{r.message}</p>}
+      {!closed && (
+        <a className="ad-btn" href={`/gift/${r.token}`} target="_blank" rel="noreferrer">
+          <Icon name="eye" size={15} /> Open reveal
+        </a>
+      )}
+    </div>
+  );
+}
+
 function GiftCard({ items }) {
   const g = (items || []).map((it) => it.customization?.gift).find(Boolean);
   if (!g) return null;
@@ -64,6 +105,7 @@ export default function Orders() {
   const [filter, setFilter] = useState(() => sp.get('filter') || 'paid');
   const [ship, setShip] = useState({});
   const [q, setQ] = useState(() => sp.get('q') || '');
+  const [reveals, setReveals] = useState({});
 
   useEffect(() => {
     supabase
@@ -75,6 +117,10 @@ export default function Orders() {
         if (error) setErr(error.message);
         setOrders(data || []);
       });
+    supabase
+      .from('gift_reveals')
+      .select('*')
+      .then(({ data }) => setReveals(Object.fromEntries((data || []).map((r) => [r.order_id, r]))));
   }, []);
 
   const list = useMemo(() => {
@@ -178,6 +224,7 @@ export default function Orders() {
                   <td>
                     <b>{o.order_number || o.id.slice(0, 8)}</b>
                     {/gift/i.test(o.notes || '') && <span className="ad-badge ad-badge-gift">🎁 Gift</span>}
+                    {reveals[o.id] && <span className="ad-badge ad-badge-gift">✨ Reveal</span>}
                   </td>
                   <td>
                     {o.customer_name}
@@ -255,6 +302,7 @@ export default function Orders() {
                           </div>
                         </div>
                         <div>
+                          <GiftRevealPanel reveal={reveals[o.id]} order={o} />
                           <GiftCard items={items[o.id]} />
                           <h3>Items</h3>
                           {!items[o.id] && <p className="ad-muted">Loading…</p>}
