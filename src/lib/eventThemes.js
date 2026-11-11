@@ -226,6 +226,17 @@ export const EVENT_THEMES = [
     picks: { categories: ['family'], keywords: ['brother', 'sister', 'family'] },
   },
   {
+    id: 'childrens-day',
+    name: 'Children’s Day',
+    palette: { deep: '#1f3f73', accent: '#ffc845', tint: '#eaf2ff', ink: '#fff8e6' },
+    decor: ['kite', 'stars'],
+    particles: 'confetti',
+    layout: 'centered',
+    motif: '🎈',
+    copy: { kicker: 'Celebrate 14 November', title: 'Little moments,', em: 'framed forever.', subtitle: 'Personalised frames with your child’s photos, name and milestones — first steps, school days and proudest smiles.', cta: 'Create their frame', target: 'create:baby' },
+    picks: { categories: ['baby-kids', 'family'], keywords: ['kid', 'child', 'baby', 'family'] },
+  },
+  {
     id: 'independence-day',
     name: 'Independence Day',
     palette: { deep: '#0d3b5c', accent: '#ff9933', tint: '#eef3ea', ink: '#f4f8ff' },

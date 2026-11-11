@@ -29,6 +29,7 @@ export const TARGETS = [
   { id: 'create:festivals', label: 'Personalised · Festival designs', to: '/customize?moment=festivals' },
   { id: 'create:wedding', label: 'Personalised · Wedding designs', to: '/customize?moment=wedding' },
   { id: 'create:anniversary', label: 'Personalised · Anniversary designs', to: '/customize?moment=anniversary' },
+  { id: 'create:baby', label: 'Personalised · Baby & Kids designs', to: '/customize?moment=baby' },
   { id: 'page:gift-finder', label: 'Gift Finder', to: '/gift-finder' },
   { id: 'page:shop', label: 'Shop · All wall art', to: '/shop' },
   { id: 'page:bestsellers', label: 'Shop · Bestsellers', to: '/shop?sort=bestsellers' },
@@ -45,6 +46,7 @@ const SEED = [
   // theme, start, end, event date, verify
   ['diwali', '2026-10-28', '2026-11-09', '2026-11-08', true],
   ['bhai-dooj', '2026-11-10', '2026-11-11', '2026-11-11', true],
+  ['childrens-day', '2026-11-11', '2026-11-14', '2026-11-14', false],
   ['chhath', '2026-11-12', '2026-11-16', '2026-11-15', true],
   ['wedding', '2026-11-17', '2027-02-28', '', false],
   ['christmas', '2026-12-12', '2026-12-26', '2026-12-25', false],
@@ -110,7 +112,7 @@ export const DEFAULT_CAMPAIGNS = SEED.map(([theme, start, end, eventDate, verify
   eventDate,
   verify,
   // Wedding season runs for months, so festivals that fall inside it win.
-  priority: theme === 'wedding' ? 9 : ['lohri', 'independence-day'].includes(theme) ? 4 : 3,
+  priority: theme === 'wedding' ? 9 : theme === 'childrens-day' ? 2 : ['lohri', 'independence-day'].includes(theme) ? 4 : 3,
   sort: i,
 }));
 
