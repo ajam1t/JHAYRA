@@ -7011,6 +7011,7 @@
 .m5-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; display: block; transition: transform 0.5s; }
 .m5-row:hover .m5-thumb img { transform: scale(1.1); }
 .m5-thumb.gold { display: grid; place-items: center; background: radial-gradient(circle at 30% 25%, #fff3d6, #e7cf9c 40%, #b08a45 100%); }
+.m5-thumb.gold .m5-ico { color: #fff; filter: drop-shadow(0 1px 4px rgba(120, 80, 20, 0.6)); }
 .m5-thumb.gold span { font-size: 22px; color: #fff; text-shadow: 0 1px 6px rgba(120, 80, 20, 0.6); animation: menu3Spin 8s linear infinite; }
 .m5-txt { flex: 1; display: grid; min-width: 0; }
 .m5-txt b { font-family: var(--fd); font-weight: 400; font-size: 22px; line-height: 1.1; }

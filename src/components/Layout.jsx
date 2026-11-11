@@ -221,6 +221,7 @@ const MAIN = [
   ['Shop', 'Wall art for every room', 'Shop'],
   ['Create', 'Design your own frame', 'Create'],
   ['Gift Finder', 'The right gift in five questions', null, '/gift-finder'],
+  ['Gift Reveal', 'A surprise before the gift arrives', null, '/gift-reveal', 'gift'],
   ['Celebrations', 'Festivals, weddings & gifting', 'Celebrations'],
   ['Signature', 'Founder-curated collection', null, '/signature-experience', true],
 ];
@@ -300,11 +301,11 @@ function MenuSheet({ onClose, returnFocus }) {
             {MAIN.map(([label, sub, group, to, gold], i) => {
               const kids = group ? SUB[group] : null;
               const isOpen = open === label;
-              const img = thumbs[i];
+              const img = gold ? null : thumbs[MAIN.slice(0, i).filter((m) => !m[4]).length];
               const inner = (
                 <>
                   <span className={`m5-thumb ${gold ? 'gold' : ''}`} aria-hidden="true">
-                    {gold ? <span>✦</span> : img ? <img src={optimized(img.thumbnail, 160)} alt="" loading="lazy" decoding="async" /> : null}
+                    {gold === true ? <span>✦</span> : gold ? <Icon name={gold} size={24} stroke={1.8} className="m5-ico" /> : img ? <img src={optimized(img.thumbnail, 160)} alt="" loading="lazy" decoding="async" /> : null}
                   </span>
                   <span className="m5-txt">
                     <b>{label}</b>
@@ -347,7 +348,7 @@ function MenuSheet({ onClose, returnFocus }) {
                 <h2>{g}</h2>
                 <ul>
                   {SUB[g]
-                    .filter(([to]) => to !== '/signature-experience' && to !== '/gift-finder')
+                    .filter(([to]) => to !== '/signature-experience' && to !== '/gift-finder' && to !== '/gift-reveal')
                     .map(([to, l]) => (
                       <li key={to + l}>
                         <Link to={to} onClick={shut} className={here(to) ? 'on' : ''}>
@@ -645,7 +646,7 @@ function SearchPalette() {
 
 function Footer() {
   const cols = [
-    ['Shop', [['/shop', 'All wall art'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/collections', 'Collections'], ['/customize', 'Create your own'], ['/gift-finder', 'Gift finder'], ['/gift-reveal', 'Gift reveal'], ['/corporate', 'Corporate gifting']]],
+    ['Shop', [['/shop', 'All wall art'], ['/shop?sort=bestsellers', 'Bestsellers'], ['/collections', 'Collections'], ['/customize', 'Create your own'], ['/gift-finder', 'Gift finder'], ['/gift-reveal', 'Gift Reveal ✦'], ['/corporate', 'Corporate gifting']]],
     ['Help', [['/support', 'Help & FAQs'], ['/track', 'Track my order'], ['/shipping-policy', 'Shipping'], ['/refund', 'Returns & refunds'], ['/contact', 'Contact us']]],
     ['Jhayra', [['/signature-experience', 'Signature'], ['/about', 'About us'], ['/worlds', 'Worlds'], ['/journal', 'Journal'], ['/visualise', 'Visualise']]],
   ];
