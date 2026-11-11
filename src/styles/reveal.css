@@ -127,7 +127,7 @@
 
 .grv-next, .grv-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 28px; border-radius: 999px; font-size: 15px; font-weight: 600; letter-spacing: 0.06em; }
 .grv-next { margin-top: 10px; background: var(--rv-ink); color: #fbf8f2; animation: grvIn 0.9s 0.8s var(--ease) both; }
-.grv-t-night .grv-next { background: linear-gradient(180deg, #e9cf8e, #b08a45); color: #1f1812; }
+.grv-t-night .grv-next, .grv-t-diya .grv-next { background: linear-gradient(180deg, #e9cf8e, #b08a45); color: #1f1812; }
 
 /* ── forever / gift / thanks ──────────────────────────────────────────── */
 .grv-forever { gap: 26px; }
